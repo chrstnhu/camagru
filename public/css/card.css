@@ -1,0 +1,381 @@
+.card-component {
+    display: grid;
+    place-items: center;
+    margin: 0 20px;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-gap: 10px;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    padding: 0 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+        Ubuntu, Cantarell, sans-serif;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.card-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #e2e8f0;
+    margin: auto 0;
+    transition: transform 0.2s ease;
+}
+
+.card-avatar:hover {
+    transform: scale(1.05);
+}
+
+.card-photo {
+    width: 340px;
+    height: 200px;
+    border-radius: 10px;
+    object-fit: cover;
+    transition: transform 0.3s ease, object-fit 0.3s ease;
+}
+
+.card-photo:hover {
+    transform: scale(1.05);
+}
+
+/* Like Section */
+.like-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+    margin-bottom: 10px;
+}
+
+.like-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.like-button:hover {
+    background-color: #f8fafc;
+}
+
+.like-button.liked {
+    animation: likeAnimation 0.3s ease-in-out;
+}
+
+.like-button i {
+    font-size: 18px;
+    transition: color 0.2s ease;
+}
+
+.like-count {
+    font-size: 14px;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+@keyframes likeAnimation {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Comments Section */
+.comments-section {
+    margin-top: 10px;
+}
+
+.comments-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 16px;
+}
+
+/* Add Comment */
+.add-comment-container {
+    display: flex;
+    gap: 10px;
+    padding: 1%;
+    width: 100%;
+}
+
+.add-comment .card-avatar {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+}
+
+.comment-input-container {
+    flex: 1;
+}
+
+.comment-input-wrapper {
+    position: relative;
+}
+
+.comment-input {
+    width: 80%;
+    padding: 12px 50px 12px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    resize: none;
+    font-size: 14px;
+    line-height: 1.4;
+    font-family: inherit;
+    transition: border-color 0.2s ease;
+    overflow: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.comment-input::-webkit-scrollbar {
+    display: none;
+}
+
+.comment-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.comment-input::placeholder {
+    color: #9ca3af;
+}
+
+.add-comment-btn {
+    padding: 8px 16px;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.add-comment-btn:hover {
+    background-color: #2563eb;
+}
+
+.add-comment-btn:active {
+    transform: translateY(1px);
+}
+
+.add-comment-btn-inside {
+    position: absolute;
+    right: 5px;
+    bottom: 15px;
+    margin: auto;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 60%;
+}
+
+.add-comment-btn-inside:hover {
+    background-color: #2563eb;
+    transform: scale(1.05);
+}
+
+.add-comment-btn-inside:active {
+    transform: scale(0.95);
+}
+
+.add-comment-btn-inside i {
+    font-size: 12px;
+}
+
+.open-comment-btn {
+    width: 100%;
+    margin: 12px 0;
+    background-color: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.open-comment-btn:hover {
+    color: blue;
+}
+
+.open-comment-btn:active {
+    transform: translateY(1px);
+}
+
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100px;
+    overflow-y: auto;
+    margin: 14px auto;
+}
+
+.comment-item {
+    background-color: #f8fafc;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    overflow-wrap: break-word;
+}
+
+.comment-item:hover {
+    background-color: #f1f5f9;
+}
+
+.comment-content {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    background-color: #4b5563;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+.comment-avatar-wrapper {
+    display: flex;
+    gap: 12px;
+}
+
+.comment-item .card-avatar {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+}
+
+.comment-info {
+    display: flex;
+    flex-direction: column;
+    overflow-wrap: break-word;
+}
+
+.comment-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.comment-author {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1f2937;
+}
+
+.comment-timestamp {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.comment-text {
+    font-size: 14px;
+    color: #374151;
+    line-height: 1.4;
+    margin: 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
+    white-space: pre-wrap;
+}
+
+.delete-comment-btn {
+    background: none;
+    margin: auto 0;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.delete-comment-btn:hover {
+    color: #ef4444;
+}
+
+.delete-comment-btn i {
+    font-size: 12px;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .card {
+        padding: 16px;
+        margin: auto;
+        max-width: none;
+    }
+
+    .card-header {
+        gap: 12px;
+    }
+
+    .card-avatar {
+        width: 48px;
+        height: 48px;
+    }
+
+    .comments-title {
+        font-size: 16px;
+    }
+}
+
+.open-comment-btn {
+    padding: 8px 16px;
+    background-color: transparent;
+    color: white;
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    overflow: hidden;
+    outline: none;
+    transition: background-color 0.2s ease;
+}
+
+.open-comment-btn:hover {
+    color: #2563eb;
+    transition: color 0.2s ease;
+}
