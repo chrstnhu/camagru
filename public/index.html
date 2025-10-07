@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/card.css">
+    <link rel="stylesheet" href="css/login.css">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="js/card.js"></script>
-
+    <script src="js/page.js"></script>
+    <script src="js/login.js"></script>
     <title>Camagru - 42 Project</title>
 </head>
+
 <body>
     <!-- Header -->
     <header>
@@ -18,11 +22,15 @@
             <div class="logo">Camagru</div>
             <nav class="nav-menu">
                 <ul>
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#gallery">Gallery</a></li>
-                    <li><a href="#camera">Camera</a></li>
-                    <li><a href="#profile">Cards</a></li>
-                    <li><a href="#login">Login</a></li>
+                    <li onclick="navigateTo('home', true);"><a href="#home">Home</a></li>
+                    <li onclick="navigateTo('gallery', true);"><a href="#gallery">Gallery</a></li>
+                    <li onclick="navigateTo('camera', true);"><a href="#camera">Camera</a></li>
+                    <li onclick="navigateTo('profile', true);"><a href="#profile">Cards</a></li>
+                    <li onclick="navigateTo('login', true);"
+                        style="cursor: pointer; display: flex; align-items: center;">
+                        <i class="fa-solid fa-user icon-menu-size" style="margin: 0.5rem;"></i>
+                        <p class="user-menu-label">Login</p>
+                    </li>
                 </ul>
             </nav>
         </div>
@@ -35,18 +43,48 @@
             <p>Share your photos with creative effects</p>
         </section>
 
-        <section id="content">
+        <section id="home">
             <h2>Main Content</h2>
-            
+
             <!-- User Card Component -->
             <div class="container">
                 <h1 style="font-size: x-large; font-weight: bold; align-items: center; margin: 8px">Component photo</h1>
                 <div class="card-component" id="card-component">
                 </div>
             </div>
-    <!-- Card Container -->
+            <div id="listingTable">
 
-    </div>
+            </div>
+
+            <div class="pagination">
+                <span onclick="firstPage()" id="btn_first" class="btn-page"><i
+                        class="fa-solid fa-angle-double-left"></i></span>
+                <span onclick="prevPage()" id="btn_prev" class="btn-page">
+                    <i class="fa-solid fa-angle-left"></i></span>
+                page: <span id="page"></span>
+                <span onclick="nextPage()" id="btn_next" class="btn-page">
+                    <i class="fa-solid fa-angle-right"></i></span>
+                <span onclick="lastPage()" id="btn_last" class="btn-page">
+                    <i class="fa-solid fa-angle-double-right"></i></span>
+            </div>
+
+            <!-- Card Container -->
+
+            </div>
+        </section>
+
+        <section>
+            <div id="login" style="display: none;">
+                <h2>Login Section</h2>
+            </div>
+
+            <div id="sign-in" style="display: none;">
+                <h2>Sign Up Section</h2>
+            </div>
+
+            <div id="login-fail" style="display: none;">
+                <h2>Login Failed Section</h2>
+            </div>
         </section>
     </main>
 
@@ -64,6 +102,7 @@
     </footer>
 
     <!-- Scripts -->
-    <script src="js/card.js"></script>
+
 </body>
+
 </html>

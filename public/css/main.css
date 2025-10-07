@@ -1,11 +1,12 @@
 .header-container {
   display: flex;
-  justify-content: space-between;
-  justify-items: center;
+  justify-content: center;
+  padding: auto;
   align-items: center;
-  background-color: rgb(158, 190, 203);
-  border-radius: 50px;
+  background-color: rgb(221, 232, 236);
   padding: 10px 20px;
+  border-radius: 0 0 50px 50px;
+
 }
 
 .nav-menu ul {
@@ -14,6 +15,30 @@
   gap: 20px;
   list-style-type: none;
 }
+
+.comment-item {
+  transition: all 0.2s ease-in-out;
+}
+
+.comment-item:hover {
+  background-color: #f8fafc;
+}
+
+
+.btn-page {
+  cursor: grab;
+  padding: 8px 12px;
+  margin: 0 5px;
+  color: blue;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.btn_page:hover {
+  background-color: #021b41;
+  transition: background-color 0.2s ease;
+}
+
 
 @media (max-width: 600px) {
   .profile-stats {
@@ -29,19 +54,14 @@
   0% {
     transform: scale(1);
   }
+  
   50% {
     transform: scale(1.2);
   }
+  
   100% {
     transform: scale(1);
   }
 }
 
-.comment-item {
-  transition: all 0.2s ease-in-out;
-}
-
-.comment-item:hover {
-  background-color: #f8fafc;
-}
-
+url(main.css)
