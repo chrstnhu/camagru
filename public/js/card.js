@@ -153,7 +153,16 @@ function addComment(userId, input, container, cardIndex) {
   // Save to localStorage
   const commentsKey = `comments_${userId}`;
   const comments = JSON.parse(localStorage.getItem(commentsKey)) || [];
-  comments.unshift(comment);
+  comments.unshift(comment);  // Add to objJson for pagination (make sure objJson is accessible)
+  if (typeof window.objJson !== 'undefined') {
+    window.objJson.push({
+      adName: user_card.alias,
+      cardHTML: cardHTML,
+      userData: user_card,
+      index: index
+    });
+  }
+
   localStorage.setItem(commentsKey, JSON.stringify(comments));
 
   // Add to UI (top of the list)
@@ -205,8 +214,11 @@ function deleteComment(userId, commentIndex, cardIndex) {
   loadComments(userId, container, cardIndex);
 }
 
+var objJson = []; // Will be populated when elements are available
+
 // Generate Card HTML with unique IDs
 function generateCardHTML(user_card, index) {
+  console.log("Generating card HTML for:", user_card);
   const cardComponent = document.getElementById("card-component");
   if (!cardComponent) return;
 
@@ -263,10 +275,18 @@ function generateCardHTML(user_card, index) {
     </div>
   `;
 
-  // Create a div element for the card and append it
-  const cardElement = document.createElement("div");
-  cardElement.innerHTML = cardHTML;
-  cardComponent.appendChild(cardElement.firstElementChild);
+  // Store the card HTML but don't append it yet (pagination will handle display)
+  // The card will be displayed by the pagination system
+
+  // Add to objJson for pagination (make sure objJson is accessible)
+  if (typeof window.objJson !== 'undefined') {
+    window.objJson.push({
+      adName: user_card.alias,
+      cardHTML: cardHTML,
+      userData: user_card,
+      index: index
+    });
+  }
 }
 
 // Set default values in case of error
@@ -275,13 +295,10 @@ function setDefaultCardValues() {
   if (aliasElement) aliasElement.textContent = "Guest";
 }
 
-// Initialize the cards
-document.addEventListener("DOMContentLoaded", function () {
-  // Clear existing cards first
-  const cardComponent = document.getElementById("card-component");
-  if (cardComponent) {
-    cardComponent.innerHTML = "";
-  }
+// Initialize cards data for pagination
+function initializeCardsData() {
+  // Initialize global objJson array
+  window.objJson = [];
 
   // Exemple - need to replace with real data
   const exampleUserData = [
@@ -295,11 +312,47 @@ document.addEventListener("DOMContentLoaded", function () {
       alias: "AnotherUser",
       avatar: "assets/profile/photo2.jpg",
     },
+    {
+      id: 3,
+      alias: "PhotoLover",
+      avatar: "assets/profile/photo3.jpg",
+    },
+    {
+      id: 4,
+      alias: "Artist",
+      avatar: "assets/profile/photo1.jpg",
+    },
+    {
+      id: 5,
+      alias: "How do you do that",
+      avatar: "assets/profile/photo1.jpg",
+    },
+    {
+      id: 6,
+      alias: "Creative",
+      avatar: "assets/profile/photo2.jpg",
+    },
+        {
+      id: 7,
+      alias: "Bob",
+      avatar: "assets/profile/photo1.jpg",
+    },
+        {
+      id: 8,
+      alias: "Youpi",
+      avatar: "assets/profile/photo3.jpg",
+    }
   ];
 
-  // Generate and initialize each card
+  // Generate card HTML for each user but don't display them yet
   exampleUserData.forEach((userData, index) => {
     generateCardHTML(userData, index);
-    updateUserCard(userData, index);
   });
+
+  console.log("Cards initialized:", window.objJson.length, "cards ready");
+}
+
+// Initialize the cards when DOM is loaded
+document.addEventListener("DOMContentLoaded", function () {
+  initializeCardsData();
 });
