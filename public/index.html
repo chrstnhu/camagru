@@ -7,11 +7,14 @@
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/card.css">
     <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="css/capturePhoto.css">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="js/card.js"></script>
     <script src="js/page.js"></script>
     <script src="js/login.js"></script>
+    <script src="js/capturePhoto.js"></script>
+
     <title>Camagru - 42 Project</title>
 </head>
 
@@ -23,9 +26,15 @@
             <nav class="nav-menu">
                 <ul>
                     <li onclick="navigateTo('home', true);"><a href="#home">Home</a></li>
-                    <li onclick="navigateTo('gallery', true);"><a href="#gallery">Gallery</a></li>
-                    <li onclick="navigateTo('camera', true);"><a href="#camera">Camera</a></li>
-                    <li onclick="navigateTo('profile', true);"><a href="#profile">Cards</a></li>
+                    <li onclick="navigateTo('container', true);" style="cursor: pointer; display: flex; align-items: center;">
+                        <i class="fa-solid fa-photo-film"></i>
+                        Gallery</li>
+                    <li onclick="navigateTo('camera-section', true);" style="cursor: pointer; display: flex; align-items: center;">
+                        <i class="fa-solid fa-camera"></i>
+                        Camera</li>
+                    <li onclick="navigateTo('myPhotos', true);" style="cursor: pointer; display: flex; align-items: center;">
+                        <i class="fa-solid fa-id-card"></i>
+                        My photos</li>
                     <li onclick="navigateTo('login', true);"
                         style="cursor: pointer; display: flex; align-items: center;">
                         <i class="fa-solid fa-user icon-menu-size" style="margin: 0.5rem;"></i>
@@ -47,16 +56,14 @@
             <h2>Main Content</h2>
 
             <!-- User Card Component -->
-            <div class="container">
+            <div class="container" style="display: none;">
                 <h1 style="font-size: x-large; font-weight: bold; align-items: center; margin: 8px">Component photo</h1>
                 <div class="card-component" id="card-component">
                 </div>
             </div>
-            <div id="listingTable">
+            <div id="listingTable"></div>
 
-            </div>
-
-            <div class="pagination">
+            <div id="pagination" class="pagination">
                 <span onclick="firstPage()" id="btn_first" class="btn-page"><i
                         class="fa-solid fa-angle-double-left"></i></span>
                 <span onclick="prevPage()" id="btn_prev" class="btn-page">
@@ -86,6 +93,29 @@
                 <h2>Login Failed Section</h2>
             </div>
         </section>
+
+        <section id="camera-section" style="display: none;">
+            <h2>Camera</h2>
+            <div class="camera-container">
+                <!-- Visualize webcam preview -->
+                <div class="camera-preview">
+                    <h3>Take a photo</h3>
+                    <video id="video">Video stream not available.</video>
+                    <button id="start-button"><i class="fa-solid fa-camera"></i></button>
+                </div>
+
+                <!-- Canvas for photo capture -->
+                <canvas id="canvas" style="display: none;"></canvas>
+
+                <!-- Display captured photo -->
+                <div class="photo-result">
+                    <h3>Captured photo: </h3>
+                    <img id="photo" class="camera-preview" alt="The capture will appear here." />
+                </div>
+            </div>
+            </div>
+        </section>
+
     </main>
 
     <!-- Footer -->

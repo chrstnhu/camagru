@@ -2,48 +2,68 @@
 function navigateTo(viewId, push) {
   console.log("🚀 Navigating to:", viewId, "push =", push);
 
-  const views = ['login', 'sign-in', 'login-fail', 'home'];
+  const views = [
+    "login",
+    "sign-in",
+    "login-fail",
+    "home",
+    "camera-section",
+    "container",
+    "myPhotos",
+    "pagination"
+  ];
   const target = document.getElementById(viewId);
 
   console.log("🎯 Target element:", target);
 
   if (target) {
     // Hide all views first
-    views.forEach(v => {
+    views.forEach((v) => {
       const view = document.getElementById(v);
       if (view) {
-        console.log(`👁️ Hiding view: ${v}`);
-        view.style.display = 'none';
+        view.style.display = "none";
       }
     });
 
     // Show the target view
     console.log(`✅ Showing view: ${viewId}`);
-    target.style.display = 'block';
+    target.style.display = "block";
+
+    if (viewId === "container") {
+      const pagination = document.getElementById("pagination");
+      if (pagination) {
+        pagination.style.display = "block";
+      }
+    }
+
+    // Special handling for camera section - dispatch custom event
+    if (viewId === "camera-section") {
+      // Create and dispatch a custom event that capturePhoto.js can listen for
+      const event = new CustomEvent("cameraViewActivated");
+      document.dispatchEvent(event);
+    }
   } else {
     console.error(`❌ Target element '${viewId}' not found!`);
   }
 
   // Navigate to the target view
   if (push) {
-    history.pushState({ viewId: viewId }, '', `#${viewId}`);
+    history.pushState({ viewId: viewId }, "", `#${viewId}`);
   }
 }
 
 // Make navigateTo available globally immediately
 window.navigateTo = navigateTo;
-console.log("✅ navigateTo function registered globally");
 
 function initializeLoginPages() {
-  console.log('📢 Initializing login page...');
-  const login = document.getElementById('login');
+  console.log("📢 Initializing login page...");
+  const login = document.getElementById("login");
 
   if (login) {
-    console.log('📢 Login container found, clearing and adding form');
-    login.innerHTML = '';
+    login.innerHTML = "";
 
     // Create login form
-    const loginFormElement = document.createElement('div');
+    const loginFormElement = document.createElement("div");
     loginFormElement.innerHTML = `
       <div class="auth-container">
         <div class="header-login-container" style="width: 98%; margin-bottom: 0.rem;">
@@ -91,24 +111,24 @@ function initializeLoginPages() {
     login.appendChild(loginFormElement);
 
     // Add eye icon functionality for password visibility
-    addEyesIcon('password');
+    addEyesIcon("password");
   }
 
   // Setup avatar preview
   function setupAvatarPreview(formElement) {
     // Add event listener for avatar preview
-    const avatarInput = formElement.querySelector('#create_avatar');
-    const avatarPreview = formElement.querySelector('#user-avatar-preview');
-    const avatarContainer = formElement.querySelector('.avatar-container');
+    const avatarInput = formElement.querySelector("#create_avatar");
+    const avatarPreview = formElement.querySelector("#user-avatar-preview");
+    const avatarContainer = formElement.querySelector(".avatar-container");
 
     if (avatarInput && avatarPreview && avatarContainer) {
       // Click on avatar container to open file selector
-      avatarContainer.addEventListener('click', function () {
+      avatarContainer.addEventListener("click", function () {
         avatarInput.click();
       });
 
       // Handle file selection
-      avatarInput.addEventListener('change', function (e) {
+      avatarInput.addEventListener("change", function (e) {
         const target = e.target;
         if (target.files && target.files[0]) {
           const reader = new FileReader();
@@ -120,22 +140,20 @@ function initializeLoginPages() {
           reader.readAsDataURL(target.files[0]);
         } else {
           // Reset to default image if no file selected
-          avatarPreview.src = 'assets/img/default.png';
+          avatarPreview.src = "assets/img/default.png";
         }
       });
-
-      // Upload avatar
     }
   }
 
   function initializeSignInPages() {
-    const signIn = document.getElementById('sign-in');
+    const signIn = document.getElementById("sign-in");
 
     if (signIn) {
-      signIn.innerHTML = '';
+      signIn.innerHTML = "";
 
       // Create sign in form
-      const signInFormElement = document.createElement('div');
+      const signInFormElement = document.createElement("div");
       signInFormElement.innerHTML = `
     <div class="auth-container">
       <div class="header-login-container" style="width: 98%;">
@@ -172,7 +190,7 @@ function initializeLoginPages() {
                 <input class="inputInfo" id="create_alias" type="text" name="alias" placeholder="Choose your alias" data-i18n-placeholder="alias" required/>
                 <i class="fa-solid fa-user input-icon"></i>
               </div>
-              <input type="file" id="create_avatar" name="create_avatar" accept="image/png" style="display: none;" aria-describedby="avatar-help"/>
+              <input type="file" id="create_avatar" name="create_avatar" accept="image/png" style="display: none;" >
             </div>
           </div>
         </div>
@@ -192,19 +210,19 @@ function initializeLoginPages() {
 
         setupAvatarPreview(formElement);
 
-        addEyesIcon('create_password');
+        addEyesIcon("create_password");
       }
     }
   }
 
   function initializeLoginFailPages() {
-    const loginFail = document.getElementById('login-fail');
+    const loginFail = document.getElementById("login-fail");
 
     if (loginFail) {
-      loginFail.innerHTML = '';
+      loginFail.innerHTML = "";
 
       // Create login fail form
-      const loginFailFormElement = document.createElement('div');
+      const loginFailFormElement = document.createElement("div");
       loginFailFormElement.innerHTML = `
       <div class="auth-container">
         <div class="header-container" style="width: 98%; margin-bottom: 0;">
@@ -236,70 +254,73 @@ function initializeLoginPages() {
   }
 
   // Initialize all auth pages
-  console.log('📢 AuthPages: Initializing all auth pages...');
+  console.log("📢 AuthPages: Initializing all auth pages...");
   initializeSignInPages();
   initializeLoginFailPages();
-  console.log('📢 AuthPages: All auth pages initialized');
+  console.log("📢 AuthPages: All auth pages initialized");
 
   // Cleanup function to reset the sign-in page
   function resetSignInPage() {
-    const avatarPreview = document.querySelector('#user-avatar-preview');
-    const avatarInput = document.querySelector('#create_avatar');
-    const usernameInput = document.querySelector('#create_username');
-    const passwordInput = document.querySelector('#create_password');
-    const aliasInput = document.querySelector('#create_alias');
+    const avatarPreview = document.querySelector("#user-avatar-preview");
+    const avatarInput = document.querySelector("#create_avatar");
+    const usernameInput = document.querySelector("#create_username");
+    const passwordInput = document.querySelector("#create_password");
+    const aliasInput = document.querySelector("#create_alias");
 
     // Clear the file input
     if (avatarPreview) {
-      avatarPreview.src = 'assets/img/default.png';
+      avatarPreview.src = "assets/img/default.png";
     }
 
     if (avatarInput) {
-      avatarInput.value = '';
+      avatarInput.value = "";
     }
 
     if (usernameInput) {
-      usernameInput.value = '';
+      usernameInput.value = "";
     }
 
     if (passwordInput) {
-      passwordInput.value = '';
+      passwordInput.value = "";
     }
 
     if (aliasInput) {
-      aliasInput.value = '';
+      aliasInput.value = "";
     }
   }
 
-  // Function to add eye icon for password visibility 
+  // Function to add eye icon for password visibility
   function addEyesIcon(inputId) {
     console.log(`👁️ Setting up eye icon for: ${inputId}`);
     const passwordInput = document.getElementById(inputId);
     const eyeIcon = document.getElementById(`${inputId}-eye`);
 
-    console.log('Password input:', passwordInput);
-    console.log('Eye icon:', eyeIcon);
+    console.log("Password input:", passwordInput);
+    console.log("Eye icon:", eyeIcon);
 
     if (passwordInput && eyeIcon) {
-      eyeIcon.addEventListener('click', function () {
-        if (passwordInput.type === 'password') {
-          passwordInput.type = 'text';
-          eyeIcon.className = 'fa-solid fa-eye-slash eye-icon';
+      eyeIcon.addEventListener("click", function () {
+        if (passwordInput.type === "password") {
+          passwordInput.type = "text";
+          eyeIcon.className = "fa-solid fa-eye-slash eye-icon";
         } else {
-          passwordInput.type = 'password';
-          eyeIcon.className = 'fa-solid fa-eye eye-icon';
+          passwordInput.type = "password";
+          eyeIcon.className = "fa-solid fa-eye eye-icon";
         }
       });
-      console.log('✅ Eye icon event listener added');
+      console.log("✅ Eye icon event listener added");
     } else {
-      console.log('❌ Could not find password input or eye icon');
+      console.log("❌ Could not find password input or eye icon");
     }
   }
 }
 
 // Popstate navigation
-window.addEventListener('popstate', (event) => {
-  const viewId = (event.state && event.state.viewId) || location.hash?.substring(1) || 'home';
+window.addEventListener("popstate", (event) => {
+  const viewId =
+    (event.state && event.state.viewId) ||
+    location.hash?.substring(1) ||
+    "home";
 
   if (document.getElementById(viewId)) {
     navigateTo(viewId, false);
@@ -307,8 +328,8 @@ window.addEventListener('popstate', (event) => {
 });
 
 // Initial load navigation
-window.addEventListener('DOMContentLoaded', () => {
-  const viewId = location.hash?.substring(1) || 'home';
+window.addEventListener("DOMContentLoaded", () => {
+  const viewId = location.hash?.substring(1) || "home";
 
   // Initialize login pages first
   initializeLoginPages();
@@ -321,27 +342,27 @@ window.addEventListener('DOMContentLoaded', () => {
 // Helper functions for navigation - Global scope
 window.return_from_sign_in = function (event) {
   event.preventDefault();
-  navigateTo('login', true);
+  navigateTo("login", true);
 };
 
 window.return_to_login = function (event) {
   event.preventDefault();
-  navigateTo('login', true);
+  navigateTo("login", true);
 };
 
 window.auth_check = function (event) {
   event.preventDefault();
-  console.log('Login attempt');
-  navigateTo('login-fail', true);
+  console.log("Login attempt");
+  navigateTo("login-fail", true);
 };
 
 window.create_user = function (event) {
   event.preventDefault();
-  console.log('User creation attempt');
-  navigateTo('login', true);
+  console.log("User creation attempt");
+  navigateTo("login", true);
 };
 
 window.login_fail = function (event) {
   event.preventDefault();
-  navigateTo('login', true);
+  navigateTo("login", true);
 };
