@@ -138,40 +138,34 @@ function updateCommentsCount(count, cardIndex) {
 }
 
 // Add a new comment
-function addComment(userId, input, container, cardIndex) {
+function addComment(userId, input, container, cardIndex, avatar) {
   const text = input.value.trim();
   if (!text) return;
 
   const comment = {
     id: Date.now(),
     text: text,
-    author: "Actual User", // Replace with actual user name
+    author: "Actual User", // * Need to replace with actual user name
     timestamp: new Date().toLocaleString(),
-    avatar: "assets/profile/photo1.jpg", // Replace with actual user avatar
+    avatar: "assets/profile/photo1.jpg", // * Need to replace with actual user avatar
   };
 
   // Save to localStorage
   const commentsKey = `comments_${userId}`;
   const comments = JSON.parse(localStorage.getItem(commentsKey)) || [];
-  comments.unshift(comment);  // Add to objJson for pagination (make sure objJson is accessible)
-  if (typeof window.objJson !== 'undefined') {
+  comments.unshift(comment); // Add to objJson for pagination (make sure objJson is accessible)
+  if (typeof window.objJson !== "undefined") {
     window.objJson.push({
-      adName: user_card.alias,
-      cardHTML: cardHTML,
-      userData: user_card,
-      index: index
+      postId: userId,
+      comment: input,
+      index: cardIndex,
     });
   }
 
   localStorage.setItem(commentsKey, JSON.stringify(comments));
 
-  // Add to UI (top of the list)
-  const commentElement = createCommentElement(
-    comment,
-    0,
-    userId,
-    cardIndex
-  );
+  // Add comment on top of the list
+  const commentElement = createCommentElement(comment, 0, userId, cardIndex);
   container.prepend(commentElement);
 
   // Clear input
@@ -214,7 +208,7 @@ function deleteComment(userId, commentIndex, cardIndex) {
   loadComments(userId, container, cardIndex);
 }
 
-var objJson = []; // Will be populated when elements are available
+var objJson = [];
 
 // Generate Card HTML with unique IDs
 function generateCardHTML(user_card, index) {
@@ -275,16 +269,13 @@ function generateCardHTML(user_card, index) {
     </div>
   `;
 
-  // Store the card HTML but don't append it yet (pagination will handle display)
-  // The card will be displayed by the pagination system
-
-  // Add to objJson for pagination (make sure objJson is accessible)
-  if (typeof window.objJson !== 'undefined') {
+  // Pagination system
+  if (typeof window.objJson !== "undefined") {
     window.objJson.push({
       adName: user_card.alias,
       cardHTML: cardHTML,
       userData: user_card,
-      index: index
+      index: index,
     });
   }
 }
@@ -300,7 +291,7 @@ function initializeCardsData() {
   // Initialize global objJson array
   window.objJson = [];
 
-  // Exemple - need to replace with real data
+  // Exemple - * need to replace with real data
   const exampleUserData = [
     {
       id: 1,
@@ -332,16 +323,16 @@ function initializeCardsData() {
       alias: "Creative",
       avatar: "assets/profile/photo2.jpg",
     },
-        {
+    {
       id: 7,
       alias: "Bob",
       avatar: "assets/profile/photo1.jpg",
     },
-        {
+    {
       id: 8,
       alias: "Youpi",
       avatar: "assets/profile/photo3.jpg",
-    }
+    },
   ];
 
   // Generate card HTML for each user but don't display them yet

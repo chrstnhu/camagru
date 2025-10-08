@@ -63,20 +63,6 @@ function changePage(page) {
                     }
                 }, 50);
             })(objJson[i], i);
-        } else {
-            listing_table.innerHTML += `
-                <div class="card-item" style="
-                    padding: 20px; 
-                    margin: 10px 0; a
-                    border: 1px solid #e5e7eb; 
-                    border-radius: 8px; 
-                    background: white;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                ">
-                    <h3>${objJson[i].adName || 'Unnamed Card'}</h3>
-                    <p>Card ${i + 1} of ${objJson.length}</p>
-                </div>
-            `;
         }
     }
     page_span.innerHTML = page + " / " + numPages();
