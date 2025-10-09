@@ -1,3 +1,6 @@
+let postsPerPage = 2;
+let currentPage = 1;
+
 // Simple post Component
 async function updateUserpost(user_post, index) {
   console.log("Updating user post for:", user_post);
@@ -359,7 +362,7 @@ function initializepostsData() {
 
     // Initialize pagination after all posts are created
     if (typeof initializePagination === 'function') {
-      initializePagination(6, 1);
+      initializePagination(postsPerPage, currentPage);
     }
   }, 50);
 }

@@ -4,7 +4,7 @@
 let webcamInitialized = false;
 let stream = null;
 
-let video, canvas, photo, startButton, cameraSection;
+let video, canvas, photo, startButton, cameraSection, cameraEffect;
 let width = 320; // Photo width (height will be calculated proportionally)
 let height = 0; // Will be calculated based on video stream
 let streaming = false;
@@ -18,12 +18,12 @@ document.addEventListener("DOMContentLoaded", () => {
   canvas = document.getElementById("canvas");
   photo = document.getElementById("photo");
   startButton = document.getElementById("start-button");
-  cameraSection = document.getElementById("camera-section");
+  cameraEffect = document.getElementById("camera-effect");
 
   // Set up event listeners
   document.addEventListener("cameraViewActivated", () => {
     initializeWebcam();
-    handleEffectSelection(); // Réinitialiser les effets quand on active la camera
+    handleEffectSelection();
   });
 
   // Initialize webcam if camera section is visible
@@ -45,12 +45,23 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  if (cameraEffect) {
+    cameraEffect.src = "assets/photosEffects/summerHat.png";
+    cameraEffect.alt = "Camera Effect";
+    cameraEffect.style.display = "block";
+    cameraEffect.style.position = "absolute";
+    cameraEffect.style.width = "100px";
+    cameraEffect.style.height = "80px";
+    cameraEffect.style.top = "50%";
+    cameraEffect.style.left = "50%";
+    cameraEffect.style.transform = "translate(-50%, -50%)";
+  }
+
   // Initialize with blank photo
   if (canvas && photo) {
     clearPhoto();
   }
   handleEffectSelection();
-
 });
 
 // Initialize webcam
@@ -126,17 +137,32 @@ function takePicture() {
     // Draw video image onto canvas
     context.drawImage(video, 0, 0, width, height);
 
-    // Convert to data URL and set as image source
-    const dataUrl = canvas.toDataURL("image/png");
-    photo.setAttribute("src", dataUrl);
+    // Load and draw effect image onto canvas
+    const image = new Image();
+    image.src = "assets/photosEffects/summerHat.png";
 
-    // Animate photo to show it was taken
-    photo.classList.add("photo-taken");
-    setTimeout(() => {
-      photo.classList.remove("photo-taken");
-    }, 500);
+    image.onload = function () {
+      // Read effect dimensions from style or use defaults
+      const effectWidth = parseInt(cameraEffect.style.width) || 100;
+      const effectHeight = parseInt(cameraEffect.style.height) || 80;
 
-    console.log("📷 Photo captured");
+      // Calculate position to center the effect
+      const posX = (width - effectWidth) / 2;
+      const posY = (height - effectHeight) / 2;
+
+      // Draw the image with the same dimensions as cameraEffect and centered
+      context.drawImage(image, posX, posY, effectWidth, effectHeight);
+
+      const dataUrl = canvas.toDataURL("image/png");
+      photo.setAttribute("src", dataUrl);
+
+      photo.classList.add("photo-taken");
+      setTimeout(() => {
+        photo.classList.remove("photo-taken");
+      }, 500);
+
+      console.log("📷 Photo with effect captured");
+    };
 
     // * Need to save photo in database
   } else {
@@ -167,7 +193,7 @@ function handleEffectSelection() {
     { name: "confettis", img: "assets/photosEffects/confettis.png" },
   ];
 
-  effectsContainer.innerHTML = '';
+  effectsContainer.innerHTML = "";
 
   effects.forEach((effect) => {
     console.log("Creating effect:", effect.name, effect.img);
@@ -193,7 +219,6 @@ function handleEffectSelection() {
 
   console.log("✅ Effects setup complete");
 }
-
 
 // Clean up when navigating away
 window.addEventListener("beforeunload", stopWebcam);

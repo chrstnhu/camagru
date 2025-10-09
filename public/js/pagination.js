@@ -4,7 +4,7 @@ let posts;
 // Handle pagination logic
 const handlePagination = (postPerPage, currentPage) => {
     // Check if the ul element exists
-    ul = document.querySelector(".pagination ul");
+    ul = document.querySelector("nav.pagination ul");
     if (!ul) {
         console.warn("Pagination element not found");
         return;
@@ -17,6 +17,8 @@ const handlePagination = (postPerPage, currentPage) => {
         console.warn("No posts found for pagination");
         return;
     }
+    
+    console.log(`Pagination active, page: ${currentPage}, posts: ${posts.length}`);
 
     updateCurrentPage(postPerPage, currentPage);
 
@@ -27,10 +29,14 @@ const handlePagination = (postPerPage, currentPage) => {
                 onclick= "handlePagination(${postPerPage}, ${currentPage - 1})">
             <span class="icon"> &lt; </span></li>`;
     for (let pageNumber of pageNumbers) {
-        li += `<li class="page ${currentPage == pageNumber ? 'active' : ''}" 
-                onclick= "handlePagination(${postPerPage}, ${pageNumber})">
-                ${pageNumber} 
-                </li>`;
+        if (pageNumber === "...") {
+            li += `<li class="page ellipsis">...</li>`;
+        } else {
+            li += `<li class="page ${currentPage == pageNumber ? 'active' : ''}" 
+                   onclick= "handlePagination(${postPerPage}, ${pageNumber})">
+                   ${pageNumber} 
+                   </li>`;
+        }
     }
     li += `<li class="page ${currentPage >= totalPages ? 'hidden' : ''}"
                 onclick= "handlePagination(${postPerPage}, ${currentPage + 1})">
@@ -86,8 +92,3 @@ function initializePagination(postPerPage = 6, currentPage = 1) {
         }
     }, 100); // Wait 100ms for posts to be generated
 }
-
-// Initialize pagination when DOM is ready
-document.addEventListener("DOMContentLoaded", function () {
-    initializePagination(6, 1);
-});

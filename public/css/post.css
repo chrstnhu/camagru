@@ -374,15 +374,6 @@
     transition: color 0.2s ease;
 }
 
-
-.pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 20px;
-    background-color: rgb(221, 232, 236);
-}
-
 /* Responsive Design */
 @media (max-width: 480px) {
     .post {
