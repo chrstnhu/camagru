@@ -1,12 +1,13 @@
-// Simple Card Component
-async function updateUserCard(user_card, index) {
+// Simple post Component
+async function updateUserpost(user_post, index) {
+  console.log("Updating user post for:", user_post);
   try {
     // Get user data
-    const userAlias = user_card.alias || "Guest";
+    const userAlias = user_post.alias || "Guest";
 
-    // Update card elements
-    const aliasElement = document.getElementById(`card-alias-${index}`);
-    const avatarElement = document.getElementById(`card-avatar-${index}`);
+    // Update post elements
+    const aliasElement = document.getElementById(`post-alias-${index}`);
+    const avatarElement = document.getElementById(`post-avatar-${index}`);
 
     if (aliasElement) aliasElement.textContent = userAlias;
 
@@ -16,15 +17,15 @@ async function updateUserCard(user_card, index) {
       const avatarPath = `/api/avatar/${userAlias}?ts=${timestamp}`;
       avatarElement.src = avatarPath;
       avatarElement.onerror = () => {
-        avatarElement.src = user_card.avatar || "assets/profile/photo1.jpg";
+        avatarElement.src = user_post.avatar || "assets/profile/photo1.jpg";
       };
     }
 
-    initializeLikeButton(user_card.id, index);
-    initializeCommentsSection(user_card.id, index);
+    initializeLikeButton(user_post.id, index);
+    initializeCommentsSection(user_post.id, index);
   } catch (error) {
-    console.log("Error updating user card:", error);
-    setDefaultCardValues();
+    console.log("Error updating user post:", error);
+    setDefaultpostValues();
   }
 }
 
@@ -103,7 +104,7 @@ function initializeCommentsSection(userId, index) {
 }
 
 // Load comments from localStorage
-function loadComments(userId, container, cardIndex) {
+function loadComments(userId, container, postIndex) {
   const commentsKey = `comments_${userId}`;
   const comments = JSON.parse(localStorage.getItem(commentsKey)) || [];
 
@@ -114,18 +115,18 @@ function loadComments(userId, container, cardIndex) {
       comment,
       index,
       userId,
-      cardIndex
+      postIndex
     );
     container.appendChild(commentElement);
   });
-  updateCommentsCount(comments.length, cardIndex);
+  updateCommentsCount(comments.length, postIndex);
 }
 
-// Update the comments count in the specific card
-function updateCommentsCount(count, cardIndex) {
-  const cardElement = document.querySelector(`[data-user-id] .comments-title`);
+// Update the comments count in the specific post
+function updateCommentsCount(count, postIndex) {
+  const postElement = document.querySelector(`[data-user-id] .comments-title`);
   const commentsContainer = document.getElementById(
-    `comments-container-${cardIndex}`
+    `comments-container-${postIndex}`
   );
 
   if (commentsContainer) {
@@ -138,7 +139,7 @@ function updateCommentsCount(count, cardIndex) {
 }
 
 // Add a new comment
-function addComment(userId, input, container, cardIndex, avatar) {
+function addComment(userId, input, container, postIndex, avatar) {
   const text = input.value.trim();
   if (!text) return;
 
@@ -158,37 +159,37 @@ function addComment(userId, input, container, cardIndex, avatar) {
     window.objJson.push({
       postId: userId,
       comment: input,
-      index: cardIndex,
+      index: postIndex,
     });
   }
 
   localStorage.setItem(commentsKey, JSON.stringify(comments));
 
   // Add comment on top of the list
-  const commentElement = createCommentElement(comment, 0, userId, cardIndex);
+  const commentElement = createCommentElement(comment, 0, userId, postIndex);
   container.prepend(commentElement);
 
   // Clear input
   input.value = "";
 
-  updateCommentsCount(comments.length, cardIndex);
+  updateCommentsCount(comments.length, postIndex);
 }
 
 // Create a comment DOM element
-function createCommentElement(comment, commentIndex, userId, cardIndex) {
+function createCommentElement(comment, commentIndex, userId, postIndex) {
   const div = document.createElement("div");
   div.className = "comment-item_${userId}";
   div.innerHTML = `
     <div class="comment-content comment-content_${userId}">
         <div class="comment-avatar-wrapper">
-          <img src="${comment.avatar}" alt="Avatar" class="card-avatar">
+          <img src="${comment.avatar}" alt="Avatar" class="post-avatar">
           <div class="comment-info">
           <div class="comment-author">${comment.author}</div>
           <div class="comment-timestamp">${comment.timestamp}</div>
           <p class="comment-text">${comment.text}</p>
           </div>
         </div>
-        <button onclick="deleteComment(${userId}, ${commentIndex}, ${cardIndex})" class="delete-comment-btn">
+        <button onclick="deleteComment(${userId}, ${commentIndex}, ${postIndex})" class="delete-comment-btn">
           <i class="fa-solid fa-trash"></i>
         </button>
     </div>
@@ -197,40 +198,40 @@ function createCommentElement(comment, commentIndex, userId, cardIndex) {
 }
 
 // Delete a comment
-function deleteComment(userId, commentIndex, cardIndex) {
+function deleteComment(userId, commentIndex, postIndex) {
   const commentsKey = `comments_${userId}`;
   const comments = JSON.parse(localStorage.getItem(commentsKey)) || [];
   comments.splice(commentIndex, 1);
   localStorage.setItem(commentsKey, JSON.stringify(comments));
 
   // Reload comments
-  const container = document.getElementById(`comments-container-${cardIndex}`);
-  loadComments(userId, container, cardIndex);
+  const container = document.getElementById(`comments-container-${postIndex}`);
+  loadComments(userId, container, postIndex);
 }
 
 var objJson = [];
 
-// Generate Card HTML with unique IDs
-function generateCardHTML(user_card, index) {
-  console.log("Generating card HTML for:", user_card);
-  const cardComponent = document.getElementById("card-component");
-  if (!cardComponent) return;
+// Generate post HTML with unique IDs
+function generatepostHTML(user_post, index) {
+  console.log("Generating post HTML for:", user_post);
+  const postComponent = document.getElementById("post-component");
+  if (!postComponent) return;
 
-  const cardHTML = `
-    <div class="card" data-user-id="${user_card.id}">
-      <!-- Card Header -->
-      <div class="card-header">
-        <img id="card-avatar-${index}" 
-             src="${user_card.avatar}" 
-             alt="Photo" 
-             class="card-avatar">
-        <h2 id="card-alias-${index}" class="card-alias">${user_card.alias}</h2>
+  const postHTML = `
+    <div class="post" data-user-id="${user_post.id}">
+      <!-- post Header -->
+      <div class="post-header">
+        <img id="post-avatar-${index}" 
+            src="${user_post.avatar}" 
+            alt="Photo" 
+            class="post-avatar">
+        <h2 id="post-alias-${index}" class="post-alias">${user_post.alias}</h2>
       </div>
         <div>
             <img
-             src="${user_card.avatar}" 
-             alt="Photo" 
-             class="card-photo">
+            src="${user_post.avatar}" 
+            alt="Photo" 
+            class="post-photo">
         </div>
       <!-- Like Section -->
       <div class="like-section">
@@ -248,7 +249,7 @@ function generateCardHTML(user_card, index) {
         <!-- Add Comment -->
         <div class="add-comment">
             <div class="add-comment-container">
-            <img src="${user_card.avatar}" alt="Avatar" class="card-avatar">
+            <img src="${user_post.avatar}" alt="Avatar" class="post-avatar">
                 <div class="comment-input-container comment-input-wrapper">
                     <textarea id="comment-input-${index}" 
                     placeholder="Add a comment..." 
@@ -269,25 +270,34 @@ function generateCardHTML(user_card, index) {
     </div>
   `;
 
-  // Pagination system
+
+  // Pagination system in objJson
   if (typeof window.objJson !== "undefined") {
     window.objJson.push({
-      adName: user_card.alias,
-      cardHTML: cardHTML,
-      userData: user_card,
+      adName: user_post.alias,
+      postHTML: postHTML,
+      userData: user_post,
       index: index,
     });
   }
+
+  // Insert post in the DOM
+  postComponent.innerHTML += postHTML;
+
+  // Initialiser les fonctionnalités après insertion dans le DOM
+  setTimeout(() => {
+    updateUserpost(user_post, index);
+  }, 10);
 }
 
 // Set default values in case of error
-function setDefaultCardValues() {
-  const aliasElement = document.getElementById("card-alias");
+function setDefaultpostValues() {
+  const aliasElement = document.getElementById("post-alias");
   if (aliasElement) aliasElement.textContent = "Guest";
 }
 
-// Initialize cards data for pagination
-function initializeCardsData() {
+// Initialize posts data for pagination
+function initializepostsData() {
   // Initialize global objJson array
   window.objJson = [];
 
@@ -335,15 +345,26 @@ function initializeCardsData() {
     },
   ];
 
-  // Generate card HTML for each user but don't display them yet
+  // Generate post HTML for each user but don't display them yet
   exampleUserData.forEach((userData, index) => {
-    generateCardHTML(userData, index);
+    generatepostHTML(userData, index);
   });
 
-  console.log("Cards initialized:", window.objJson.length, "cards ready");
+  console.log("posts initialized:", window.objJson.length, "posts ready");
+
+  // Wait a short delay to ensure posts are in the DOM
+  setTimeout(() => {
+    const postsInDOM = document.querySelectorAll(".post");
+    console.log("Posts found in the DOM:", postsInDOM.length);
+
+    // Initialize pagination after all posts are created
+    if (typeof initializePagination === 'function') {
+      initializePagination(6, 1);
+    }
+  }, 50);
 }
 
-// Initialize the cards when DOM is loaded
+// Initialize the posts when DOM is loaded
 document.addEventListener("DOMContentLoaded", function () {
-  initializeCardsData();
+  initializepostsData();
 });

@@ -1,12 +1,12 @@
 .camera-container {
     display: flex;
     flex-direction: row;
-    max-width: 800px;
     margin: 0 auto;
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    background-color: #f5f5f5;
+    gap: 20px;
+    /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); */
+    /* background-color: #f5f5f5; */
 }
 
 /* Section titles */
@@ -21,17 +21,23 @@
 
 .camera-preview {
     display: flex;
+    flex: 1;
     flex-direction: column;
+    align-items: center;
     position: relative;
     border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     overflow: hidden;
 }
 
 #video {
+    position : relative;
     display: block;
     width: 100%;
-    max-width: 400px;
-    height: auto;
+    min-width: 320px;
+    min-height: 240px;
+    height: 100%;
     margin: 0 auto;
     border-radius: 4px;
     margin-top: 10px;
@@ -39,7 +45,7 @@
 
 #start-button {
     position: absolute;
-    bottom: 20px;
+    bottom: 40px;
     left: 50%;
     transform: translateX(-50%);
     background-color: #e74c3c;
@@ -64,15 +70,31 @@
 }
 
 .photo-result {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
-    margin-top: 20px;
-    padding: 15px;
+    height: auto;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .photo-result h3 {
     margin-bottom: 15px;
     font-size: 18px;
 }
+
+.camera-result {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
 
 #photo {
     max-width: 400px;
@@ -94,4 +116,40 @@
     transform: translate(-50%, -50%);
     color: white;
     font-size: 18px;
+}
+
+/* Effects container */
+.camera-effects {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.effects-container {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+}
+
+.effect {
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.effect img {
+    width: 60px;
+    height: 60px;
+    display: block;
+    object-fit: contain;
 }

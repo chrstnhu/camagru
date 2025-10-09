@@ -5,25 +5,34 @@
     grid-gap: 10px;
 }
 
-.card-component {
+.post-component {
     display: grid;
     place-items: center;
     grid-template-columns: 1fr 1fr 1fr;
     grid-gap: 10px;
 }
 
-.card {
+.post {
     background: white;
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     max-width: 400px;
     padding: 0 20px;
     margin: 0 20px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-        Ubuntu, Cantarell, sans-serif;
+    display: block;
+    transition: all 0.3s ease;
 }
 
-.card-header {
+/* Pagination styles pour les cartes */
+.post.hide {
+    display: none;
+}
+
+.post.show {
+    display: block;
+}
+
+.post-header {
     display: flex;
     align-items: center;
     gap: 16px;
@@ -31,7 +40,7 @@
     border-bottom: 1px solid #f1f5f9;
 }
 
-.card-avatar {
+.post-avatar {
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -41,11 +50,11 @@
     transition: transform 0.2s ease;
 }
 
-.card-avatar:hover {
+.post-avatar:hover {
     transform: scale(1.05);
 }
 
-.card-photo {
+.post-photo {
     width: 340px;
     height: 200px;
     border-radius: 10px;
@@ -53,7 +62,7 @@
     transition: transform 0.3s ease, object-fit 0.3s ease;
 }
 
-.card-photo:hover {
+.post-photo:hover {
     transform: scale(1.05);
 }
 
@@ -134,7 +143,7 @@
     width: 100%;
 }
 
-.add-comment .card-avatar {
+.add-comment .post-avatar {
     width: 32px;
     height: 32px;
     flex-shrink: 0;
@@ -285,7 +294,7 @@
     gap: 12px;
 }
 
-.comment-item .card-avatar {
+.comment-item .post-avatar {
     width: 32px;
     height: 32px;
     flex-shrink: 0;
@@ -376,19 +385,20 @@
 
 /* Responsive Design */
 @media (max-width: 480px) {
-    .card {
+    .post {
         padding: 16px;
         margin: auto;
         max-width: none;
     }
 
-    .card-header {
+    .post-header {
         gap: 12px;
     }
 
-    .card-avatar {
+    .post-avatar {
         width: 48px;
         height: 48px;
+        post
     }
 
     .comments-title {

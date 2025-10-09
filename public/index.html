@@ -5,15 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/card.css">
+    <link rel="stylesheet" href="css/post.css">
     <link rel="stylesheet" href="css/login.css">
     <link rel="stylesheet" href="css/capturePhoto.css">
+    <link rel="stylesheet" href="css/pagination.css">
+
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="js/card.js"></script>
-    <script src="js/page.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/post.js"></script>
     <script src="js/login.js"></script>
     <script src="js/capturePhoto.js"></script>
+    <script src="js/pagination.js"></script>
 
     <title>Camagru - 42 Project</title>
 </head>
@@ -21,27 +24,32 @@
 <body>
     <!-- Header -->
     <header>
-        <div class="header-container">
+        <div class="header-container" style="display: flex; justify-content: space-between; align-items: center;">
             <div class="logo">Camagru</div>
             <nav class="nav-menu">
-                <ul>
-                    <li onclick="navigateTo('home', true);"><a href="#home">Home</a></li>
-                    <li onclick="navigateTo('container', true);" style="cursor: pointer; display: flex; align-items: center;">
-                        <i class="fa-solid fa-photo-film"></i>
-                        Gallery</li>
-                    <li onclick="navigateTo('camera-section', true);" style="cursor: pointer; display: flex; align-items: center;">
-                        <i class="fa-solid fa-camera"></i>
-                        Camera</li>
-                    <li onclick="navigateTo('myPhotos', true);" style="cursor: pointer; display: flex; align-items: center;">
-                        <i class="fa-solid fa-id-card"></i>
-                        My photos</li>
-                    <li onclick="navigateTo('login', true);"
-                        style="cursor: pointer; display: flex; align-items: center;">
-                        <i class="fa-solid fa-user icon-menu-size" style="margin: 0.5rem;"></i>
-                        <p class="user-menu-label">Login</p>
+                <ul style="display: flex; align-items: center;">
+                    <li onclick="navigateTo('home', true);">
+                        <i class="fa-solid fa-house" style="margin: 0.5rem;"></i>
+                        Home
                     </li>
+                    <li onclick="navigateTo('gallery', true);">
+                        <i class="fa-solid fa-globe" style="margin: 0.5rem;"></i>
+                        Gallery
+                    </li>
+                    <li onclick="navigateTo('camera-section', true);">
+                        <i class="fa-solid fa-camera" style="margin: 0.5rem;"></i>
+                        Camera
+                    </li>
+                    <li onclick="navigateTo('myPhotos', true);">
+                        <i class="fa-solid fa-image" style="margin: 0.5rem;"></i>
+                        My photos
                 </ul>
             </nav>
+            <div class="logo" onclick="navigateTo('login', true);">
+                <i class="fa-solid fa-user icon-menu-size" style="margin: 0.5rem;"></i>
+                Login
+            </div>
+
         </div>
     </header>
 
@@ -55,31 +63,25 @@
         <section id="home">
             <h2>Main Content</h2>
 
-            <!-- User Card Component -->
-            <div class="container" style="display: none;">
+
+            <!-- post Container -->
+        </section>
+
+        <section id="gallery" style="display: none;">
+            <h2>Gallery Section</h2>
+            <!-- User post Component -->
+            <div id="container" class="container">
                 <h1 style="font-size: x-large; font-weight: bold; align-items: center; margin: 8px">Component photo</h1>
-                <div class="card-component" id="card-component">
+                <div class="post-component" id="post-component">
                 </div>
             </div>
             <div id="listingTable"></div>
 
-            <div id="pagination" class="pagination">
-                <span onclick="firstPage()" id="btn_first" class="btn-page"><i
-                        class="fa-solid fa-angle-double-left"></i></span>
-                <span onclick="prevPage()" id="btn_prev" class="btn-page">
-                    <i class="fa-solid fa-angle-left"></i></span>
-                page: <span id="page"></span>
-                <span onclick="nextPage()" id="btn_next" class="btn-page">
-                    <i class="fa-solid fa-angle-right"></i></span>
-                <span onclick="lastPage()" id="btn_last" class="btn-page">
-                    <i class="fa-solid fa-angle-double-right"></i></span>
-            </div>
+            <nav class="pagination">
+                <ul> </ul>
+            </nav>
 
-            <!-- Card Container -->
-
-            </div>
         </section>
-
         <section>
             <div id="login" style="display: none;">
                 <h2>Login Section</h2>
@@ -98,10 +100,18 @@
             <h2>Camera</h2>
             <div class="camera-container">
                 <!-- Visualize webcam preview -->
-                <div class="camera-preview">
-                    <h3>Take a photo</h3>
-                    <video id="video">Video stream not available.</video>
-                    <button id="start-button"><i class="fa-solid fa-camera"></i></button>
+                <div style="display: flex; flex:1; flex-direction: column; align-items: center; gap: 20px">
+                    <div class="camera-preview">
+                        <h3>Take a photo</h3>
+                        <video id="video">Video stream not available.</video>
+                        <button id="start-button"><i class="fa-solid fa-camera"></i></button>
+                    </div>
+                    <div id="camera-effects" class="camera-effects">
+                        <h3>Choose an effect</h3>
+                        <div id="effects-container" class="effects-container">
+                            <!-- Effects will be dynamically added here -->
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Canvas for photo capture -->
@@ -110,7 +120,7 @@
                 <!-- Display captured photo -->
                 <div class="photo-result">
                     <h3>Captured photo: </h3>
-                    <img id="photo" class="camera-preview" alt="The capture will appear here." />
+                    <img id="photo" class="camera-result" alt="The capture will appear here." />
                 </div>
             </div>
             </div>
@@ -121,12 +131,12 @@
     <!-- Footer -->
     <footer>
         <div class="footer-container">
-            <div class="footer-links">
+            <!-- <div class="footer-links">
                 <a href="#about">About</a>
                 <a href="#contact">Contact</a>
                 <a href="#privacy">Privacy</a>
                 <a href="#terms">Terms</a>
-            </div>
+            </div> -->
             <p>&copy; 2025 Camagru - 42 Project. All rights reserved.</p>
         </div>
     </footer>

@@ -1,0 +1,50 @@
+nav.pagination {
+    padding : 0 1.5rem;
+}
+
+
+nav.pagination ul {
+    display: flex;
+    list-style-type: none;
+    justify-content: center;
+    gap: .2rem;
+    
+    background-color: #111;
+    padding: .8rem;
+    border-radius: 3rem;
+}
+
+nav.pagination ul .page {
+    padding: .5rem 1rem;
+    cursor: pointer;
+    user-select: none;
+    color: #fff;
+    width : 3rem;
+    height: 3rem;
+    line-height: 3rem;
+    text-align: center;
+    font-size: 1.2rem;
+    border-radius: 50%;
+
+    user-select: none;
+    cursor: pointer;
+    transition: .2s linear
+}
+
+nav.pagination ul .page:hover {
+    background-color: #2229;
+}
+
+nav.pagination ul .page:active {
+    background-color: #222;
+}
+
+nav.pagination ul .page.hidden {
+    display: none;
+}
+
+nav.pagination ul .page .icon {
+    display: inline-block;
+    scale: 1 2;
+}
+

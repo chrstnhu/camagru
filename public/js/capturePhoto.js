@@ -21,7 +21,10 @@ document.addEventListener("DOMContentLoaded", () => {
   cameraSection = document.getElementById("camera-section");
 
   // Set up event listeners
-  document.addEventListener("cameraViewActivated", initializeWebcam);
+  document.addEventListener("cameraViewActivated", () => {
+    initializeWebcam();
+    handleEffectSelection(); // Réinitialiser les effets quand on active la camera
+  });
 
   // Initialize webcam if camera section is visible
   if (cameraSection && cameraSection.style.display === "block") {
@@ -46,6 +49,8 @@ document.addEventListener("DOMContentLoaded", () => {
   if (canvas && photo) {
     clearPhoto();
   }
+  handleEffectSelection();
+
 });
 
 // Initialize webcam
@@ -148,6 +153,47 @@ function stopWebcam() {
     console.log("📷 Webcam stopped");
   }
 }
+
+function handleEffectSelection() {
+  console.warn("🎨 Setting up effects...");
+  const effectsContainer = document.getElementById("effects-container");
+  if (!effectsContainer) {
+    console.error("❌ Effects container not found");
+    return;
+  }
+
+  const effects = [
+    { name: "summerHat", img: "assets/photosEffects/summerHat.png" },
+    { name: "confettis", img: "assets/photosEffects/confettis.png" },
+  ];
+
+  effectsContainer.innerHTML = '';
+
+  effects.forEach((effect) => {
+    console.log("Creating effect:", effect.name, effect.img);
+    const effectDiv = document.createElement("div");
+    effectDiv.classList.add("effect");
+
+    const img = document.createElement("img");
+    img.src = effect.img;
+    img.alt = effect.name;
+    img.title = effect.name;
+
+    // Debug to see if images load
+    img.onload = () => {
+      console.log(`✅ Image loaded: ${effect.name}`);
+    };
+    img.onerror = () => {
+      console.error(`❌ Loading error: ${effect.img}`);
+    };
+
+    effectDiv.appendChild(img);
+    effectsContainer.appendChild(effectDiv);
+  });
+
+  console.log("✅ Effects setup complete");
+}
+
 
 // Clean up when navigating away
 window.addEventListener("beforeunload", stopWebcam);

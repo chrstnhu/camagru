@@ -1,60 +1,3 @@
-// Define navigateTo function first and make it globally available
-function navigateTo(viewId, push) {
-  console.log("🚀 Navigating to:", viewId, "push =", push);
-
-  const views = [
-    "login",
-    "sign-in",
-    "login-fail",
-    "home",
-    "camera-section",
-    "container",
-    "myPhotos",
-    "pagination"
-  ];
-  const target = document.getElementById(viewId);
-
-  console.log("🎯 Target element:", target);
-
-  if (target) {
-    // Hide all views first
-    views.forEach((v) => {
-      const view = document.getElementById(v);
-      if (view) {
-        view.style.display = "none";
-      }
-    });
-
-    // Show the target view
-    console.log(`✅ Showing view: ${viewId}`);
-    target.style.display = "block";
-
-    if (viewId === "container") {
-      const pagination = document.getElementById("pagination");
-      if (pagination) {
-        pagination.style.display = "block";
-      }
-    }
-
-    // Special handling for camera section - dispatch custom event
-    if (viewId === "camera-section") {
-      // Create and dispatch a custom event that capturePhoto.js can listen for
-      const event = new CustomEvent("cameraViewActivated");
-      document.dispatchEvent(event);
-    }
-  } else {
-    console.error(`❌ Target element '${viewId}' not found!`);
-  }
-
-  // Navigate to the target view
-  if (push) {
-    history.pushState({ viewId: viewId }, "", `#${viewId}`);
-  }
-}
-
-// Make navigateTo available globally immediately
-window.navigateTo = navigateTo;
-
 function initializeLoginPages() {
   console.log("📢 Initializing login page...");
   const login = document.getElementById("login");
@@ -257,7 +200,6 @@ function initializeLoginPages() {
   console.log("📢 AuthPages: Initializing all auth pages...");
   initializeSignInPages();
   initializeLoginFailPages();
-  console.log("📢 AuthPages: All auth pages initialized");
 
   // Cleanup function to reset the sign-in page
   function resetSignInPage() {
@@ -291,12 +233,8 @@ function initializeLoginPages() {
 
   // Function to add eye icon for password visibility
   function addEyesIcon(inputId) {
-    console.log(`👁️ Setting up eye icon for: ${inputId}`);
     const passwordInput = document.getElementById(inputId);
     const eyeIcon = document.getElementById(`${inputId}-eye`);
-
-    console.log("Password input:", passwordInput);
-    console.log("Eye icon:", eyeIcon);
 
     if (passwordInput && eyeIcon) {
       eyeIcon.addEventListener("click", function () {
@@ -308,7 +246,6 @@ function initializeLoginPages() {
           eyeIcon.className = "fa-solid fa-eye eye-icon";
         }
       });
-      console.log("✅ Eye icon event listener added");
     } else {
       console.log("❌ Could not find password input or eye icon");
     }
@@ -352,13 +289,11 @@ window.return_to_login = function (event) {
 
 window.auth_check = function (event) {
   event.preventDefault();
-  console.log("Login attempt");
   navigateTo("login-fail", true);
 };
 
 window.create_user = function (event) {
   event.preventDefault();
-  console.log("User creation attempt");
   navigateTo("login", true);
 };
 
