@@ -9,6 +9,10 @@ let width = 320; // Photo width (height will be calculated proportionally)
 let height = 0; // Will be calculated based on video stream
 let streaming = false;
 
+// Test mode variables
+let testMode = false;
+let simulationCanvas = null;
+
 // Main initialization when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
   console.log("📷 CapturePhoto.js loaded");
@@ -19,6 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
   photo = document.getElementById("photo");
   startButton = document.getElementById("start-button");
   cameraEffect = document.getElementById("camera-effect");
+  cameraSection = document.getElementById("camera");
 
   // Set up event listeners
   document.addEventListener("cameraViewActivated", () => {
@@ -38,9 +43,9 @@ document.addEventListener("DOMContentLoaded", () => {
       ev.preventDefault();
 
       // Animate the capture button
-      startButton.classList.add("clicked");
+      startButton.classList.add("camera__button--clicked");
       setTimeout(() => {
-        startButton.classList.remove("clicked");
+        startButton.classList.remove("camera__button--clicked");
       }, 200);
     });
   }
@@ -81,7 +86,7 @@ function initializeWebcam() {
 
   // Add loading indicator
   if (cameraSection) {
-    cameraSection.classList.add("loading");
+    cameraSection.classList.add("camera__container--loading");
   }
 
   // Request webcam access
@@ -156,9 +161,9 @@ function takePicture() {
       const dataUrl = canvas.toDataURL("image/png");
       photo.setAttribute("src", dataUrl);
 
-      photo.classList.add("photo-taken");
+      photo.classList.add("camera__result__image--taken");
       setTimeout(() => {
-        photo.classList.remove("photo-taken");
+        photo.classList.remove("camera__result__image--taken");
       }, 500);
 
       console.log("📷 Photo with effect captured");
@@ -198,7 +203,13 @@ function handleEffectSelection() {
   effects.forEach((effect) => {
     console.log("Creating effect:", effect.name, effect.img);
     const effectDiv = document.createElement("div");
-    effectDiv.classList.add("effect");
+    effectDiv.classList.add("camera__effects__item");
+    effectDiv.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      cameraEffect.src = effect.img;
+      cameraEffect.alt = effect.name;
+      console.log(`🎨 Effect selected: ${effect.name}`);
+    });
 
     const img = document.createElement("img");
     img.src = effect.img;

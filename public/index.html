@@ -4,11 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/buttons.css">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/post.css">
     <link rel="stylesheet" href="css/login.css">
     <link rel="stylesheet" href="css/capturePhoto.css">
     <link rel="stylesheet" href="css/pagination.css">
+
+    <!-- <link rel="stylesheet" href="css/sideBar.css"> -->
 
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -23,122 +27,131 @@
 
 <body>
     <!-- Header -->
-    <header>
-        <div class="header-container" style="display: flex; justify-content: space-between; align-items: center;">
-            <div class="logo">Camagru</div>
-            <nav class="nav-menu">
-                <ul style="display: flex; align-items: center;">
-                    <li onclick="navigateTo('home', true);">
-                        <i class="fa-solid fa-house" style="margin: 0.5rem;"></i>
-                        Home
+    <header class="header">
+        <div class="header__container">
+            <div class="header__logo">Camagru</div>
+            <nav class="nav">
+                <ul class="nav__list">
+                    <li class="nav__item" onclick="navigateTo('home', true);" data-full-text="Home">
+                        <i class="nav__icon fa-solid fa-house"></i>
+                        <span class="nav__text">Home</span>
                     </li>
-                    <li onclick="navigateTo('gallery', true);">
-                        <i class="fa-solid fa-globe" style="margin: 0.5rem;"></i>
-                        Gallery
+                    <li class="nav__item" onclick="navigateTo('gallery', true);" data-full-text="Gallery">
+                        <i class="nav__icon fa-solid fa-globe"></i>
+                        <span class="nav__text">Gallery</span>
                     </li>
-                    <li onclick="navigateTo('camera-section', true);">
-                        <i class="fa-solid fa-camera" style="margin: 0.5rem;"></i>
-                        Camera
+                    <li class="nav__item" onclick="navigateTo('camera-section', true);" data-full-text="Camera">
+                        <i class="nav__icon fa-solid fa-camera"></i>
+                        <span class="nav__text">Camera</span>
                     </li>
-                    <li onclick="navigateTo('myPhotos', true);">
-                        <i class="fa-solid fa-image" style="margin: 0.5rem;"></i>
-                        My photos
+                    <li class="nav__item" onclick="navigateTo('myPhotos', true);" data-full-text="My photos">
+                        <i class="nav__icon fa-solid fa-image"></i>
+                        <span class="nav__text">My photos</span>
+                    </li>
+                    <li class="nav__item" onclick="navigateTo('setting');" data-full-text="Setting">
+                        <i class="nav__icon fa-solid fa-gears"></i>
+                        <span class="nav__text">Setting</span>
+                    </li>
+                    <li class="nav__item nav__item--logout" onclick="navigateTo('logout');" data-full-text="Logout">
+                        <i class="nav__icon nav__icon--danger fa-solid fa-right-from-bracket"></i>
+                        <span class="nav__text">Logout</span>
+                    </li>
                 </ul>
             </nav>
-            <div class="logo" onclick="navigateTo('login', true);">
-                <i class="fa-solid fa-user icon-menu-size" style="margin: 0.5rem;"></i>
-                Login
+            <div class="header__auth" onclick="navigateTo('login', true);">
+                <i class="header__icon fa-solid fa-user"></i>
+                <span class="header__text">Login</span>
             </div>
 
         </div>
     </header>
 
     <!-- Main content -->
-    <main>
-        <section class="hero">
-            <h1>Welcome to Camagru</h1>
-            <p>Share your photos with creative effects</p>
-        </section>
+    <div class="layout">
+        <main class="layout__main">
+            <!-- <section class="hero">
+                <h2 class="hero__title">Sign Up Section</h2>
+            </section> -->
 
-        <section id="home">
-            <h2>Main Content</h2>
+            <section class="welcome">
+                <h1 class="welcome__title">Welcome to Camagru</h1>
+                <p class="welcome__subtitle">Share your photos with creative effects</p>
+            </section>
 
+            <section id="home" class="section section--home">
+                <h2 class="section__title">Main Content</h2>
+                <!-- post Container -->
+            </section>
 
-            <!-- post Container -->
-        </section>
-
-        <section id="gallery" style="display: none;">
-            <h2>Gallery Section</h2>
-            <!-- User post Component -->
-            <div id="container" class="container">
-                <h1 style="font-size: x-large; font-weight: bold; align-items: center; margin: 8px">Component photo</h1>
-                <div class="post-component" id="post-component">
-                </div>
-            </div>
-            <div id="listingTable"></div>
-
-            <nav class="pagination">
-                <ul> </ul>
-            </nav>
-
-        </section>
-        <section>
-            <div id="login" style="display: none;">
-                <h2>Login Section</h2>
-            </div>
-
-            <div id="sign-in" style="display: none;">
-                <h2>Sign Up Section</h2>
-            </div>
-
-            <div id="login-fail" style="display: none;">
-                <h2>Login Failed Section</h2>
-            </div>
-        </section>
-
-        <section id="camera-section" style="display: none;">
-            <h2>Camera</h2>
-            <div class="camera-container">
-                <!-- Visualize webcam preview -->
-                <div style="display: flex; flex:1; flex-direction: column; align-items: center; gap: 20px">
-                    <div class="camera-preview">
-                        <h3>Take a photo</h3>
-                        <video id="video">Video stream not available.</video>
-                        <img id="camera-effect"></img>
-                        <button id="start-button"><i class="fa-solid fa-camera"></i></button>
+            <section id="gallery" class="section section--gallery" style="display: none;">
+                <h2 class="section__title">Gallery Section</h2>
+                <!-- User post Component -->
+                <div id="container" class="gallery">
+                    <div class="gallery__posts" id="post-component">
                     </div>
-                    <div id="camera-effects" class="camera-effects">
-                        <h3>Choose an effect</h3>
-                        <div id="effects-container" class="effects-container">
-                            <!-- Effects will be dynamically added here -->
+                </div>
+                <div id="listingTable"></div>
+
+                <nav class="pagination">
+                    <ul class="pagination__list"> </ul>
+                </nav>
+            </section>
+
+            <section class="section section--auth">
+                <div id="login" class="auth auth--login" style="display: none;">
+                    <h2 class="auth__title">Login Section</h2>
+                </div>
+
+                <div id="sign-in" class="auth auth--signup" style="display: none;">
+                    <h2 class="auth__title">Sign Up Section</h2>
+                </div>
+
+                <div id="login-fail" class="auth auth--error" style="display: none;">
+                    <h2 class="auth__title">Login Failed Section</h2>
+                </div>
+            </section>
+
+            <section id="camera-section" class="section section--camera" style="display: none;">
+                <h2 class="section__title">Camera</h2>
+                <div class="camera">
+                    <!-- Visualize webcam preview -->
+                    <div class="camera__content">
+                        <div class="camera__preview">
+                            <h3 class="camera__subtitle">Take a photo</h3>
+                            <video id="video" class="camera__video">Video stream not available.</video>
+                            <img id="camera-effect" class="camera__effect" />
+                            <button id="start-button" class="camera__button"><i class="fa-solid fa-camera"></i></button>
+                        </div>
+                        <div id="camera-effects" class="camera__effects">
+                            <h3 class="camera__subtitle">Choose an effect</h3>
+                            <div id="effects-container" class="camera__effects__grid">
+                                <!-- Effects will be dynamically added here -->
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Canvas for photo capture -->
+                    <canvas id="canvas" class="camera__canvas" style="display: none;"></canvas>
+
+                    <!-- Display captured photo -->
+                    <div class="camera__result">
+                        <h3 class="camera__subtitle">Captured photo: </h3>
+                        <img id="photo" class="camera__result__image" alt="The capture will appear here." />
+                    </div>
                 </div>
-
-                <!-- Canvas for photo capture -->
-                <canvas id="canvas" style="display: none;"></canvas>
-
-                <!-- Display captured photo -->
-                <div class="photo-result">
-                    <h3>Captured photo: </h3>
-                    <img id="photo" class="camera-result" alt="The capture will appear here." />
-                </div>
-            </div>
-            </div>
-        </section>
-
-    </main>
-
+            </section>
+        </main>
+    </div>
     <!-- Footer -->
-    <footer>
-        <div class="footer-container">
-            <!-- <div class="footer-links">
+    <footer class="footer">
+        <div class="footer__container">
+            <!-- <div class="footer__links">
                 <a href="#about">About</a>
                 <a href="#contact">Contact</a>
                 <a href="#privacy">Privacy</a>
                 <a href="#terms">Terms</a>
             </div> -->
-            <p>&copy; 2025 Camagru - 42 Project. All rights reserved.</p>
+            <p class="footer__text">&copy; 2025 Camagru - 42 Project. All rights reserved.</p>
         </div>
     </footer>
 

@@ -8,19 +8,19 @@ function initializeLoginPages() {
     // Create login form
     const loginFormElement = document.createElement("div");
     loginFormElement.innerHTML = `
-      <div class="auth-container">
-        <div class="header-login-container" style="width: 98%; margin-bottom: 0.rem;">
-            <i class="fa-solid fa-user-lock" style="margin-right: 0.5rem; font-size: 0.875rem;"></i>
-            <h2>Please login</h2>
+      <div class="auth__container">
+        <div class="auth__header">
+            <i class="auth__icon fa-solid fa-user-lock"></i>
+            <h2 class="auth__title">Please login</h2>
         </div>
-        <div class="auth-section">
-            <div class="auth-form-section">
-                <form class="login-window" id="login-window" onsubmit="auth_check(event)">
-                    <div class="login-inputs">
-                        <div class="input-with-icon">
-                        <i class="fa-solid fa-at input-icon"></i>
+        <div class="auth__content">
+            <div class="auth__form-section">
+                <form class="auth__form" id="login-window" onsubmit="auth_check(event)">
+                    <div class="auth__inputs">
+                        <div class="auth__input-group">
+                        <i class="auth__input-icon fa-solid fa-at"></i>
                             <input 
-                              class="inputInfo" 
+                              class="auth__input" 
                               id="username" 
                               type="text" 
                               name="username" 
@@ -28,21 +28,21 @@ function initializeLoginPages() {
                               required
                             />
                         </div>
-                        <div class="input-with-icon">
-                        <i class="fa-solid fa-lock input-icon"></i>
-                            <input class="inputInfo" 
+                        <div class="auth__input-group">
+                        <i class="auth__input-icon fa-solid fa-lock"></i>
+                            <input class="auth__input" 
                             id="password" 
                             type="password" 
                             name="password" 
                             placeholder="Enter your password" 
                             required
                             />
-                            <i class="fa-solid fa-eye eye-icon" id="password-eye"></i>
+                            <i class="auth__eye-icon fa-solid fa-eye" id="password-eye"></i>
                         </div>
                     </div>
-                    <div class="login-buttons">
-                        <button class="button-return" onclick="navigateTo('home', true)" type="button">Return</button>
-                        <button class="button2" type="submit">Login</button>
+                    <div class="auth__buttons">
+                        <button class="auth__button auth__button--return" onclick="navigateTo('home', true)" type="button">Return</button>
+                        <button class="auth__button auth__button--submit" type="submit">Login</button>
                     </div>
                 </form>
             </div>

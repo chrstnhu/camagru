@@ -45,3 +45,31 @@ function navigateTo(viewId, push) {
 
 // Make navigateTo available globally immediately
 window.navigateTo = navigateTo;
+
+
+// Responsive navigation text handling on mobile devices
+function updateNavForMobile() {
+    const isMobile = window.innerWidth <= 768;
+    const navTexts = document.querySelectorAll(".nav-text");
+
+    navTexts.forEach((textElem) => {
+        const listItem = listItem.getAttribute('data-mobile-text');
+
+        if (isMobile) {
+            // Mask text for mobile
+            const mobileText = listItem.getAttribute('data-mobile-text');
+            if (mobileText) {
+                textElem.textContent = mobileText;
+            } else {
+                textElem.style.display = 'none';
+            }
+        } else {
+            // Restore full text
+            textElem.style.display = 'inline';
+            textElem.textContent = listItem.getAttribute('data-full-text');
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', updateNavForMobile);
+window.addEventListener('resize', updateNavForMobile);

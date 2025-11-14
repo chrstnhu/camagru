@@ -1,21 +1,348 @@
-.header-container {
+/* Header Styles - BEM */
+.header__container {
   display: flex;
-  justify-content: center;
-  padding: auto;
+  flex-direction: row;
+  justify-content: space-between;
   align-items: center;
-  background-color: rgb(221, 232, 236);
+  background-color: var(--background-color);
   padding: 10px 20px;
   border-radius: 0 0 50px 50px;
-
 }
 
-.nav-menu ul {
+.header__logo {
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+.header__auth {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.header__icon {
+  margin-right: 0.5rem;
+}
+
+.header__text {
+  font-size: 1rem;
+}
+
+/* Navigation Styles - BEM */
+.nav__list {
   display: flex;
   flex-direction: row;
   gap: 20px;
   list-style-type: none;
+  margin: 0;
+  padding: 0;
+  align-items: center;
 }
 
+.nav__item {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: background-color 0.2s ease;
+  border-radius: 5px;
+}
+
+.nav__item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav__icon {
+  margin-right: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.nav__icon--danger {
+  color: red;
+}
+
+.nav__text {
+  font-size: 1rem;
+}
+
+/* Layout Styles - BEM */
+.layout {
+  margin-left: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout__main {
+  flex: 1;
+  padding: 20px;
+}
+
+/* Section Styles - BEM */
+.section {
+  margin-bottom: 2rem;
+}
+
+.section__title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 800px) {
+  .header__logo {
+    font-size: 1rem;
+  }
+  .nav__text {
+    display: none;
+  }
+
+  .header__container {
+    flex-direction: row;
+    gap: 1rem;
+  }
+
+  .nav__list {
+    gap: 10px;
+  }
+
+  .nav__item {
+    justify-content: center;
+    min-width: 40px;
+  }
+
+  .camera__content {
+    flex-direction: column;
+  }
+
+  .gallery__posts {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+
+  /* Raccourcir "My photos" en "Photos" sur mobile */
+  .nav__item[data-full-text="My photos"] .nav__text {
+    font-size: 0;
+  }
+
+  .nav__item[data-full-text="My photos"] .nav__text::after {
+    content: "Photos";
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .layout__main {
+    padding: 10px;
+  }
+
+  .gallery__posts {
+    grid-template-columns: 1fr;
+  }
+
+  .camera__effects__grid {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  }
+
+  .footer__links {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+/* Hero Styles - BEM */
+.hero {
+  padding: 2rem 0;
+}
+
+.hero__title {
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* Welcome Styles - BEM */
+.welcome {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.welcome__title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.welcome__subtitle {
+  font-size: 1.2rem;
+  color: #666;
+}
+
+/* Gallery Styles - BEM */
+.gallery {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.gallery__title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.gallery__posts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+/* Auth Styles - BEM */
+.auth {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.auth__title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.auth--error {
+  /* Error specific styles */
+  border: 2px solid #ff4444;
+}
+
+/* Camera Styles - BEM */
+.camera {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.camera__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.camera__preview {
+  text-align: center;
+}
+
+.camera__subtitle {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.camera__video {
+  max-width: 100%;
+  border-radius: 10px;
+}
+
+.camera__effect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.camera__button {
+  background: #4CAF50;
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: all 0.3s ease;
+}
+
+.camera__button:hover {
+  background: #45a049;
+  transform: scale(1.1);
+}
+
+.camera__effects {
+  text-align: center;
+}
+
+.camera__effects__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 10px;
+  margin-top: 1rem;
+}
+
+.camera__canvas {
+  border: 1px solid #ccc;
+}
+
+.camera__result {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.camera__result__image {
+  max-width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Footer Styles - BEM */
+.footer {
+  background-color: #333;
+  color: white;
+  padding: 1rem 0;
+  margin-top: auto;
+}
+
+.footer__container {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.footer__links {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 1rem;
+}
+
+.footer__links a {
+  color: white;
+  text-decoration: none;
+}
+
+.footer__links a:hover {
+  text-decoration: underline;
+}
+
+.footer__text {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* Pagination Styles - BEM */
+.pagination__list {
+  display: flex;
+  justify-content: center;
+  list-style: none;
+  padding: 0;
+  margin: 2rem 0;
+  gap: 0.5rem;
+}
+
+/* Utility & Component Styles - BEM */
 .comment-item {
   transition: all 0.2s ease-in-out;
 }
@@ -23,7 +350,6 @@
 .comment-item:hover {
   background-color: #f8fafc;
 }
-
 
 .btn-page {
   cursor: grab;
@@ -39,13 +365,6 @@
   transition: background-color 0.2s ease;
 }
 
-
-@media (max-width: 600px) {
-  .profile-stats {
-    grid-template-columns: 1fr;
-  }
-}
-
 .liked {
   animation: likeAnimation 0.3s ease-in-out;
 }
@@ -54,14 +373,12 @@
   0% {
     transform: scale(1);
   }
-  
+
   50% {
     transform: scale(1.2);
   }
-  
+
   100% {
     transform: scale(1);
   }
 }
-
-url(main.css)
