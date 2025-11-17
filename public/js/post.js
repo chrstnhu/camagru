@@ -1,4 +1,4 @@
-let postsPerPage = 2;
+let postsPerPage = 6;
 let currentPage = 1;
 
 // Simple post Component
@@ -127,14 +127,17 @@ function loadComments(userId, container, postIndex) {
 
 // Update the comments count in the specific post
 function updateCommentsCount(count, postIndex) {
-  const postElement = document.querySelector(`[data-user-id] .post__comments__title`);
+  const postElement = document.querySelector(
+    `[data-user-id] .post__comments__title`
+  );
   const commentsContainer = document.getElementById(
     `comments-container-${postIndex}`
   );
 
   if (commentsContainer) {
-    const commentsTitle =
-      commentsContainer.parentElement.querySelector(".post__comments__title");
+    const commentsTitle = commentsContainer.parentElement.querySelector(
+      ".post__comments__title"
+    );
     if (commentsTitle) {
       commentsTitle.textContent = `Comments (${count})`;
     }
@@ -185,7 +188,7 @@ function createCommentElement(comment, commentIndex, userId, postIndex) {
   div.innerHTML = `
     <div class="post__comment__content">
         <div class="post__comment__avatar__wrapper">
-          <img src="${comment.avatar}" alt="Avatar" class="post__avatar">
+          <img src="${comment.avatar}" alt="Avatar" class="post__comment__avatar">
           <div class="post__comment__info">
           <div class="post__comment__author">${comment.author}</div>
           <div class="post__comment__timestamp">${comment.timestamp}</div>
@@ -227,7 +230,7 @@ function generatepostHTML(user_post, index) {
         <img id="post-avatar-${index}" 
             src="${user_post.avatar}" 
             alt="Photo" 
-            class="post__avatar">
+            class="post__comment__avatar" style="width:40px; height:40px;">
         <h2 id="post-alias-${index}" class="post__alias">${user_post.alias}</h2>
       </div>
       <!-- Post Image -->
@@ -253,14 +256,16 @@ function generatepostHTML(user_post, index) {
         <!-- Add Comment -->
         <div class="post__comment">
             <div class="post__comment__container">
-            <img src="${user_post.avatar}" alt="Avatar" class="post__avatar">
-                <div class="post__comment__input__container post__comment__input__wrapper">
-                    <textarea id="comment-input-${index}" 
-                    placeholder="Add a comment..." 
-                    class="post__comment__input"
-                    rows="2"></textarea>
-                    <button id="add-comment-btn-${index}" class="post__comment__button">
-                    <i class="fa-solid fa-paper-plane"></i>
+            <div class="post__comment__input__container post__comment__input__wrapper">
+                  <textarea id="comment-input-${index}" 
+                  placeholder="Add a comment..." 
+                  class="post__comment__input"
+                  rows="2"></textarea>
+                  <img src="${
+                    user_post.avatar
+                  }" alt="Avatar" class="post__avatar">
+                  <button id="add-comment-btn-${index}" class="post__comment__button">
+                  <i class="fa-solid fa-paper-plane"></i>
                     </button>
                 </div>
             </div>
@@ -273,7 +278,6 @@ function generatepostHTML(user_post, index) {
       </div>
     </div>
   `;
-
 
   // Pagination system in objJson
   if (typeof window.objJson !== "undefined") {
@@ -362,7 +366,7 @@ function initializepostsData() {
     console.log("Posts found in the DOM:", postsInDOM.length);
 
     // Initialize pagination after all posts are created
-    if (typeof initializePagination === 'function') {
+    if (typeof initializePagination === "function") {
       initializePagination(postsPerPage, currentPage);
     }
   }, 50);

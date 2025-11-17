@@ -115,20 +115,24 @@
                 <h2 class="section__title">Camera</h2>
                 <div class="camera">
                     <!-- Visualize webcam preview -->
-                    <div class="camera__content">
-                        <div class="camera__preview">
-                            <h3 class="camera__subtitle">Take a photo</h3>
-                            <video id="video" class="camera__video">Video stream not available.</video>
-                            <img id="camera-effect" class="camera__effect" />
-                            <button id="start-button" class="camera__button"><i class="fa-solid fa-camera"></i></button>
-                        </div>
-                        <div id="camera-effects" class="camera__effects">
-                            <h3 class="camera__subtitle">Choose an effect</h3>
-                            <div id="effects-container" class="camera__effects__grid">
-                                <!-- Effects will be dynamically added here -->
+                    <div class="camera__main__section">
+                        <div class="camera__content">
+                                <div class="camera__preview">
+                                    <h3 class="camera__subtitle">Take a photo</h3>
+                                    <div class="camera__video__container">
+                                        <video id="video" class="camera__video">Video stream not available.</video>
+                                        <img id="camera-effect" class="camera__effect" />
+                                    </div>
+                                    <button id="start-button" class="camera__button"><i class="fa-solid fa-camera"></i></button>
+                                </div>
+                                <div id="camera-effects" class="camera__effects">
+                                    <h3 class="camera__subtitle">Choose an effect</h3>
+                                    <div id="effects-container" class="camera__effects__grid">
+                                        <!-- Effects will be dynamically added here -->
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
                     <!-- Canvas for photo capture -->
                     <canvas id="canvas" class="camera__canvas" style="display: none;"></canvas>

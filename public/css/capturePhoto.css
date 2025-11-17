@@ -1,4 +1,4 @@
-/* Camera Styles - BEM */
+/* Camera Styles  */
 .camera {
     display: flex;
     flex-direction: row;
@@ -22,6 +22,17 @@
     position: relative;
 }
 
+.camera__main__section {
+    display: flex;
+    flex: 2;
+    gap: 20px;
+    width: 100%;
+}
+
+.camera__content {
+    width: 100%;
+}
+
 .camera__preview {
     display: flex;
     flex: 2;
@@ -32,18 +43,32 @@
     padding: 20px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     overflow: hidden;
+    width: 100%;
 }
 
 .camera__video {
-    position: relative;
     display: block;
     width: 100%;
-    min-width: 320px;
-    min-height: 240px;
-    height: 100%;
-    margin: 0 auto;
+    max-width: 100%;
+    aspect-ratio: 3/2;
     border-radius: 4px;
-    margin-top: 10px;
+}
+
+.camera__video__container {
+    position: relative;
+    display: block;
+    margin: 10px auto 0;
+    width: 100%;
+    max-width: 100%;
+}
+
+.camera__video__container .camera__effect {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 10;
 }
 
 .camera__result {
@@ -56,6 +81,7 @@
     border-radius: 8px;
     padding: 20px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-left: 30px;
 }
 
 .camera__result h3 {
@@ -72,17 +98,31 @@
     overflow: hidden;
 }
 
+.camera__result__gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    max-height: 500px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
 .camera__result__image {
-    min-width: 320px;
-    min-height: 240px;
-    height: 100%;
     width: 100%;
+    aspect-ratio: 3/2;
     border-radius: 8px;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
+    cursor: pointer;
 }
 
 .camera__result__image--taken {
-    transform: scale(1.03);
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.camera__result__image:hover {
+    transform: scale(1.02);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
 }
 
 .camera__container--loading .camera__video::after {
@@ -95,7 +135,7 @@
     font-size: 18px;
 }
 
-/* Effects container - BEM */
+/* Effects container  */
 .camera__effects {
     display: flex;
     flex: 1;
@@ -105,6 +145,7 @@
     border-radius: 8px;
     padding: 20px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
 }
 
 .camera__effects__grid {
