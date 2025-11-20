@@ -1,0 +1,12 @@
+:root {
+  --color-primary: #3498db;
+  --bg-color: #ffffff;
+  --text-color: #222222;
+  --radius: 12px;
+  --background-color :rgb(221, 232, 236);
+}
+
+.dark {
+  --bg-color: #222222;
+  --text-color: #ffffff;
+}

@@ -1,4 +1,4 @@
-let postsPerPage = 2;
+let postsPerPage = 6;
 let currentPage = 1;
 
 // Simple post Component
@@ -74,11 +74,11 @@ function updateLikeButton(button, isLiked) {
   if (isLiked) {
     heart.className = "fa-solid fa-heart";
     heart.style.color = "red";
-    button.classList.add("liked");
+    button.classList.add("post__like__button--liked");
   } else {
     heart.className = "fa-regular fa-heart";
     heart.style.color = "gray";
-    button.classList.remove("liked");
+    button.classList.remove("post__like__button--liked");
   }
 }
 
@@ -127,14 +127,17 @@ function loadComments(userId, container, postIndex) {
 
 // Update the comments count in the specific post
 function updateCommentsCount(count, postIndex) {
-  const postElement = document.querySelector(`[data-user-id] .comments-title`);
+  const postElement = document.querySelector(
+    `[data-user-id] .post__comments__title`
+  );
   const commentsContainer = document.getElementById(
     `comments-container-${postIndex}`
   );
 
   if (commentsContainer) {
-    const commentsTitle =
-      commentsContainer.parentElement.querySelector(".comments-title");
+    const commentsTitle = commentsContainer.parentElement.querySelector(
+      ".post__comments__title"
+    );
     if (commentsTitle) {
       commentsTitle.textContent = `Comments (${count})`;
     }
@@ -181,18 +184,18 @@ function addComment(userId, input, container, postIndex, avatar) {
 // Create a comment DOM element
 function createCommentElement(comment, commentIndex, userId, postIndex) {
   const div = document.createElement("div");
-  div.className = "comment-item_${userId}";
+  div.className = "post__comment__item";
   div.innerHTML = `
-    <div class="comment-content comment-content_${userId}">
-        <div class="comment-avatar-wrapper">
-          <img src="${comment.avatar}" alt="Avatar" class="post-avatar">
-          <div class="comment-info">
-          <div class="comment-author">${comment.author}</div>
-          <div class="comment-timestamp">${comment.timestamp}</div>
-          <p class="comment-text">${comment.text}</p>
+    <div class="post__comment__content">
+        <div class="post__comment__avatar__wrapper">
+          <img src="${comment.avatar}" alt="Avatar" class="post__comment__avatar">
+          <div class="post__comment__info">
+          <div class="post__comment__author">${comment.author}</div>
+          <div class="post__comment__timestamp">${comment.timestamp}</div>
+          <p class="post__comment__text">${comment.text}</p>
           </div>
         </div>
-        <button onclick="deleteComment(${userId}, ${commentIndex}, ${postIndex})" class="delete-comment-btn">
+        <button onclick="deleteComment(${userId}, ${commentIndex}, ${postIndex})" class="post__comment__delete">
           <i class="fa-solid fa-trash"></i>
         </button>
     </div>
@@ -214,65 +217,67 @@ function deleteComment(userId, commentIndex, postIndex) {
 
 var objJson = [];
 
-// Generate post HTML with unique IDs
+// Generate post HTML with unique IDsg
 function generatepostHTML(user_post, index) {
   console.log("Generating post HTML for:", user_post);
   const postComponent = document.getElementById("post-component");
   if (!postComponent) return;
 
   const postHTML = `
-    <div class="post" data-user-id="${user_post.id}">
+    <div class="post post--hidden" data-user-id="${user_post.id}">
       <!-- post Header -->
-      <div class="post-header">
+      <div class="post__header">
         <img id="post-avatar-${index}" 
             src="${user_post.avatar}" 
             alt="Photo" 
-            class="post-avatar">
-        <h2 id="post-alias-${index}" class="post-alias">${user_post.alias}</h2>
+            class="post__comment__avatar" style="width:40px; height:40px;">
+        <h2 id="post-alias-${index}" class="post__alias">${user_post.alias}</h2>
       </div>
-        <div>
-            <img
-            src="${user_post.avatar}" 
-            alt="Photo" 
-            class="post-photo">
-        </div>
+      <!-- Post Image -->
+      <div class="post__photo__container">
+        <img
+          src="${user_post.photo || user_post.avatar}" 
+          alt="Post by ${user_post.alias}" 
+          class="post__photo">
+      </div>
       <!-- Like Section -->
-      <div class="like-section">
-        <button id="like-button-${index}" class="like-button">
+      <div class="post__like">
+        <button id="like-button-${index}" class="post__like__button">
           <i class="fa-regular fa-heart"></i>
           <span>Like</span>
         </button>
-        <span id="like-count-${index}" class="like-count">0</span>
+        <span id="like-count-${index}" class="post__like__count">0</span>
       </div>
 
       <!-- Comments Section -->
-      <div class="comments-section">
-        <h4 class="comments-title">Comments (0)</h4>
+      <div class="post__comments">
+        <h4 class="post__comments__title">Comments (0)</h4>
 
         <!-- Add Comment -->
-        <div class="add-comment">
-            <div class="add-comment-container">
-            <img src="${user_post.avatar}" alt="Avatar" class="post-avatar">
-                <div class="comment-input-container comment-input-wrapper">
-                    <textarea id="comment-input-${index}" 
-                    placeholder="Add a comment..." 
-                    class="comment-input"
-                    rows="2"></textarea>
-                    <button id="add-comment-btn-${index}" class="add-comment-btn-inside">
-                    <i class="fa-solid fa-paper-plane"></i>
+        <div class="post__comment">
+            <div class="post__comment__container">
+            <div class="post__comment__input__container post__comment__input__wrapper">
+                  <textarea id="comment-input-${index}" 
+                  placeholder="Add a comment..." 
+                  class="post__comment__input"
+                  rows="2"></textarea>
+                  <img src="${
+                    user_post.avatar
+                  }" alt="Avatar" class="post__avatar">
+                  <button id="add-comment-btn-${index}" class="post__comment__button">
+                  <i class="fa-solid fa-paper-plane"></i>
                     </button>
                 </div>
             </div>
         </div>
 
         <!-- Comments List -->
-        <div id="comments-container-${index}" class="comments-list">
+        <div id="comments-container-${index}" class="post__comments__list">
           <!-- Comments will be dynamically added here -->
         </div>
       </div>
     </div>
   `;
-
 
   // Pagination system in objJson
   if (typeof window.objJson !== "undefined") {
@@ -361,7 +366,7 @@ function initializepostsData() {
     console.log("Posts found in the DOM:", postsInDOM.length);
 
     // Initialize pagination after all posts are created
-    if (typeof initializePagination === 'function') {
+    if (typeof initializePagination === "function") {
       initializePagination(postsPerPage, currentPage);
     }
   }, 50);

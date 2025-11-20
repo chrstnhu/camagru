@@ -1,0 +1,6 @@
+// // ...existing code...
+// fetch('/api/server.php')
+//   .then(r => r.json())
+//   .then(data => console.log(data))
+//   .catch(err => console.error(err));
+// // ...existing code...

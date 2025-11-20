@@ -4,7 +4,7 @@ let posts;
 // Handle pagination logic
 const handlePagination = (postPerPage, currentPage) => {
     // Check if the ul element exists
-    ul = document.querySelector("nav.pagination ul");
+    ul = document.querySelector(".pagination__list");
     if (!ul) {
         console.warn("Pagination element not found");
         return;
@@ -17,7 +17,7 @@ const handlePagination = (postPerPage, currentPage) => {
         console.warn("No posts found for pagination");
         return;
     }
-    
+
     console.log(`Pagination active, page: ${currentPage}, posts: ${posts.length}`);
 
     updateCurrentPage(postPerPage, currentPage);
@@ -25,22 +25,22 @@ const handlePagination = (postPerPage, currentPage) => {
     const totalPages = Math.ceil(posts.length / postPerPage);
     let pageNumbers = generatePageNumbers(totalPages, currentPage);
     let li = '';
-    li += `<li class="page ${currentPage <= 1 ? 'hidden' : ''}" 
+    li += `<li class="pagination__item pagination__item--prev ${currentPage <= 1 ? 'pagination__item--hidden' : ''}" 
                 onclick= "handlePagination(${postPerPage}, ${currentPage - 1})">
-            <span class="icon"> &lt; </span></li>`;
+            <span class="pagination__icon"> &lt; </span></li>`;
     for (let pageNumber of pageNumbers) {
         if (pageNumber === "...") {
-            li += `<li class="page ellipsis">...</li>`;
+            li += `<li class="pagination__item pagination__item--ellipsis">...</li>`;
         } else {
-            li += `<li class="page ${currentPage == pageNumber ? 'active' : ''}" 
+            li += `<li class="pagination__item ${currentPage == pageNumber ? 'pagination__item--active' : ''}" 
                    onclick= "handlePagination(${postPerPage}, ${pageNumber})">
                    ${pageNumber} 
                    </li>`;
         }
     }
-    li += `<li class="page ${currentPage >= totalPages ? 'hidden' : ''}"
+    li += `<li class="pagination__item pagination__item--next ${currentPage >= totalPages ? 'pagination__item--hidden' : ''}"
                 onclick= "handlePagination(${postPerPage}, ${currentPage + 1})">
-            <span class="icon"> &gt; </span></li>`;
+            <span class="pagination__icon"> &gt; </span></li>`;
 
     ul.innerHTML = li;
 }
@@ -53,9 +53,11 @@ const updateCurrentPage = (postPerPage, currentPage) => {
     posts.forEach((post, index) => {
         let isPageWithinRange = index >= prevRange && index < currRange;
         if (isPageWithinRange) {
-            post.classList.remove("hide");
+            post.classList.remove("post--hidden");
+            post.classList.add("post--visible");
         } else {
-            post.classList.add("hide");
+            post.classList.add("post--hidden");
+            post.classList.remove("post--visible");
         }
     });
 }

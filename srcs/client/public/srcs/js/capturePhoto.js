@@ -4,10 +4,21 @@
 let webcamInitialized = false;
 let stream = null;
 
-let video, canvas, photo, startButton, cameraSection, cameraEffect;
+let video,
+  canvas,
+  photo,
+  startButton,
+  cameraSection,
+  cameraEffect,
+  photoGallery;
 let width = 320; // Photo width (height will be calculated proportionally)
 let height = 0; // Will be calculated based on video stream
 let streaming = false;
+let photoCount = 0; // Counter for photo IDs
+
+// Test mode variables
+let testMode = false;
+let simulationCanvas = null;
 
 // Main initialization when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
@@ -19,6 +30,21 @@ document.addEventListener("DOMContentLoaded", () => {
   photo = document.getElementById("photo");
   startButton = document.getElementById("start-button");
   cameraEffect = document.getElementById("camera-effect");
+  cameraSection = document.getElementById("camera");
+
+  // Create or get photo gallery container
+  photoGallery = document.getElementById("photo-gallery");
+  if (!photoGallery) {
+    // Create gallery if it doesn't exist
+    const resultSection = photo.parentElement;
+    photoGallery = document.createElement("div");
+    photoGallery.id = "photo-gallery";
+    photoGallery.className = "camera__result__gallery";
+
+    // Replace single photo with gallery
+    photo.style.display = "none";
+    resultSection.appendChild(photoGallery);
+  }
 
   // Set up event listeners
   document.addEventListener("cameraViewActivated", () => {
@@ -38,28 +64,24 @@ document.addEventListener("DOMContentLoaded", () => {
       ev.preventDefault();
 
       // Animate the capture button
-      startButton.classList.add("clicked");
+      startButton.classList.add("camera__button--clicked");
       setTimeout(() => {
-        startButton.classList.remove("clicked");
+        startButton.classList.remove("camera__button--clicked");
       }, 200);
     });
   }
 
   if (cameraEffect) {
-    cameraEffect.src = "assets/photosEffects/summerHat.png";
-    cameraEffect.alt = "Camera Effect";
-    cameraEffect.style.display = "block";
-    cameraEffect.style.position = "absolute";
+    // Remove any inline styles that might interfere with CSS positioning
+    cameraEffect.removeAttribute("style");
+    // Add specific dimensions while letting CSS handle positioning
     cameraEffect.style.width = "100px";
     cameraEffect.style.height = "80px";
-    cameraEffect.style.top = "50%";
-    cameraEffect.style.left = "50%";
-    cameraEffect.style.transform = "translate(-50%, -50%)";
   }
 
-  // Initialize with blank photo
-  if (canvas && photo) {
-    clearPhoto();
+  // Initialize with blank photo gallery
+  if (canvas && photoGallery) {
+    clearPhotoGallery();
   }
   handleEffectSelection();
 });
@@ -81,7 +103,7 @@ function initializeWebcam() {
 
   // Add loading indicator
   if (cameraSection) {
-    cameraSection.classList.add("loading");
+    cameraSection.classList.add("camera__container--loading");
   }
 
   // Request webcam access
@@ -101,8 +123,8 @@ function initializeWebcam() {
   // Set up canplay event handler
   video.addEventListener("canplay", (ev) => {
     if (!streaming) {
-      // Calculate proportional height
-      height = video.videoHeight / (video.videoWidth / width);
+      // Calculate proportional height with 3:2 ratio
+      height = (width * 2) / 3;
 
       // Set dimensions
       video.setAttribute("width", width);
@@ -111,19 +133,47 @@ function initializeWebcam() {
       canvas.setAttribute("height", height);
 
       streaming = true;
-      console.log("Video ready to display");
+      console.log("Video ready to display with 3:2 ratio");
     }
   });
 }
 
-// Clear photo (set to blank)
-function clearPhoto() {
-  const context = canvas.getContext("2d");
-  context.fillStyle = "#aaaaaa";
-  context.fillRect(0, 0, canvas.width, canvas.height);
+// Clear photo gallery (remove all photos)
+function clearPhotoGallery() {
+  if (photoGallery) {
+    photoGallery.innerHTML = "";
+    photoCount = 0;
+    console.log("📷 Photo gallery cleared");
+  }
+}
 
-  const data = canvas.toDataURL("image/png");
-  photo.setAttribute("src", data);
+// Add a new photo to the gallery
+function addPhotoToGallery(dataUrl) {
+  if (!photoGallery) return;
+
+  photoCount++;
+  const photoItem = document.createElement("div");
+  photoItem.className = "camera__result__photo-item";
+
+  const img = document.createElement("img");
+  img.src = dataUrl;
+  img.alt = `Captured photo ${photoCount}`;
+  img.className = "camera__result__image camera__result__image--taken";
+  img.id = `photo-${photoCount}`;
+
+  // Remove animation class after animation
+  setTimeout(() => {
+    img.classList.remove("camera__result__image--taken");
+  }, 500);
+
+  photoItem.appendChild(img);
+  photoGallery.appendChild(photoItem);
+
+  // Scroll gallery photo
+  photoGallery.insertBefore(photoItem, photoGallery.firstChild);
+  photoGallery.scrollTop = 0;
+
+  console.log(`📷 Photo ${photoCount} added to gallery`);
 }
 
 // Take a picture
@@ -138,15 +188,19 @@ function takePicture() {
     context.drawImage(video, 0, 0, width, height);
 
     // Load and draw effect image onto canvas
+    // const image = new Image();
+    // image.src = "assets/photosEffects/summerHat.png";
+
+    // Load effect from selected effect
     const image = new Image();
-    image.src = "assets/photosEffects/summerHat.png";
+    image.src = cameraEffect.src;
 
     image.onload = function () {
       // Read effect dimensions from style or use defaults
       const effectWidth = parseInt(cameraEffect.style.width) || 100;
       const effectHeight = parseInt(cameraEffect.style.height) || 80;
 
-      // Calculate position to center the effect
+      // Calculate position to center the effect (same as CSS transform)
       const posX = (width - effectWidth) / 2;
       const posY = (height - effectHeight) / 2;
 
@@ -154,19 +208,16 @@ function takePicture() {
       context.drawImage(image, posX, posY, effectWidth, effectHeight);
 
       const dataUrl = canvas.toDataURL("image/png");
-      photo.setAttribute("src", dataUrl);
 
-      photo.classList.add("photo-taken");
-      setTimeout(() => {
-        photo.classList.remove("photo-taken");
-      }, 500);
+      // Add photo to gallery instead of replacing single photo
+      addPhotoToGallery(dataUrl);
 
-      console.log("📷 Photo with effect captured");
+      console.log("📷 Photo with effect captured at center position");
     };
 
     // * Need to save photo in database
   } else {
-    clearPhoto();
+    console.log("❌ Cannot take picture - video not ready");
   }
 }
 
@@ -198,7 +249,13 @@ function handleEffectSelection() {
   effects.forEach((effect) => {
     console.log("Creating effect:", effect.name, effect.img);
     const effectDiv = document.createElement("div");
-    effectDiv.classList.add("effect");
+    effectDiv.classList.add("camera__effects__item");
+    effectDiv.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      cameraEffect.src = effect.img;
+      cameraEffect.alt = effect.name;
+      console.log(`🎨 Effect selected: ${effect.name}`);
+    });
 
     const img = document.createElement("img");
     img.src = effect.img;

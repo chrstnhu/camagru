@@ -1,0 +1,157 @@
+/* Button Styles  */
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn--primary {
+    background-color: #3b82f6;
+    color: var(--text-color);
+}
+
+.btn--primary:hover {
+    background-color: #2563eb;
+}
+
+.btn--secondary {
+    background-color: #6b7280;
+    color: var(--text-color);
+}
+
+.btn--secondary:hover {
+    background-color: #374151;
+}
+
+.btn:active {
+    transform: translateY(1px);
+}
+
+/* Camera Button  */
+.camera__button {
+    /* position: absolute; */
+    bottom: 40px;
+    left: 50%;
+    /* transform: translateX(-50%); */
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    aspect-ratio: 1/1;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin: 10px;
+}
+
+.camera__button:hover {
+    background-color: #c0392b;
+    /* transform: translateX(-50%) scale(1.05); */
+    transform: scale(1.05);
+}
+
+.camera__button--clicked {
+    transform: translateX(-50%) scale(0.95);
+    background-color: #a93226;
+}
+
+/* Post Like Button  */
+.post__like__button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.post__like__button:hover {
+    background-color: #f8fafc;
+}
+
+.post__like__button--liked {
+    animation: likeAnimation 0.3s ease-in-out;
+}
+
+.post__like__button i {
+    font-size: 18px;
+    transition: color 0.2s ease;
+}
+
+/* Legacy Button Support */
+.button2 {
+    padding: 12px 24px;
+    background-color: #3b82f6;
+    color: var(--text-color);
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.button2:hover {
+    background-color: #2563eb;
+}
+
+.button2:active {
+    transform: translateY(1px);
+}
+
+.button-return {
+    padding: 12px 24px;
+    color: var(--text-color);
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    background-color: #6b7280;
+    transition: background-color 0.3s ease;
+}
+
+.button-return:hover {
+    background-color: #374151;
+}
+
+.button-return:active {
+    transform: translateY(1px);
+}
+
+.like-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.like-button:hover {
+    background-color: #f8fafc;
+}
+
+.like-button.liked {
+    animation: likeAnimation 0.3s ease-in-out;
+}
+
+.like-button i {
+    font-size: 18px;
+    transition: color 0.2s ease;
+}

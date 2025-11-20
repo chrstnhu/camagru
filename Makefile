@@ -12,11 +12,11 @@ all:
 	mkdir -p srcs/database/init
 
 	docker compose -f docker-compose.yml up --build
+# 	docker compose -f docker-compose.yml up -d --build
 	clear
-	@echo "$(GREEN)----------------------FT_TRANSCENDENCE-----------------------$(RESET)"
+	@echo "$(GREEN)----------------------CAMAGRU-----------------------$(RESET)"
 	@echo "$(GREEN)Camagru is running$(RESET)"
-	@echo "$(GREEN)Local launch: https://localhost$(RESET)"
-	@echo "$(GREEN)Remote launch: https://server_ip$(RESET)"
+	@echo "$(GREEN)Local launch: https://localhost$(RESET):8080"
 	@echo "$(GREEN)-------------------------------------------------------------$(RESET)"
 	@echo "--------------------------[Service built]----------------------------" >> log.txt
 	@echo >> log.txt
@@ -28,10 +28,9 @@ $(NAME): all
 start:
 	docker compose -f docker-compose.yml up -d
 	clear
-	@echo "$(GREEN)----------------------FT_TRANSCENDENCE-----------------------$(RESET)"
+	@echo "$(GREEN)----------------------CAMAGRU-----------------------$(RESET)"
 	@echo "$(GREEN)Camagru is running$(RESET)"
-	@echo "$(GREEN)Local launch: https://localhost$(RESET)"
-	@echo "$(GREEN)Remote launch: https://server_ip$(RESET)"
+	@echo "$(GREEN)Local launch: https://localhost$(RESET):8080"
 	@echo "$(GREEN)-------------------------------------------------------------$(RESET)"
 	@echo "--------------------------[Service started]----------------------------" >> log.txt
 	@echo >> log.txt
