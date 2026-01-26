@@ -169,8 +169,9 @@ function addPhotoToGallery(dataUrl) {
   photoItem.appendChild(img);
   photoGallery.appendChild(photoItem);
 
-  // Scroll to latest photo
-  photoGallery.scrollTop = photoGallery.scrollHeight;
+  // Scroll gallery photo
+  photoGallery.insertBefore(photoItem, photoGallery.firstChild);
+  photoGallery.scrollTop = 0;
 
   console.log(`📷 Photo ${photoCount} added to gallery`);
 }

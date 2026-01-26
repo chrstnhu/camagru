@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # Web application service
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=camagru
+      - DB_USER=camagru_user
+      - DB_PASSWORD=camagru_password
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+      - /app/node_modules
+      # Mount public directory for static files
+      - ./public:/app/public
+      # Mount server directory for backend code
+      - ./server:/app/server
+    command: npm run dev
+    restart: unless-stopped
+
+  # MySQL database service
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: camagru
+      MYSQL_USER: camagru_user
+      MYSQL_PASSWORD: camagru_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Updated path for init.sql
+      - ./server/database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    restart: unless-stopped
+
+  # phpMyAdmin for database administration
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root_password
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
