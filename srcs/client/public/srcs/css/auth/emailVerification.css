@@ -1,0 +1,85 @@
+.verification-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.verification-container {
+  background: white;
+  padding: 40px 30px;
+  border-radius: 15px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  max-width: 500px;
+  width: 90%;
+  animation: slideIn 0.5s ease-out;
+}
+
+.verification-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+}
+
+.verification-icon.success {
+  color: #0abf30;
+}
+
+.verification-icon.error {
+  color: #f00;
+}
+
+.verification-title {
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.verification-message {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 30px;
+  font-size: var(--font-md);
+}
+
+.verification-btn {
+  display: inline-block;
+  padding: 15px 40px;
+  color: white;
+  background-color: #3b82f6;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: var(--font-md);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.verification-btn:hover {
+  background-color: #2563eb;
+}
+
+.verification-countdown {
+  margin-top: 20px;
+  color: #999;
+  font-size: var(--font-sm);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

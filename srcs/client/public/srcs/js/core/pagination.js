@@ -3,19 +3,16 @@ let posts;
 
 // Handle pagination logic
 const handlePagination = (postPerPage, currentPage) => {
-    // Check if the ul element exists
     ul = document.querySelector("nav.pagination ul");
     if (!ul) {
-        console.warn("Pagination element not found");
-        return;
+        return console.warn("Pagination element not found");
     }
 
     // Retrieve the posts on each call to ensure they exist
     posts = document.querySelectorAll(".post");
 
     if (posts.length === 0) {
-        console.warn("No posts found for pagination");
-        return;
+        return console.warn("No posts found for pagination");
     }
     
     console.log(`Pagination active, page: ${currentPage}, posts: ${posts.length}`);
@@ -66,9 +63,9 @@ const generatePageNumbers = (totalPages, currentPage) => {
         pageNo = 1;
 
     while (pageNo <= totalPages) {
-        let isFirstPage = pageNo <= 1,
-            isLastPage = pageNo == totalPages,
-            isWithinRange = pageNo >= currentPage - 1 && pageNo <= currentPage + 1;
+        let isFirstPage = pageNo <= 1;
+        let isLastPage = pageNo == totalPages;
+        let isWithinRange = pageNo >= currentPage - 1 && pageNo <= currentPage + 1;
 
         if (isFirstPage || isLastPage || isWithinRange) {
             pagination.push(pageNo);

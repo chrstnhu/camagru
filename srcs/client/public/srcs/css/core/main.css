@@ -1,0 +1,424 @@
+.header-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgb(136, 176, 219, 0.2);
+  backdrop-filter: blur(40px);
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9;
+  box-sizing: border-box;
+}
+
+.nav-menu ul {
+  display: flex;
+  flex-direction: row;
+  gap: 30px;
+  list-style-type: none;
+}
+
+.btn-page {
+  cursor: grab;
+  padding: 8px 12px;
+  margin: 0 5px;
+  color: blue;
+  border-radius: 8px;
+  transition: background-color var(--transition-fast);
+}
+
+.btn_page:hover {
+  background-color: #021b41;
+  transition: background-color var(--transition-fast);
+}
+
+
+.liked {
+  animation: likeAnimation var(--transition-normal);
+}
+
+@keyframes likeAnimation {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+
+body {
+  /*a href=httpsfr.freepik.comvecteurs-librefond-bleu-aquarelle_23761122.html*/
+  background: url('../../../assets/img/background.jpg') no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  color: #1e3a8a;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #0f172a;
+}
+
+p,
+span,
+div,
+li {
+  color: #1e3a8a;
+}
+
+a {
+  color: #1d4ed8;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #1e40af;
+  text-decoration: underline;
+}
+
+.logo {
+  cursor: pointer;
+  padding: 10px;
+  max-width: 100px;
+  max-height: auto;
+  transition: transform var(--transition-slow);
+}
+
+.logo:hover {
+  transform: scale(1.15);
+}
+
+.nav-content {
+  cursor: pointer;
+  padding: 17px 0;
+  transition: transform var(--transition-slow);
+}
+
+.nav-content:hover {
+  border-bottom: 2px solid #1e40af;
+  transform: translateY(-2px) scale(1.15);
+}
+
+.main-content {
+  padding-top: 70px;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* Responsive: hide navigation text on mobile devices */
+@media (max-width: 768px) {
+  .nav-label {
+    display: none;
+  }
+
+  .nav-content {
+    padding: 14px 0;
+  }
+
+  .logo {
+    max-width: 80px;
+  }
+
+  .post-component {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+main,
+.page-container,
+.content-wrapper {
+  padding-top: 70px;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* Footer */
+footer {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer-container {
+  text-align: center;
+  font-size: var(--font-sm);
+}
+
+/* Alert Container - Stacked notifications */
+.alert-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  z-index: 10001;
+  pointer-events: none;
+}
+
+.alert-box {
+  width: 350px;
+  min-height: 70px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  position: relative;
+  pointer-events: auto;
+  cursor: pointer;
+  animation: slideIn 0.3s ease-out;
+  transition: all var(--transition-fast);
+}
+
+.alert-box:hover {
+  transform: translateX(-5px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.alert-box.removing {
+  animation: slideOut 0.3s ease-out forwards;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  to {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+}
+
+.alert {
+  display: flex;
+  align-items: center;
+  color: #222;
+  font-weight: 500;
+}
+
+.alert::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background-color: #0abf30;
+  animation: progress 5s linear forwards;
+}
+
+.alert.error::after {
+  background-color: #f00;
+}
+
+@keyframes progress {
+  from {
+    width: 100%;
+  }
+
+  to {
+    width: 0;
+  }
+}
+
+.alert i {
+  font-size: 28px;
+  color: #0abf30;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.alert.error i {
+  color: #f00;
+}
+
+.alert span {
+  flex: 1;
+  word-wrap: break-word;
+}
+
+/* My Photos Gallery - Horizontal Scroll */
+.my-photos-gallery {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 20px;
+}
+
+.gallery-photo-item {
+  position: relative;
+  flex: 0 0 auto;
+  width: 300px;
+  background: white;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform var(--transition-slow), box-shadow var(--transition-normal);
+}
+
+.gallery-photo {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  display: block;
+}
+
+.gallery-caption {
+  padding: 12px;
+  font-size: var(--font-sm);
+  color: #333;
+  text-align: center;
+  background: white;
+  margin: 0;
+}
+
+
+
+/* Test */
+.file-uploader {
+  /* make it invisible */
+  opacity: 0;
+  /* make it take the full height and width of the parent container */
+  height: 100%;
+  width: 100%;
+  cursor: pointer;
+  /* make it absolute positioned */
+  position: absolute;
+  top: 0%;
+  left: 0%;
+}
+
+.upload-icon {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* initial icon state */
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+  color: #ccc;
+  -webkit-text-stroke-width: 2px;
+  -webkit-text-stroke-color: #bbb;
+}
+
+.profile-picture {
+  opacity: 0.75;
+  height: 100px;
+  width: 100px;
+  margin: auto;
+  position: relative;
+  overflow: hidden;
+  border-radius: 50%;
+
+  /* default image */
+  background: url('https://qph.cf2.quoracdn.net/main-qimg-f32f85d21d59a5540948c3bfbce52e68');
+
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  box-shadow: 0 8px 6px -6px black;
+}
+
+/* toggle icon state */
+.profile-picture:hover .upload-icon {
+  opacity: 1;
+}
+
+/* Something disable */
+.isDisabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+
+.user-profile {
+  position: relative;
+  padding: 10px;
+}
+
+
+.user-profile .user-avatar {
+  width: 32px;
+  height: 32px;
+  background: #fff;
+  border-radius: 50%;
+  border: solid 2px #1e3a8a;
+  line-height: 32px;
+  text-align: center;
+  font-size: var(--font-md);
+  color: #222;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-items: center;
+  gap: var(--gap-sm);
+}
+
+.user-profile .user-profile--dropdown {
+  position: absolute;
+  top: 100%;
+  right: 1px;
+  padding: 10px;
+  background: #fff;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(20px);
+  opacity: 0;
+  pointer-events: none;
+  transition: all var(--transition-normal);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  min-width: 100px;
+  z-index: 10001;
+}
+
+.user-profile.show .user-profile--dropdown {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.user-profile .user-profile--dropdown a {
+  padding: 6px 12px;
+  border-radius: 4px;
+  color: #222;
+  text-decoration: none;
+  font-weight: 500;
+  margin: 2px 0;
+  transition: all var(--transition-fast);
+}
+
+.user-profile .user-profile--dropdown a:hover {
+  background: #eee;
+}

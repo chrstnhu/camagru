@@ -11,8 +11,10 @@ services:
     env_file:
     - .env
     restart: unless-stopped
-    expose:
-    - "9001"
+    ports:
+    - "9001:9001"
+    depends_on:
+    - database
 
   client:
     container_name: client
@@ -28,27 +30,55 @@ services:
     ports:
     - "8080:8080"
 
-  # database:
-  #   container_name: database
-  #   image: postgres:16
-  #   networks:
-  #   - _network
-  #   environment:
-  #     POSTGRES_USER: ${POSTGRES_USER}
-  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-  #     POSTGRES_DB: ${POSTGRES_DB}
-  #   volumes:
-  #     - pgdata:/var/lib/pgsql/data
-  #     - ./srcs/database/init:/docker-entrypoint-initdb.d
-  #   restart: unless-stopped
-  #   ports:
-  #   - "5432:5432"
+  database:
+    container_name: database
+    image: mariadb:10.9
+    networks:
+    - _network
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./srcs/server/config/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    ports:
+    - "3306:3306"
+
+  phpmyadmin:
+    container_name: phpmyadmin
+    image: phpmyadmin
+    networks:
+    - _network
+    environment:
+      PMA_HOST: database
+      PMA_PORT: 3306
+      PMA_USER: ${DB_USER}
+      PMA_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    ports:
+    - "8081:80"
+    depends_on:
+    - database
+    restart: unless-stopped
+
+  mailhog:
+    container_name: mailhog
+    image: mailhog/mailhog:latest
+    networks:
+    - _network
+    ports:
+    - "1025:1025" # Mailhog SMTP port
+    - "8025:8025" # Mailhog web UI port
+    restart: unless-stopped
+
+volumes:
+  mariadb_data:
+    driver: local
 
 networks:
   _network:
     name: "_network"
     driver: "bridge"
-
-volumes:
-  pgdata:
-    driver: local

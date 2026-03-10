@@ -1,0 +1,362 @@
+.camera-container {
+    display: flex;
+    flex-direction: row;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: var(--radius-md);
+    gap: 20px;
+    /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); */
+    /* background-color: #f5f5f5; */
+}
+
+@media (max-width: 768px) {
+    .camera-container {
+        flex-direction: column;
+    }
+}
+
+/* Section titles */
+.camera-container h2,
+.camera-container h3 {
+    text-align: center;
+    margin: 0 0 15px 0;
+    color: #333;
+    position: relative;
+}
+
+.camera-preview {
+    display: flex;
+    flex: 2;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    border-radius: var(--radius-md);
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+}
+
+#video {
+    position: relative;
+    display: block;
+    width: 100%;
+    min-width: 320px;
+    min-height: 240px;
+    height: 100%;
+    margin: 0 auto;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+/* Effect overlay on video */
+#camera-effect {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 80px;
+    pointer-events: none;
+    z-index: 5;
+    display: none;
+}
+
+#start-btn {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    font-size: var(--font-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+#start-btn:hover {
+    background-color: #c0392b;
+    transform: translateX(-50%) scale(1.05);
+}
+
+#start-btn.clicked {
+    transform: translateX(-50%) scale(0.95);
+    background-color: #a93226;
+}
+
+.photo-result {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    height: auto;
+    border-radius: var(--radius-md);
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.photo-result h3 {
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.camera-result {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    border-radius: var(--radius-md);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+#photo {
+    min-width: 320px;
+    min-height: 240px;
+    height: 100%;
+    width: 100%;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-normal);
+}
+
+#photo.photo-taken {
+    transform: scale(1.03);
+}
+
+/* Photo gallery */
+.photo-gallery {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-sm);
+    max-height: 400px;
+    overflow-y: scroll;
+    padding: 10px;
+}
+
+.photo-item {
+    position: relative;
+    border-radius: var(--radius-md);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.photo-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: all var(--transition-normal);
+}
+
+.photo-image.photo-taken {
+    animation: photoCapture 0.5s ease-out;
+}
+
+@keyframes photoCapture {
+    0% {
+        transform: scale(1);
+        opacity: 0.7;
+    }
+
+    50% {
+        transform: scale(1.05);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Effects container */
+.camera-effects {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    border-radius: var(--radius-md);
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+
+}
+
+.effects-container {
+    display: flex;
+    gap: var(--gap-md);
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+}
+
+.effect {
+    border: 2px solid #ddd;
+    border-radius: var(--radius-md);
+    padding: 20px;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    background: white;
+}
+
+.effect:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.effect.selected {
+    border-color: #667eea;
+    background: #dbe9ff;
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+}
+
+.effect img {
+    width: 60px;
+    height: 60px;
+    display: block;
+    object-fit: contain;
+}
+
+/* Button states */
+#start-btn:disabled,
+#start-btn.disabled {
+    background: #ccc !important;
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: translateX(-50%);
+}
+
+#start-btn:disabled:hover {
+    transform: translateX(-50%);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Toggle Camera / Upload - same style as login/register separator */
+.camera-toggle-btn,
+.upload-toggle-btn {
+    flex: 1;
+    padding: 0.75rem 1.5rem;
+    border: 2px solid #3498db;
+    background: white;
+    color: #3498db;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+
+.camera-toggle-btn:hover,
+.upload-toggle-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.camera-toggle-btn.active,
+.upload-toggle-btn.active {
+    background: #3498db;
+    color: white;
+}
+
+/* Upload mode */
+.upload-drop-zone {
+    position: relative;
+    width: 100%;
+    min-width: 320px;
+    min-height: 240px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    margin-top: 10px;
+}
+
+.upload-drop-zone.dragover {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: #999;
+}
+
+.upload-placeholder i {
+    font-size: 48px;
+    color: #ccc;
+}
+
+.upload-placeholder p {
+    color: #999;
+    font-size: 14px;
+}
+
+.upload-placeholder input[type="file"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.upload-preview-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.upload-preview-wrapper #upload-preview {
+    max-width: 320px;
+    max-height: 240px;
+    border-radius: 4px;
+    display: block;
+}
+
+.upload-preview-wrapper #upload-effect-preview {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 80px;
+    pointer-events: none;
+    display: none;
+}
+
+.upload-save-btn {
+    padding: 12px 30px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    margin-top: 10px;
+}
+
+.upload-save-btn:hover:not(:disabled) {
+    background: #5a6fd6;
+    transform: scale(1.02);
+}
+
+.upload-save-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+}

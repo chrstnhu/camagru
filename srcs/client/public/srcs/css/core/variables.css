@@ -1,0 +1,44 @@
+:root {
+  /* ========== COLORS ========== */
+  --color-primary: #3498db;
+  --bg-color: #ffffff;
+  --text-color: #222222;
+  --background-color: rgb(221, 232, 236);
+  --comment-bg: #f8fafc;
+
+  --color-error: #ef4444;
+
+  /* ========== BORDER RADIUS ========== */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius: 12px;
+
+  /* ========== TYPOGRAPHY ========== */
+  --font-main: 'Inter', sans-serif;
+  --font-sm: 14px;
+  --font-md: 16px;
+  --font-lg: 20px;
+
+  /* ========== SPACING ========== */
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+
+  /* ========== GAP ==========*/
+  --gap-sm: 10px;
+  --gap-md: 16px;
+  --gap-lg: 24px;
+
+  /* ========== SHADOWS ========== */
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  /* ========== TRANSITIONS ========== */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+}
+
+.dark {
+  --bg-color: #222222;
+  --text-color: #ffffff;
+}

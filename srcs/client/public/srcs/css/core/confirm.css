@@ -1,0 +1,121 @@
+/* Confirmation Popup Styles */
+.confirm-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-normal);
+}
+
+.confirm-popup-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.confirm-popup {
+    background: white;
+    border-radius: var(--radius);
+    padding: 2rem;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    transform: scale(0.9);
+    transition: transform var(--transition-normal);
+}
+
+.confirm-popup-overlay.active .confirm-popup {
+    transform: scale(1);
+}
+
+.confirm-popup-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.confirm-popup-header i {
+    font-size: 1.5rem;
+    color: #e74c3c;
+}
+
+.confirm-popup-header h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: #2c3e50;
+}
+
+.confirm-popup-message {
+    color: #5a6c7d;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+}
+
+.confirm-popup-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.confirm-popup-btn {
+    padding: 0.6rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.confirm-popup-btn-cancel {
+    background: #ecf0f1;
+    color: #2c3e50;
+}
+
+.confirm-popup-btn-cancel:hover {
+    background: #bdc3c7;
+}
+
+.confirm-popup-btn-confirm {
+    background: #e74c3c;
+    color: white;
+}
+
+.confirm-popup-btn-confirm:hover {
+    filter: brightness(0.85);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .confirm-popup {
+        padding: 1.5rem;
+        max-width: 90%;
+    }
+
+    .confirm-popup-header h3 {
+        font-size: 1.1rem;
+    }
+
+    .confirm-popup-message {
+        font-size: 0.9rem;
+    }
+
+    .confirm-popup-buttons {
+        flex-direction: column-reverse;
+    }
+
+    .confirm-popup-btn {
+        width: 100%;
+    }
+}
