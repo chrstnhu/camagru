@@ -1,20 +1,26 @@
-# Utilise l'image officielle Node.js
-FROM node:18-alpine
+FROM php:8.2-cli
 
-# Définit le répertoire de travail dans le conteneur
-WORKDIR /app
+# Installer les extensions PHP nécessaires
+RUN apt-get update && apt-get install -y \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libzip-dev \
+    unzip \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd pdo pdo_mysql zip
 
-# Copie les fichiers package.json et package-lock.json (s'ils existent)
-COPY package*.json ./
+# Créer le répertoire de travail
+WORKDIR /app/server
 
-# Installe les dépendances
-RUN npm install
+# Copier tous les fichiers du serveur
+COPY . /app/server/
 
-# Copie le reste du code de l'application
-COPY . .
+# Créer le répertoire uploads avec les bonnes permissions
+RUN mkdir -p /app/server/uploads && chmod 755 /app/server/uploads
 
-# Expose le port sur lequel l'application s'exécute
-EXPOSE 3000
+# Exposer le port
+EXPOSE 9001
 
-# Définit la commande par défaut pour démarrer l'application
-CMD ["npm", "start"]
+# Commande de démarrage
+CMD ["php", "-S", "0.0.0.0:9001", "server.php"]

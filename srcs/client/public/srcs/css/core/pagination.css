@@ -1,22 +1,22 @@
+/* Pagination Styles  */
 .pagination {
     display: flex;
     justify-content: center;
     align-items: center;
     margin: 20px;
-}
-
-nav.pagination {
     padding: 0 1.5rem;
 }
 
-nav.pagination ul {
+.pagination-list {
     display: flex;
     list-style-type: none;
     justify-content: center;
     gap: 0.6rem;
+    margin: 0;
+    padding: 0;
 }
 
-nav.pagination ul .page {
+.pagination-item {
     cursor: pointer;
     user-select: none;
     color: #222;
@@ -25,23 +25,22 @@ nav.pagination ul .page {
     line-height: 3rem;
     text-align: center;
     font-size: 1rem;
-
-    user-select: none;
-    cursor: pointer;
     border: 1px solid #888;
-    transition: .2s linear
+    transition: all 0.2s linear;
+    border-radius: 4px;
+    background: white;
 }
 
-nav.pagination ul .page:hover {
+.pagination-item:hover {
     background-color: #999;
-    scale: 1.1;
+    transform: scale(1.1);
 }
 
-nav.pagination ul .page:active {
+.pagination-item:active {
     background-color: #999;
 }
 
-nav.pagination ul .page.active {
+.pagination-item--active {
     background-color: #3498db;
     color: white;
     font-weight: bold;
@@ -49,11 +48,28 @@ nav.pagination ul .page.active {
     box-shadow: 0 2px 5px rgba(52, 152, 219, 0.3);
 }
 
-nav.pagination ul .page.hidden {
+.pagination-item--hidden {
     display: none;
 }
 
-nav.pagination ul .page .icon {
+.pagination-item--ellipsis {
+    cursor: default;
+    pointer-events: none;
+    border: none;
+    background: transparent;
+}
+
+.pagination-item--ellipsis:hover {
+    background: transparent;
+    transform: none;
+}
+
+.pagination-item--prev,
+.pagination-item--next {
+    font-weight: bold;
+}
+
+.pagination-icon {
     display: inline-block;
-    scale: 1 2;
+    transform: scale(1, 2);
 }
