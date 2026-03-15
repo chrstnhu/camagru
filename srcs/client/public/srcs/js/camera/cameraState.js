@@ -13,7 +13,8 @@ window.photo = null;
 window.startBtn = null;
 window.cameraSection = null;
 window.cameraEffect = null;
-window.photoGallery = null;
+window._captureDrafts = [];
+window._selectedCaptureDraftIndex = -1;
 
 // Photo dimensions
 window.width = 320;

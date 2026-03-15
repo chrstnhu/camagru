@@ -12,6 +12,24 @@ function handleEffectSelection() {
   effects.forEach((effect) => createEffectElement(effect, effectsContainer));
 }
 
+async function ensureEffectDataUrl(effect) {
+  if (effect.dataUrl) {
+    return effect.dataUrl;
+  }
+
+  const response = await fetch(effect.img);
+  const blob = await response.blob();
+
+  effect.dataUrl = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+
+  return effect.dataUrl;
+}
+
 // Create effect element
 function createEffectElement(effect, container) {
   const effectDiv = document.createElement("div");
@@ -32,46 +50,60 @@ function createEffectElement(effect, container) {
 }
 
 // Toggle effect selection
-function toggleEffectSelection(effectDiv, effect) {
-  const alreadySelected = effectDiv.classList.contains("selected");
+async function toggleEffectSelection(effectDiv, effect) {
+  const alreadySelected = effectDiv.classList.contains("is-selected");
 
   document
     .querySelectorAll(".effect")
-    .forEach((el) => el.classList.remove("selected"));
+    .forEach((el) => el.classList.remove("is-selected"));
 
   const uploadEffectPreview = document.getElementById("upload-effect-preview");
-  const uploadSaveBtn = document.getElementById("upload-save-btn");
+  const addToDraft = document.getElementById("add-to-draft");
 
   if (alreadySelected) {
     selectedEffect = null;
     cameraEffect.src = "";
     cameraEffect.style.display = "none";
     startBtn.disabled = true;
-    startBtn.classList.add("disabled");
+    startBtn.classList.add("is-disabled");
 
     // Hide effect on upload preview
     if (uploadEffectPreview) {
       uploadEffectPreview.style.display = "none";
     }
-    if (uploadSaveBtn) {
-      uploadSaveBtn.disabled = true;
+    if (addToDraft) {
+      addToDraft.disabled = true;
     }
     return;
   }
 
-  effectDiv.classList.add("selected");
-  selectedEffect = effect;
-  cameraEffect.src = effect.img;
-  cameraEffect.style.display = "block";
-  startBtn.disabled = false;
-  startBtn.classList.remove("disabled");
+  effectDiv.classList.add("is-selected");
+
+  try {
+    await ensureEffectDataUrl(effect);
+    selectedEffect = effect;
+    cameraEffect.src = effect.img;
+    cameraEffect.style.display = "block";
+    startBtn.disabled = false;
+    startBtn.classList.remove("is-disabled");
+  } catch (error) {
+    console.error("Failed to load effect image:", error);
+    selectedEffect = null;
+    cameraEffect.src = "";
+    cameraEffect.style.display = "none";
+    startBtn.disabled = true;
+    startBtn.classList.add("is-disabled");
+    effectDiv.classList.remove("is-selected");
+    showErrorAlert("Failed to load selected effect");
+    return;
+  }
 
   // Show effect on upload preview if image is uploaded
   if (uploadEffectPreview && window._uploadedImageData) {
     uploadEffectPreview.src = effect.img;
     uploadEffectPreview.style.display = "block";
   }
-  if (uploadSaveBtn && window._uploadedImageData) {
-    uploadSaveBtn.disabled = false;
+  if (addToDraft && window._uploadedImageData) {
+    addToDraft.disabled = false;
   }
 }
