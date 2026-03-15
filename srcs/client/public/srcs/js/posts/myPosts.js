@@ -1,5 +1,5 @@
 const MY_POSTS_INFINITE_BATCH_SIZE = 10;
-const MY_POSTS_PAGINATION_PAGE_SIZE = 6;
+const MY_POSTS_PAGINATION_PAGE_SIZE = 8;
 const MY_POSTS_FEED_MODE_STORAGE_KEY = "myPostsFeedDisplayMode";
 let myPostsCurrentPage = 1;
 let myPostsIsLoading = false;
