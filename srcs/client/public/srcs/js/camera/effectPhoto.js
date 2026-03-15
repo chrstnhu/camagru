@@ -1,7 +1,9 @@
 // Handle effect selection
 function handleEffectSelection() {
   const effectsContainer = document.getElementById("effects-container");
-  if (!effectsContainer) return;
+  if (!effectsContainer) {
+    return;
+  }
 
   const effects = [
     { name: "summerHat", img: "assets/photosEffects/summerHat.png" },
@@ -12,6 +14,7 @@ function handleEffectSelection() {
   effects.forEach((effect) => createEffectElement(effect, effectsContainer));
 }
 
+// Ensure effect data URL
 async function ensureEffectDataUrl(effect) {
   if (effect.dataUrl) {
     return effect.dataUrl;
@@ -49,6 +52,37 @@ function createEffectElement(effect, container) {
   container.appendChild(effectDiv);
 }
 
+function clearCurrentEffect(uploadEffectPreview, addToDraft) {
+  selectedEffect = null;
+  cameraEffect.src = "";
+  cameraEffect.style.display = "none";
+  startBtn.disabled = true;
+  startBtn.classList.add("is-disabled");
+
+  if (uploadEffectPreview) {
+    uploadEffectPreview.style.display = "none";
+  }
+  if (addToDraft) {
+    addToDraft.disabled = true;
+  }
+}
+
+function applySelectedEffect(effect, uploadEffectPreview, addToDraft) {
+  selectedEffect = effect;
+  cameraEffect.src = effect.img;
+  cameraEffect.style.display = "block";
+  startBtn.disabled = false;
+  startBtn.classList.remove("is-disabled");
+
+  if (uploadEffectPreview && window._uploadedImageData) {
+    uploadEffectPreview.src = effect.img;
+    uploadEffectPreview.style.display = "block";
+  }
+  if (addToDraft && window._uploadedImageData) {
+    addToDraft.disabled = false;
+  }
+}
+
 // Toggle effect selection
 async function toggleEffectSelection(effectDiv, effect) {
   const alreadySelected = effectDiv.classList.contains("is-selected");
@@ -61,19 +95,7 @@ async function toggleEffectSelection(effectDiv, effect) {
   const addToDraft = document.getElementById("add-to-draft");
 
   if (alreadySelected) {
-    selectedEffect = null;
-    cameraEffect.src = "";
-    cameraEffect.style.display = "none";
-    startBtn.disabled = true;
-    startBtn.classList.add("is-disabled");
-
-    // Hide effect on upload preview
-    if (uploadEffectPreview) {
-      uploadEffectPreview.style.display = "none";
-    }
-    if (addToDraft) {
-      addToDraft.disabled = true;
-    }
+    clearCurrentEffect(uploadEffectPreview, addToDraft);
     return;
   }
 
@@ -81,29 +103,12 @@ async function toggleEffectSelection(effectDiv, effect) {
 
   try {
     await ensureEffectDataUrl(effect);
-    selectedEffect = effect;
-    cameraEffect.src = effect.img;
-    cameraEffect.style.display = "block";
-    startBtn.disabled = false;
-    startBtn.classList.remove("is-disabled");
+    applySelectedEffect(effect, uploadEffectPreview, addToDraft);
   } catch (error) {
     console.error("Failed to load effect image:", error);
-    selectedEffect = null;
-    cameraEffect.src = "";
-    cameraEffect.style.display = "none";
-    startBtn.disabled = true;
-    startBtn.classList.add("is-disabled");
+    clearCurrentEffect(uploadEffectPreview, addToDraft);
     effectDiv.classList.remove("is-selected");
     showErrorAlert("Failed to load selected effect");
     return;
-  }
-
-  // Show effect on upload preview if image is uploaded
-  if (uploadEffectPreview && window._uploadedImageData) {
-    uploadEffectPreview.src = effect.img;
-    uploadEffectPreview.style.display = "block";
-  }
-  if (addToDraft && window._uploadedImageData) {
-    addToDraft.disabled = false;
   }
 }

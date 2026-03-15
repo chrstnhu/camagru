@@ -15,6 +15,7 @@ window.cameraSection = null;
 window.cameraEffect = null;
 window._captureDrafts = [];
 window._selectedCaptureDraftIndex = -1;
+window._uploadedImageData = null;
 
 // Photo dimensions
 window.width = 320;

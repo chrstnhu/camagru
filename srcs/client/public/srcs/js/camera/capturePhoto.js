@@ -4,39 +4,36 @@
 // Current mode: 'camera' or 'upload'
 window.currentCameraMode = "camera";
 
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("📷 CapturePhoto.js loaded");
+function hideInitialCaptureState() {
+  if (photo) {
+    photo.style.display = "none";
+  }
 
-  // Get DOM elements
-  video = document.getElementById("video");
-  canvas = document.getElementById("canvas");
-  photo = document.getElementById("photo");
-  startBtn = document.getElementById("start-btn");
-  cameraEffect = document.getElementById("camera-effect");
-  cameraSection = document.getElementById("camera");
-  // Initially hide captured photo until a photo is taken
-  if (photo) photo.style.display = "none";
+  if (cameraEffect) {
+    cameraEffect.style.display = "none";
+  }
+}
 
-  // Set up event listeners
+function setupCameraViewInitialization() {
   document.addEventListener("cameraViewActivated", () => {
     if (currentCameraMode === "camera") {
       initializeWebcam();
     }
+
     handleEffectSelection();
   });
 
-  // Initialize webcam if camera section is visible
   if (cameraSection && cameraSection.style.display === "block") {
     initializeWebcam();
   }
+}
 
-  // Handle image upload
+function setupUploadHandlers() {
   const uploadInput = document.getElementById("upload-image");
   if (uploadInput) {
     uploadInput.addEventListener("change", handleImageUpload);
   }
 
-  // Handle drag & drop on upload zone
   const dropZone = document.getElementById("upload-drop-zone");
   if (dropZone) {
     dropZone.addEventListener("dragover", (e) => {
@@ -56,13 +53,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Handle upload save button
   const addToDraft = document.getElementById("add-to-draft");
   if (addToDraft) {
     addToDraft.addEventListener("click", saveUploadedPhoto);
   }
+}
 
-  // Set up capture button
+function setupCaptureButton() {
   if (startBtn) {
     startBtn.disabled = true;
     startBtn.classList.add("is-disabled");
@@ -84,13 +81,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }, 200);
     });
   }
+}
 
-  // Initially hide the effect
-  if (cameraEffect) {
-    cameraEffect.style.display = "none";
-  }
-
-  // Handle confirm save button
+function setupCaptureDraftActions() {
   const confirmSaveBtn = document.getElementById("confirm-save-btn");
   if (confirmSaveBtn) {
     confirmSaveBtn.addEventListener("click", async () => {
@@ -105,7 +98,23 @@ document.addEventListener("DOMContentLoaded", () => {
       removeSelectedDraft();
     });
   }
+}
 
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("📷 CapturePhoto.js loaded");
+
+  video = document.getElementById("video");
+  canvas = document.getElementById("canvas");
+  photo = document.getElementById("photo");
+  startBtn = document.getElementById("start-btn");
+  cameraEffect = document.getElementById("camera-effect");
+  cameraSection = document.getElementById("camera");
+
+  hideInitialCaptureState();
+  setupCameraViewInitialization();
+  setupUploadHandlers();
+  setupCaptureButton();
+  setupCaptureDraftActions();
   handleEffectSelection();
 });
 

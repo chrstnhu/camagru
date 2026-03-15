@@ -136,7 +136,7 @@ async function saveSelectedDraft() {
   });
 
   removeSelectedDraft();
-  showConfirmPopup("Photo saved successfully!");
+  showSucessAlert("Photo saved successfully!");
   return true;
 }
 
@@ -265,7 +265,9 @@ window._uploadedImageData = null;
 // Handle image upload from file input
 function handleImageUpload(event) {
   const file = event.target.files[0];
-  if (!file) return;
+  if (!file) {
+    return;
+  }
 
   // Check if file is an image
   if (!file.type.startsWith("image/")) {
