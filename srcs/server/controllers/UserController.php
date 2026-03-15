@@ -26,11 +26,19 @@ class UserController extends BaseController {
         
         if (isset($_SESSION['user_id'])) {
             $currentUser = $this->user->getById($_SESSION['user_id']);
+            $avatarPath = null;
+            if ($currentUser && array_key_exists('avatar_path', $currentUser) && $currentUser['avatar_path']) {
+                $avatarPath = $currentUser['avatar_path'];
+            } else if ($currentUser && array_key_exists('username', $currentUser) && $currentUser['username']) {
+                // fallback: default API route for avatar
+                $avatarPath = '/api/avatar/' . urlencode($currentUser['username']);
+            }
             $response['user'] = [
                 'id' => $_SESSION['user_id'],
                 'username' => $_SESSION['username'] ?? null,
                 'email' => $_SESSION['email'] ?? null,
-                'notification_enabled' => $currentUser['notification_enabled'] ?? 1
+                'notification_enabled' => $currentUser['notification_enabled'] ?? 1,
+                'avatar_path' => $avatarPath
             ];
         }
         
@@ -435,22 +443,44 @@ class UserController extends BaseController {
         }
         
         // Update session data if username or email changed
+        $oldUser = $this->user->getById($userId);
+        $oldUsername = $oldUser['username'] ?? null;
+        $oldAvatarPath = $oldUser['avatar_path'] ?? null;
+
         if ($this->user->updateProfile($userId, $input)) {
-            if (isset($input['username'])) {
+            // If username changed and user had an avatar, rename the avatar file to match the new username
+            if (isset($input['username']) && $oldUsername && $input['username'] !== $oldUsername) {
+                $avatarDir = __DIR__ . '/../uploads/avatars';
+                $oldAvatarFile = $avatarDir . '/' . $oldUsername . '.png';
+                $newAvatarFile = $avatarDir . '/' . $input['username'] . '.png';
+                if (file_exists($oldAvatarFile)) {
+                    // If the old avatar file exists, rename it to the new username
+                    @rename($oldAvatarFile, $newAvatarFile);
+                    // Update avatar path in database
+                    $dbAvatarPath = '/api/avatar/' . $input['username'];
+                    $this->user->updateAvatar($userId, $dbAvatarPath);
+                }
                 $_SESSION['username'] = $input['username'];
             }
             if (isset($input['email'])) {
                 $_SESSION['email'] = $input['email'];
             }
-            
+
             $currentUser = $this->user->getById($userId);
-            
+            $avatarPath = null;
+            if ($currentUser && array_key_exists('avatar_path', $currentUser) && $currentUser['avatar_path']) {
+                $avatarPath = $currentUser['avatar_path'];
+            } else if ($currentUser && array_key_exists('username', $currentUser) && $currentUser['username']) {
+                $avatarPath = '/api/avatar/' . urlencode($currentUser['username']);
+            }
+
             $this->sendSuccess('Profile updated successfully', [
                 'user' => [
                     'id' => $userId,
                     'username' => $currentUser['username'],
                     'email' => $currentUser['email'],
-                    'notification_enabled' => (bool) ($currentUser['notification_enabled'] ?? 1)
+                    'notification_enabled' => (bool) ($currentUser['notification_enabled'] ?? 1),
+                    'avatar_path' => $avatarPath
                 ]
             ]);
         } else {
