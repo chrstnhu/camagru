@@ -73,6 +73,11 @@ function renderPostsInBatches(postsData, startIndex = 0) {
 }
 
 function getFeedDisplayMode() {
+  const session = getUserSession();
+  if (!session || !session.logged_in) {
+    return "pagination";
+  }
+
   const savedMode = localStorage.getItem(GALLERY_FEED_MODE_STORAGE_KEY);
   return savedMode === "infinite" ? "infinite" : "pagination";
 }
@@ -122,7 +127,9 @@ async function renderPosts(postsData) {
 }
 
 async function loadMorePosts() {
-  if (isLoading || !hasMorePosts) return;
+  if (isLoading || !hasMorePosts) {
+    return;
+  }
 
   isLoading = true;
 
