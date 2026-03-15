@@ -28,8 +28,10 @@
     <script src="srcs/js/core/alerts.js"></script>
     <script src="srcs/js/core/auth.js"></script>
     <script src="srcs/js/core/pagination.js"></script>
-    <script src="srcs/js/core/profilePassword.js"></script>
-    <script src="srcs/js/core/profile.js"></script>
+    <script src="srcs/js/core/profile/profileData.js"></script>
+    <script src="srcs/js/core/profile/profileFeedMode.js"></script>
+    <script src="srcs/js/core/profile/profileData.js"></script>
+    <script src="srcs/js/core/profile/profileForm.js"></script>
     <!-- Authentication modules -->
     <script src="srcs/js/auth/emailVerification.js"></script>
     <script src="srcs/js/auth/passwordReset.js"></script>
@@ -39,17 +41,22 @@
     <!-- Register: registerCheck, setupRegisterPasswordToggles -->
     <script src="srcs/js/auth/register.js"></script>
     <!-- Posts management -->
-    <script src="srcs/js/posts/postCommon.js"></script>
     <script src="srcs/js/posts/post.js"></script>
+    <script src="srcs/js/posts/postAvatar.js"></script>
+    <script src="srcs/js/posts/postComments.js"></script>
+    <script src="srcs/js/posts/postLikes.js"></script>
+    <script src="srcs/js/posts/postUtils.js"></script>
     <script src="srcs/js/posts/myPosts.js"></script>
-    <!-- Camera modules (load in order: state → effects/save → main) -->
+
+    <!-- Camera modules (load in order: state → effects → drafts/save/upload → main) -->
     <script src="srcs/js/camera/cameraState.js"></script>
     <script src="srcs/js/camera/effectPhoto.js"></script>
-    <script src="srcs/js/camera/savePhoto.js"></script>
+    <script src="srcs/js/camera/captureDrafts.js"></script>
+    <script src="srcs/js/camera/cameraSaveService.js"></script>
+    <script src="srcs/js/camera/uploadPhoto.js"></script>
     <script src="srcs/js/camera/capturePhoto.js"></script>
 
     <script src="srcs/js/core/home.js"></script>
-
 
     <title>Camagru - 42 Project</title>
 </head>
@@ -366,6 +373,67 @@
             <p>&copy; 2025 Camagru - 42 Project. All rights reserved.</p>
         </div>
     </footer>
+
+    <!-- Authentication Modal Templates -->
+    <!-- Forgot Password Modal Template -->
+    <template id="forgot-password-template">
+        <div id="forgot-password-overlay" class="popup-overlay is-active"></div>
+        <div id="forgot-password-popup" class="auth-container is-open">
+            <span class="icon-close" data-close-forgot-password>
+                <i class="fa-solid fa-xmark"></i>
+            </span>
+            <div class="header-login-container">
+                <h2>Reset Password</h2>
+                <p class="password-reset-description">Enter your email to receive a password reset link</p>
+            </div>
+            <form id="forgot-password-form" class="password-reset-form">
+                <div class="login-inputs">
+                    <label>Email Address</label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-envelope input-icon"></i>
+                        <input type="email" id="forgot-email" class="input-info" placeholder="Enter your email" required />
+                    </div>
+                </div>
+                <button class="submit-btn" type="submit">Send Reset Link</button>
+                <div class="login-register password-reset-back">
+                    <p>
+                        <a href="#" data-back-to-login>Back to Login</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </template>
+
+    <!-- Reset Password Modal Template -->
+    <template id="reset-password-template">
+        <div id="reset-password-overlay" class="popup-overlay is-active"></div>
+        <div id="reset-password-popup" class="auth-container is-open">
+            <span class="icon-close" data-close-reset-password>
+                <i class="fa-solid fa-xmark"></i>
+            </span>
+            <div class="header-login-container">
+                <h2>Set New Password</h2>
+                <p class="password-reset-description">Enter your new password</p>
+            </div>
+            <form id="reset-password-form" class="password-reset-form">
+                <div class="login-inputs">
+                    <label>New Password</label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" id="new-password" class="input-info" placeholder="Enter new password" required minlength="8" />
+                        <i class="fa-solid fa-eye eye-icon" data-password-target="new-password"></i>
+                    </div>
+                    <label>Confirm Password</label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" id="confirm-password" class="input-info" placeholder="Confirm new password" required minlength="8" />
+                        <i class="fa-solid fa-eye eye-icon" data-password-target="confirm-password"></i>
+                    </div>
+                </div>
+                <button class="submit-btn" type="submit">Reset Password</button>
+            </form>
+        </div>
+    </template>
 
     <!-- Scripts -->
 

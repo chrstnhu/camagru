@@ -44,6 +44,24 @@ function checkPasswordMatch(password, confirmPassword) {
 }
 
 // Client-side validations
+function validateRegisterIdentity(username, email) {
+  const usernameRegex = /^[a-zA-Z0-9_-]{3,20}$/;
+  if (!usernameRegex.test(username)) {
+    showErrorAlert(
+      "Username must be 3-20 characters with only letters, numbers, _ and -.",
+    );
+    return false;
+  }
+
+  const emailRegex = /^\S+@\S+\.\S+$/;
+  if (!emailRegex.test(email)) {
+    showErrorAlert("Please enter a valid email address!");
+    return false;
+  }
+
+  return true;
+}
+
 function checkClientSideValidation(
   username,
   email,
@@ -56,34 +74,51 @@ function checkClientSideValidation(
     return false;
   }
 
-  // Username validation
-  const usernameRegex = /^[a-zA-Z0-9_-]{3,20}$/;
-  if (!usernameRegex.test(username)) {
-    showErrorAlert(
-      "Username must be 3-20 characters with only letters, numbers, _ and -.",
-    );
+  if (!validateRegisterIdentity(username, email)) {
     return false;
   }
 
-  // Email validation
-  const emailRegex = /^\S+@\S+\.\S+$/;
-  if (!emailRegex.test(email)) {
-    showErrorAlert("Please enter a valid email address!");
-    return false;
-  }
-
-  // Password validation
   if (!checkPasswordMatch(password, confirmPassword)) {
     return false;
   }
 
-  // Terms agreement validation
   if (!termsAgreed) {
     showErrorAlert("You must agree to the terms and conditions!");
     return false;
   }
 
   return true;
+}
+
+async function sendRegisterRequest(username, email, password) {
+  return fetch("/api/auth/register", {
+    method: "POST",
+    headers: await getJsonHeaders(),
+    body: JSON.stringify({
+      username: username,
+      email: email,
+      password: password,
+      avatar_data: window._registerAvatarData || null,
+    }),
+  });
+}
+
+async function handleRegisterApiError(response) {
+  let errorMessage;
+
+  try {
+    const errorData = await response.json();
+    errorMessage = errorData.error || `Server error: ${response.status}`;
+  } catch (e) {
+    const errorText = await response.text();
+    console.error(
+      "Server returned non-JSON response:",
+      errorText.substring(0, 200),
+    );
+    errorMessage = `Server error (${response.status}): ${response.statusText}`;
+  }
+
+  return showErrorAlert(errorMessage);
 }
 
 // Handle registration form submission
@@ -113,39 +148,13 @@ async function registerCheck(event) {
   }
 
   try {
-    const response = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: await getJsonHeaders(),
-      body: JSON.stringify({
-        username: username,
-        email: email,
-        password: password,
-        avatar_data: window._registerAvatarData || null,
-      }),
-    });
+    const response = await sendRegisterRequest(username, email, password);
 
     if (!response.ok) {
-      let errorMessage;
-      try {
-        const errorData = await response.json();
-        errorMessage = errorData.error || `Server error: ${response.status}`;
-      } catch (e) {
-        const errorText = await response.text();
-        console.error(
-          "Server returned non-JSON response:",
-          errorText.substring(0, 200),
-        );
-        errorMessage = `Server error (${response.status}): ${response.statusText}`;
-      }
-
-      return showErrorAlert(errorMessage);
+      return handleRegisterApiError(response);
     }
-
     clearRegisterForm();
-    showSuccessAlert(
-      "Registration successful! Please check your email to verify your account.",
-    );
-
+    showSuccessAlert("Account created. Check your email to verify it.");
     showLogin();
   } catch (error) {
     console.error("Registration error:", error);
@@ -204,15 +213,13 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       const reader = new FileReader();
       reader.onload = (ev) => {
-        console.log(
-          "📸 Avatar file loaded, data length:",
+        console.log("📸 Avatar file loaded, data length:",
           ev.target.result.length,
         );
         document.getElementById("register-avatar-preview").src =
           ev.target.result;
         window._registerAvatarData = ev.target.result;
-        console.log(
-          "📸 _registerAvatarData set:",
+        console.log("📸 registerAvatarData set:",
           !!window._registerAvatarData,
         );
       };

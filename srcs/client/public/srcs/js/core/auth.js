@@ -9,13 +9,6 @@ async function checkUserStatus() {
   }
 }
 
-// Show user profile and hide login button
-function showUserAvatar(username) {
-  if (typeof updateUIAfterLogin === "function") {
-    updateUIAfterLogin({ username: username });
-  }
-}
-
 // Handle login
 async function login(username, password) {
   try {
@@ -33,7 +26,10 @@ async function login(username, password) {
     const data = await response.json();
 
     if (data.success) {
-      showUserAvatar(data.user.username);
+      // Show user avatar 
+      if (typeof updateUIAfterLogin === "function") {
+        updateUIAfterLogin({ username: username });
+      }
       showSuccessAlert("Login successful!");
       return true;
     } else {

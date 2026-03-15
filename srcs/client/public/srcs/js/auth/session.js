@@ -2,6 +2,7 @@
 
 window.csrfToken = null;
 
+// Clear user session cookie
 function setUserSessionCookie(userData) {
   document.cookie = `user_session=${encodeURIComponent(
     JSON.stringify({
@@ -14,10 +15,7 @@ function setUserSessionCookie(userData) {
   )}; path=/; max-age=3600; SameSite=Lax`;
 }
 
-function clearUserSessionCookie() {
-  document.cookie = "user_session=; path=/; max-age=0; SameSite=Lax";
-}
-
+// Refresh user session cookie
 async function refreshServerSession() {
   const response = await fetch("/api/user/status");
   const data = await response.json();
@@ -29,7 +27,7 @@ async function refreshServerSession() {
   if (data.logged_in && data.user) {
     setUserSessionCookie(data.user);
   } else {
-    clearUserSessionCookie();
+    document.cookie = "user_session=; path=/; max-age=0; SameSite=Lax";
   }
 
   return data;
@@ -46,6 +44,7 @@ async function getJsonHeaders() {
   };
 }
 
+// Handle Unauthorized 
 async function handleUnauthorizedResponse(defaultMessage) {
   try {
     const data = await refreshServerSession();
@@ -64,8 +63,10 @@ async function handleUnauthorizedResponse(defaultMessage) {
   );
 }
 
+// Apply lougout State to UI
 function applyLoggedOutState() {
-  clearUserSessionCookie();
+  document.cookie = "user_session=; path=/; max-age=0; SameSite=Lax";
+
   window.currentUser = null;
   window.csrfToken = null;
 
@@ -99,7 +100,6 @@ function applyLoggedOutState() {
 
 // Update UI after successful login
 function updateUIAfterLogin(userData) {
-  // Show user profile
   const userProfile = document.getElementById("user-profile");
   if (userProfile) {
     userProfile.style.display = "flex";
@@ -209,7 +209,9 @@ function updateHomeDashboard() {
 function setupProfileDropdown() {
   const profileBox = document.querySelector(".user-profile");
   const profileAvatar = document.querySelector(".user-avatar");
-  if (!profileBox || !profileAvatar) return;
+  if (!profileBox || !profileAvatar) {
+    return;
+  }
 
   profileBox.addEventListener("mouseenter", () =>
     profileBox.classList.add("is-open"),

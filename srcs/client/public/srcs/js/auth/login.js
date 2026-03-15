@@ -28,6 +28,7 @@ function showRegister() {
   toggleAuthForm(false);
 }
 
+// Update UI after successful login
 async function handleApiError(response) {
   let errorMessage;
   try {
@@ -59,32 +60,69 @@ async function handleApiError(response) {
   return showErrorAlert(errorMessage);
 }
 
+async function sendLoginRequest(email, password) {
+  return fetch("/api/auth/login", {
+    method: "POST",
+    headers: await getJsonHeaders(),
+    body: JSON.stringify({
+      email: email,
+      password: password,
+    }),
+  });
+}
+
+// Set user session cookie after successful login
+async function finalizeLogin(userData, email) {
+  const syncedSession = await refreshServerSession();
+  const finalUser =
+    syncedSession.logged_in && syncedSession.user
+      ? syncedSession.user
+      : {
+          ...userData,
+          email: userData.email || email,
+        };
+
+  setUserSessionCookie(finalUser);
+  updateUIAfterLogin(finalUser);
+
+  // Clear login form fields
+  document.getElementById("login-email").value = "";
+  document.getElementById("login-password").value = "";
+
+  showSuccessAlert(`Welcome back, ${userData.username}!`);
+  navigateTo("gallery", true);
+}
+
+function handleLoginNetworkError(error) {
+  console.error("Network error:", error);
+
+  if (error instanceof SyntaxError && error.message.includes("JSON")) {
+    return showErrorAlert(
+      "Server error. Please contact support or try again later.",
+    );
+  }
+
+  return showErrorAlert("Connection error. Please try again.");
+}
+
 // Handle login from page form
 async function loginCheck(event) {
-  if (event) event.preventDefault();
+  if (event) {
+    event.preventDefault();
+  }
 
   const email = document.getElementById("login-email")?.value;
   const password = document.getElementById("login-password")?.value;
-
+  
   if (!email || !password) {
-    showErrorAlert("Please enter both email and password");
-    return;
+    return showErrorAlert("Please enter both email and password");
   }
 
   try {
-    const response = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: await getJsonHeaders(),
-      body: JSON.stringify({
-        email: email,
-        password: password,
-      }),
-    });
+    const response = await sendLoginRequest(email, password);
 
-    // Special handling for 403 (email not verified)
     if (!response.ok) {
-      await handleApiError(response);
-      return;
+      return handleApiError(response);
     }
 
     const data = await response.json();
@@ -93,35 +131,9 @@ async function loginCheck(event) {
     console.log("Login successful:", data);
     console.log("User data:", userData);
 
-    const syncedSession = await refreshServerSession();
-    const finalUser =
-      syncedSession.logged_in && syncedSession.user
-        ? syncedSession.user
-        : {
-            ...userData,
-            email: userData.email || email,
-          };
-
-    setUserSessionCookie(finalUser);
-    updateUIAfterLogin(finalUser);
-
-    // Clear form
-    document.getElementById("login-email").value = "";
-    document.getElementById("login-password").value = "";
-
-    // Show success message
-    showSuccessAlert(`Welcome back, ${userData.username}!`);
-    navigateTo("gallery", true);
+    await finalizeLogin(userData, email);
   } catch (error) {
-    console.error("Network error:", error);
-    // Check if error is due to HTML response instead of JSON
-    if (error instanceof SyntaxError && error.message.includes("JSON")) {
-      showErrorAlert(
-        "Server error. Please contact support or try again later.",
-      );
-    } else {
-      showErrorAlert("Connection error. Please try again.");
-    }
+    handleLoginNetworkError(error);
   }
 }
 
