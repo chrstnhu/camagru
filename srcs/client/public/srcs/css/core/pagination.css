@@ -41,7 +41,7 @@ nav.pagination ul .page:active {
     background-color: #999;
 }
 
-nav.pagination ul .page.active {
+nav.pagination ul .page.is-active {
     background-color: #3498db;
     color: white;
     font-weight: bold;
@@ -49,7 +49,7 @@ nav.pagination ul .page.active {
     box-shadow: 0 2px 5px rgba(52, 152, 219, 0.3);
 }
 
-nav.pagination ul .page.hidden {
+nav.pagination ul .page.is-hidden {
     display: none;
 }
 
