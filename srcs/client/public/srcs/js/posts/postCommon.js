@@ -42,14 +42,14 @@ function showConfirmPopup(title, message) {
     document.body.appendChild(overlay);
 
     // Animate in
-    setTimeout(() => overlay.classList.add("active"), 10);
+    setTimeout(() => overlay.classList.add("is-active"), 10);
 
     // Handle buttons
     const cancelBtn = document.getElementById("confirm-cancel-btn");
     const okBtn = document.getElementById("confirm-ok-btn");
 
     const cleanup = (result) => {
-      overlay.classList.remove("active");
+      overlay.classList.remove("is-active");
       setTimeout(() => {
         overlay.remove();
         resolve(result);
@@ -64,43 +64,250 @@ function showConfirmPopup(title, message) {
   });
 }
 
+async function refreshDeletedImageViews() {
+  invalidatePostViews();
+
+  if (typeof loadCameraGallery === "function") {
+    try {
+      await loadCameraGallery();
+    } catch (error) {
+      console.error("Error refreshing camera gallery:", error);
+    }
+  }
+
+  const gallerySection = document.getElementById("gallery");
+  if (
+    gallerySection &&
+    gallerySection.style.display !== "none" &&
+    typeof window.initializepostsData === "function"
+  ) {
+    await window.initializepostsData();
+  }
+
+  const myPostsSection = document.getElementById("my-posts");
+  if (
+    myPostsSection &&
+    myPostsSection.style.display !== "none" &&
+    typeof initializeMyPosts === "function"
+  ) {
+    await initializeMyPosts();
+  }
+}
+
+function invalidatePostViews() {
+  window._galleryNeedsRefresh = true;
+  window._myPostsNeedsRefresh = true;
+  window._lastGalleryUser = null;
+}
+
+function escapeHTML(value) {
+  const text = value == null ? "" : String(value);
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function removePostCardByImageId(containerId, imageId) {
+  const selector = `#${containerId} .post[data-image-id="${imageId}"]`;
+  const postElement = document.querySelector(selector);
+  if (!postElement) {
+    return false;
+  }
+
+  postElement.remove();
+
+  return true;
+}
+
+function refreshMyPostsAfterLocalDelete() {
+  const gallery = document.getElementById("my-photos-gallery");
+  const paginationNav = document.getElementById("myposts-pagination");
+  const remainingPosts = gallery ? gallery.querySelectorAll(".post").length : 0;
+
+  if (remainingPosts === 0 && gallery) {
+    gallery.innerHTML =
+      '<p style="text-align: center; padding: 2rem; color: #666;">No posts yet. Go to Camera to publish your first photo!</p>';
+    if (paginationNav) {
+      paginationNav.style.display = "none";
+      const ul = paginationNav.querySelector("ul");
+      if (ul) {
+        ul.innerHTML = "";
+      }
+    }
+    return true;
+  }
+
+  const mode = localStorage.getItem("myPostsFeedDisplayMode") || "pagination";
+  if (
+    mode === "pagination" &&
+    paginationNav &&
+    typeof initializeMyPostsPagination === "function"
+  ) {
+    const activePage = Number(
+      paginationNav.querySelector("li.page.is-active")?.dataset?.page || 1,
+    );
+    initializeMyPostsPagination(6, activePage);
+    paginationNav.style.display = "block";
+  }
+}
+
+async function deleteUserImageById(imageId, options = {}) {
+  try {
+    const response = await fetch(`/api/images/${imageId}`, {
+      method: "DELETE",
+      headers: await getJsonHeaders(),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        await handleUnauthorizedResponse("Please login to delete photos");
+        return false;
+      }
+
+      showErrorAlert(result.error || "Failed to delete photo");
+      return false;
+    }
+
+    showSuccessAlert("Photo deleted successfully");
+
+    const removedFromMyPosts = removePostCardByImageId(
+      "my-photos-gallery",
+      imageId,
+    );
+
+    if (removedFromMyPosts) {
+      refreshMyPostsAfterLocalDelete();
+    }
+
+    if (removedFromMyPosts) {
+      window._myPostsNeedsRefresh = false;
+      window._galleryNeedsRefresh = true;
+      window._lastGalleryUser = null;
+      return true;
+    }
+
+    await refreshDeletedImageViews();
+    return true;
+  } catch (error) {
+    console.error("Error deleting photo:", error);
+    showErrorAlert("Error deleting photo");
+    return false;
+  }
+}
+
 // Update post with user data
 async function updateUserPost(user_post, index) {
-  console.log("Updating user post for:", user_post);
   try {
     const userAlias = user_post.alias;
     const aliasElement = document.getElementById(`post-alias-${index}`);
     const avatarElement = document.getElementById(`post-avatar-${index}`);
+    const postElement = document.querySelector(`[data-post-index="${index}"]`);
+    const isCompact = postElement?.dataset.compact === "true";
 
-    if (aliasElement) aliasElement.textContent = userAlias;
+    if (aliasElement) {
+      const ownerSession = getUserSession();
+      const isMyPost =
+        ownerSession &&
+        ownerSession.logged_in &&
+        Number(ownerSession.user_id) === Number(user_post.user_id);
+
+      aliasElement.dataset.rawAlias = userAlias;
+      aliasElement.dataset.ownerId = String(user_post.user_id || "");
+      aliasElement.innerHTML = isMyPost
+        ? `${userAlias} <i class="fa-solid fa-child-reaching" style="color: #486EE3;"></i>`
+        : userAlias;
+    }
 
     if (avatarElement) {
-      const timestamp = Date.now();
-      const avatarPath = `/api/avatar/${userAlias}?ts=${timestamp}`;
+      const avatarPath = buildAvatarUrl(userAlias);
       avatarElement.src = avatarPath;
       avatarElement.onerror = () => {
         avatarElement.src = "assets/profile/default-avatar.png";
       };
     }
 
-    initializeLikeBtn(user_post.id, index);
+    if (!isCompact) {
+      initializeLikeBtn(
+        user_post.id,
+        index,
+        user_post.is_liked,
+        user_post.likes_count,
+      );
+    }
+
     initializeCommentsSection(user_post.id, index);
+
+    initializeDeletePostBtn(user_post, index);
   } catch (error) {
     console.log("Error updating user post:", error);
   }
 }
 
+function initializeDeletePostBtn(user_post, index) {
+  const session = getUserSession();
+  const isOwner =
+    session &&
+    session.logged_in &&
+    Number(session.user_id) === Number(user_post.user_id);
+
+  if (!isOwner || !user_post.image_id) {
+    return;
+  }
+
+  const deleteBtn = document.getElementById(`post-delete-btn-${index}`);
+  if (!deleteBtn || deleteBtn.dataset.bound === "true") {
+    return;
+  }
+
+  deleteBtn.dataset.bound = "true";
+  deleteBtn.addEventListener("click", async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const confirmDelete = await showConfirmPopup(
+      "Delete Photo",
+      "Are you sure you want to delete this photo? This action cannot be undone.",
+    );
+
+    if (!confirmDelete) {
+      return;
+    }
+
+    const isMyPostsCard = String(index).startsWith("my-posts-");
+    await deleteUserImageById(user_post.image_id, {
+      localPostIndex: isMyPostsCard ? index : null,
+    });
+  });
+}
+
 // Like button functionality
-async function initializeLikeBtn(postId, index) {
+async function initializeLikeBtn(
+  postId,
+  index,
+  initialIsLiked,
+  initialLikeCount,
+) {
   const likeBtn = document.getElementById(`like-btn-${index}`);
   const likeCount = document.getElementById(`like-count-${index}`);
 
-  if (!likeBtn || !likeCount) return;
+  if (!likeBtn || !likeCount) {
+    return;
+  }
 
   const session = getUserSession();
   const isLoggedIn = session && session.logged_in;
 
-  await loadLikeStatus(postId, likeBtn, likeCount, isLoggedIn);
+  if (typeof initialLikeCount !== "undefined") {
+    likeCount.textContent = Number(initialLikeCount) || 0;
+    updateLikeBtn(likeBtn, isLoggedIn ? Boolean(initialIsLiked) : false);
+  } else {
+    await loadLikeStatus(postId, likeBtn, likeCount, isLoggedIn);
+  }
 
   if (isLoggedIn) {
     likeBtn.addEventListener("click", async function () {
@@ -135,24 +342,24 @@ async function loadLikeStatus(postId, likeBtn, likeCount, isLoggedIn) {
 async function toggleLike(postId, likeBtn, likeCount) {
   const session = getUserSession();
   if (!session || !session.user_id || !session.logged_in) {
-    showErrorAlert("Please login to like posts");
-    return;
+    return showErrorAlert("Please login to like posts");
   }
 
   try {
     const response = await fetch(`/api/posts/${postId}/like`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: await getJsonHeaders(),
     });
 
     const data = await response.json();
 
     if (response.ok) {
+      invalidatePostViews();
       updateLikeBtn(likeBtn, data.is_liked);
       likeCount.textContent = data.likes_count;
     } else {
       if (response.status === 401) {
-        showErrorAlert("Please login to like posts");
+        await handleUnauthorizedResponse("Please login to like posts");
       } else {
         showErrorAlert(data.error || "Failed to toggle like");
       }
@@ -169,39 +376,118 @@ function updateLikeBtn(btn, isLiked) {
   if (isLiked) {
     heart.className = "fa-solid fa-heart";
     heart.style.color = "red";
-    btn.classList.add("liked");
+    btn.classList.add("is-liked");
   } else {
     heart.className = "fa-regular fa-heart";
     heart.style.color = "gray";
-    btn.classList.remove("liked");
+    btn.classList.remove("is-liked");
   }
 }
 
 // Comments Section
+function updateCommentsToggleState(commentsToggleBtn, isExpanded) {
+  if (!commentsToggleBtn) {
+    return;
+  }
+
+  commentsToggleBtn.setAttribute(
+    "aria-expanded",
+    isExpanded ? "true" : "false",
+  );
+
+  const toggleAction = commentsToggleBtn.querySelector(
+    ".comments-toggle-action",
+  );
+
+  const toggleIcon = commentsToggleBtn.querySelector(".comments-toggle-icon");
+
+  if (toggleAction) {
+    toggleAction.textContent = isExpanded ? "Hide" : "Open";
+  }
+
+  if (toggleIcon) {
+    toggleIcon.classList.toggle("is-open", isExpanded);
+  }
+}
+
 function initializeCommentsSection(postId, index) {
+  const commentsSection = document.getElementById(`comments-section-${index}`);
+  const commentsBody = document.getElementById(`comments-body-${index}`);
+  const commentsToggleBtn = document.getElementById(
+    `comments-toggle-btn-${index}`,
+  );
   const commentsContainer = document.getElementById(
     `comments-container-${index}`,
   );
   const commentInput = document.getElementById(`comment-input-${index}`);
   const addCommentBtn = document.getElementById(`add-comment-btn-${index}`);
 
-  if (!commentsContainer || !commentInput || !addCommentBtn) {
+  if (
+    !commentsSection ||
+    !commentsBody ||
+    !commentsToggleBtn ||
+    !commentsContainer
+  ) {
     console.error("Comments section elements not found for post ID:", postId);
     return;
   }
 
-  loadComments(postId, commentsContainer, index);
+  if (commentsToggleBtn.dataset.bound !== "true") {
+    commentsToggleBtn.dataset.bound = "true";
+    commentsToggleBtn.addEventListener("click", async () => {
+      const isHidden = commentsBody.classList.contains("comments-body-hidden");
 
-  addCommentBtn.addEventListener("click", function () {
-    addComment(postId, commentInput, commentsContainer, index);
-  });
+      if (isHidden) {
+        commentsBody.classList.remove("comments-body-hidden");
+        updateCommentsToggleState(commentsToggleBtn, true);
 
-  commentInput.addEventListener("keypress", function (e) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      addComment(postId, commentInput, commentsContainer, index);
+        if (commentsSection.dataset.loaded !== "true") {
+          await loadComments(postId, commentsContainer, index);
+          commentsSection.dataset.loaded = "true";
+        }
+      } else {
+        commentsBody.classList.add("comments-body-hidden");
+        updateCommentsToggleState(commentsToggleBtn, false);
+      }
+    });
+  }
+
+  if (addCommentBtn && commentInput) {
+    if (addCommentBtn.dataset.bound !== "true") {
+      addCommentBtn.dataset.bound = "true";
+      addCommentBtn.addEventListener("click", function () {
+        addComment(postId, commentInput, commentsContainer, index);
+      });
     }
-  });
+
+    if (commentInput.dataset.bound !== "true") {
+      commentInput.dataset.bound = "true";
+      commentInput.addEventListener("keypress", function (e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          addComment(postId, commentInput, commentsContainer, index);
+        }
+      });
+    }
+  }
+}
+
+function initializeCommentsCount(postIndex, count) {
+  const safeCount = Number(count) || 0;
+  const commentsSection = document.getElementById(
+    `comments-section-${postIndex}`,
+  );
+
+  if (commentsSection) {
+    commentsSection.dataset.count = String(safeCount);
+  }
+
+  const commentsToggleCount = document.getElementById(
+    `comments-toggle-count-${postIndex}`,
+  );
+  if (commentsToggleCount) {
+    commentsToggleCount.textContent = `(${safeCount})`;
+  }
 }
 
 async function loadComments(postId, container, postIndex) {
@@ -214,8 +500,7 @@ async function loadComments(postId, container, postIndex) {
     if (data.comments && data.comments.length > 0) {
       data.comments.forEach((comment, index) => {
         // Use the comment author's avatar
-        const ts = Date.now();
-        const commentAvatar = `/api/avatar/${comment.username}?ts=${ts}`;
+        const commentAvatar = buildAvatarUrl(comment.username);
 
         const formattedComment = {
           id: comment.id,
@@ -234,10 +519,14 @@ async function loadComments(postId, container, postIndex) {
       });
       updateCommentsCount(data.comments.length, postIndex);
     } else {
+      container.innerHTML =
+        '<p class="comments-empty-state">No comments yet. Be the first to comment.</p>';
       updateCommentsCount(0, postIndex);
     }
   } catch (error) {
     console.error("Error loading comments:", error);
+    container.innerHTML =
+      '<p class="comments-empty-state">Unable to load comments right now.</p>';
     updateCommentsCount(0, postIndex);
   }
 }
@@ -249,10 +538,17 @@ function updateCommentsCount(count, postIndex) {
   );
 
   if (commentsContainer) {
-    const commentsTitle =
-      commentsContainer.parentElement.querySelector(".comments-title");
-    if (commentsTitle) {
-      commentsTitle.textContent = `Comments (${count})`;
+    const commentsSection = commentsContainer.closest(".comments-section");
+    const commentsToggleCount = document.getElementById(
+      `comments-toggle-count-${postIndex}`,
+    );
+
+    if (commentsSection) {
+      commentsSection.dataset.count = String(Number(count) || 0);
+    }
+
+    if (commentsToggleCount) {
+      commentsToggleCount.textContent = `(${Number(count) || 0})`;
     }
   }
 }
@@ -273,18 +569,39 @@ async function addComment(postId, input, container, postIndex) {
   try {
     const response = await fetch(`/api/posts/${postId}/comment`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: await getJsonHeaders(),
       body: JSON.stringify({ text: text }),
     });
 
     const data = await response.json();
 
     if (response.ok) {
+      invalidatePostViews();
+      const commentsSection = container.closest(".comments-section");
+      const commentsBody = document.getElementById(
+        `comments-body-${postIndex}`,
+      );
+      const commentsToggleBtn = document.getElementById(
+        `comments-toggle-btn-${postIndex}`,
+      );
+
+      if (commentsSection) {
+        commentsSection.dataset.loaded = "true";
+      }
+
+      if (commentsBody) {
+        commentsBody.classList.remove("comments-body-hidden");
+      }
+
+      if (commentsToggleBtn) {
+        updateCommentsToggleState(commentsToggleBtn, true);
+      }
+
       await loadComments(postId, container, postIndex);
       input.value = "";
     } else {
       if (response.status === 401) {
-        showErrorAlert("Please login to add comments");
+        await handleUnauthorizedResponse("Please login to add comments");
       } else {
         showErrorAlert(data.error || "Failed to add comment");
       }
@@ -336,8 +653,7 @@ function createCommentElement(comment, commentIndex, postId, postIndex) {
 async function deleteMyComment(postId, commentId, postIndex) {
   const session = getUserSession();
   if (!session || !session.user_id || !session.logged_in) {
-    showErrorAlert("Please login to delete comments");
-    return;
+    return showErrorAlert("Please login to delete comments");
   }
 
   const confirmed = await showConfirmPopup(
@@ -352,17 +668,23 @@ async function deleteMyComment(postId, commentId, postIndex) {
   try {
     const response = await fetch(`/api/posts/${postId}/comments/${commentId}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: await getJsonHeaders(),
     });
 
     const data = await response.json();
 
     if (response.ok) {
+      invalidatePostViews();
       const container = document.getElementById(
         `comments-container-${postIndex}`,
       );
       await loadComments(postId, container, postIndex);
     } else {
+      if (response.status === 401) {
+        await handleUnauthorizedResponse("Please login to delete comments");
+        return;
+      }
+
       if (response.status === 403) {
         showErrorAlert("You can only delete your own comments");
       } else {
@@ -376,13 +698,21 @@ async function deleteMyComment(postId, commentId, postIndex) {
 }
 
 // Generate post HTML
-function generatepostHTML(user_post, index) {
-  console.log("Generating post HTML for:", user_post);
-  const postComponent = document.getElementById("post-component");
-  if (!postComponent) return;
+function generatepostHTML(user_post, index, options = {}) {
+  const targetId = options.targetId || "post-component";
+  const storeInObjJson = options.storeInObjJson !== false;
+  const showDeleteButton = options.showDeleteButton === true;
+  const compact = options.compact === true;
+  const postComponent = document.getElementById(targetId);
+  if (!postComponent) {
+    return;
+  }
 
   const session = getUserSession();
-  const isOwner = session && session.logged_in && session.username;
+  const isOwner =
+    session &&
+    session.logged_in &&
+    Number(session.user_id) === Number(user_post.user_id);
 
   const ts = Date.now();
   let commentAvatar = `assets/profile/default-avatar.png`;
@@ -390,33 +720,56 @@ function generatepostHTML(user_post, index) {
     commentAvatar = `/api/avatar/${session.username}?ts=${ts}`;
   }
 
-  const postHTML = `
-    <div class="post" data-user-id="${user_post.id}">
-      <div class="post-header">
-        <img id="post-avatar-${index}" 
-            src="${user_post.avatar}" 
-            alt="Photo" 
-            class="post-avatar"
-            onerror="this.onerror=null; this.src='assets/profile/default-avatar.png'">
-        <h2 id="post-alias-${index}" class="post-alias">${user_post.alias}</h2>
-      </div>
-        <div>
-            <img
-            src="${user_post.avatar}" 
-            alt="Photo" 
-            class="post-photo">
+  const deleteButtonHTML =
+    showDeleteButton && isOwner && user_post.image_id
+      ? `
+        <button
+          id="post-delete-btn-${index}"
+          class="delete-btn post-delete-btn"
+          aria-label="Delete photo"
+        >
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      `
+      : "";
+
+  const formattedDate = user_post.created_at
+    ? new Date(user_post.created_at).toLocaleDateString()
+    : "";
+  const safeCaption = escapeHTML(user_post.caption || "");
+
+  const compactMetaHTML = compact
+    ? `
+      <div class="post-compact-meta">
+        <div class="post-compact-topline">
+          ${
+            formattedDate
+              ? `<p class="post-compact-date">${formattedDate}</p>`
+              : ""
+          }
+          <div class="post-compact-likes">
+            <i class="fa-solid fa-heart"></i>
+            <span>${user_post.likes_count || 0}</span>
+          </div>
         </div>
-      <div class="like-section">
-        <btn id="like-btn-${index}" class="like-btn">
-          <i class="fa-regular fa-heart"></i>
-          <span>Like</span>
-        </btn>
-        <span id="like-count-${index}" class="like-count">0</span>
+        ${
+          safeCaption
+            ? `<p class="post-compact-caption">${safeCaption}</p>`
+            : ""
+        }
       </div>
+    `
+    : "";
 
-      <div class="comments-section">
-        <h4 class="comments-title">Comments (0)</h4>
+  const initialCommentsCount = Number(user_post.comments_count) || 0;
 
+  const commentsSectionHTML = `
+      <div
+        id="comments-section-${index}"
+        class="comments-section comments-section-collapsible ${compact ? "comments-section-compact" : ""}"
+        data-loaded="false"
+        data-count="${initialCommentsCount}"
+      >
         <div class="add-comment">
             <div class="add-comment-container">
             <img src="${commentAvatar}" alt="Avatar" class="add-comment-avatar"
@@ -432,14 +785,61 @@ function generatepostHTML(user_post, index) {
                 </div>
             </div>
         </div>
+        <button
+          id="comments-toggle-btn-${index}"
+          class="comments-toggle-btn"
+          type="button"
+          aria-expanded="false"
+        >
+          <span class="comments-toggle-label">Comments</span>
+          <span id="comments-toggle-count-${index}" class="comments-toggle-count">(${initialCommentsCount})</span>
+          <span class="comments-toggle-action">Open</span>
+          <i class="fa-solid fa-chevron-down comments-toggle-icon"></i>
+        </button>
 
+        <div id="comments-body-${index}" class="comments-body comments-body-hidden">
         <div id="comments-container-${index}" class="comments-list">
         </div>
+        </div>
       </div>
+    `;
+
+  const fullMetaHTML = compact
+    ? ""
+    : `
+      <div class="like-section">
+        <btn id="like-btn-${index}" class="like-btn">
+          <i class="fa-regular fa-heart"></i>
+          <span>Like</span>
+        </btn>
+        <span id="like-count-${index}" class="like-count">0</span>
+      </div>
+    `;
+
+  const postHTML = `
+    <div class="post ${compact ? "post-compact" : ""}" data-user-id="${user_post.id}" data-image-id="${user_post.image_id || ""}" data-post-index="${index}" data-compact="${compact ? "true" : "false"}">
+      ${deleteButtonHTML}
+      <div class="post-header">
+        <img id="post-avatar-${index}" 
+            src="${user_post.avatar}" 
+            alt="Photo" 
+            class="post-avatar"
+            onerror="this.onerror=null; this.src='assets/profile/default-avatar.png'">
+        <h2 id="post-alias-${index}" class="post-alias"></h2>
+      </div>
+        <div class="post-photo-wrapper">
+            <img
+            src="${user_post.avatar}" 
+            alt="Photo" 
+            class="post-photo">
+        </div>
+      ${compactMetaHTML}
+      ${fullMetaHTML}
+      ${commentsSectionHTML}
     </div>
   `;
 
-  if (typeof window.objJson !== "undefined") {
+  if (storeInObjJson && typeof window.objJson !== "undefined") {
     window.objJson.push({
       adName: user_post.alias,
       postHTML: postHTML,
@@ -448,11 +848,10 @@ function generatepostHTML(user_post, index) {
     });
   }
 
-  postComponent.innerHTML += postHTML;
+  postComponent.insertAdjacentHTML("beforeend", postHTML);
 
-  setTimeout(() => {
-    updateUserPost(user_post, index);
-  }, 10);
+  updateUserPost(user_post, index);
+  initializeCommentsCount(index, initialCommentsCount);
 }
 
 // Set avatar src with default
@@ -465,42 +864,65 @@ function setAvatarSrc(img, src) {
   };
 }
 
+function buildAvatarUrl(username, version) {
+  if (!username) {
+    return "assets/profile/default-avatar.png";
+  }
+
+  if (!window._avatarCacheVersion) {
+    window._avatarCacheVersion = Date.now();
+  }
+
+  const cacheVersion = version || window._avatarCacheVersion;
+  return `/api/avatar/${encodeURIComponent(username)}?ts=${cacheVersion}`;
+}
+
 // Refresh avatar of logged-in user
-function refreshAllUserAvatars(username) {
+function refreshAllUserAvatars(username, previousUsername = null) {
   if (!username) {
     return;
   }
 
-  const ts = Date.now();
-  const newAvatarUrl = `/api/avatar/${username}?ts=${ts}`;
+  const avatarUrl = buildAvatarUrl(username, Date.now());
+  const matchingUsernames = new Set(
+    [username, previousUsername].filter(Boolean),
+  );
 
   const headerAvatar = document.getElementById("user-avatar-img");
   if (headerAvatar) {
-    setAvatarSrc(headerAvatar, newAvatarUrl);
+    setAvatarSrc(headerAvatar, avatarUrl);
   }
 
   const profileAvatar = document.getElementById("profile-avatar-preview");
   if (profileAvatar) {
-    setAvatarSrc(profileAvatar, newAvatarUrl);
+    setAvatarSrc(profileAvatar, avatarUrl);
   }
 
   // Post avatars that belong to this user
   document.querySelectorAll("[id^='post-avatar-']").forEach((img) => {
-    if (img.src && img.src.includes(`/api/avatar/${username}`)) {
-      setAvatarSrc(img, newAvatarUrl);
+    const postHeader = img.closest(".post-header");
+    const aliasElement = postHeader?.querySelector(".post-alias");
+    const aliasRaw =
+      aliasElement?.dataset?.rawAlias || aliasElement?.textContent?.trim();
+    if (aliasElement && aliasRaw && matchingUsernames.has(aliasRaw)) {
+      setAvatarSrc(img, avatarUrl);
     }
   });
 
   // Add comment avatars that belong to this user
   document.querySelectorAll(".add-comment-avatar").forEach((img) => {
-    setAvatarSrc(img, newAvatarUrl);
+    setAvatarSrc(img, avatarUrl);
   });
 
   document.querySelectorAll(".comment-avatar-wrapper").forEach((wrapper) => {
     const authorEl = wrapper.querySelector(".comment-author");
     const avatarImg = wrapper.querySelector(".post-avatar");
-    if (authorEl && avatarImg && authorEl.textContent.trim() === username) {
-      setAvatarSrc(avatarImg, newAvatarUrl);
+    if (
+      authorEl &&
+      avatarImg &&
+      matchingUsernames.has(authorEl.textContent.trim())
+    ) {
+      setAvatarSrc(avatarImg, avatarUrl);
     }
   });
 }
@@ -521,8 +943,18 @@ function refreshAllUsername(oldUsername, newUsername) {
 
   // Post aliases that belong to this user
   document.querySelectorAll(`[id^='post-alias-']`).forEach((el) => {
-    if (el.textContent.trim() === oldUsername) {
-      el.textContent = newUsername;
+    const rawAlias = el.dataset.rawAlias || el.textContent.trim();
+    if (rawAlias === oldUsername) {
+      const session = getUserSession();
+      const isCurrentUser =
+        session &&
+        session.logged_in &&
+        Number(session.user_id) === Number(el.dataset.ownerId);
+
+      el.dataset.rawAlias = newUsername;
+      el.innerHTML = isCurrentUser
+        ? `${newUsername} <i class="fa-solid fa-child-reaching" style="color: #486EE3;"></i>`
+        : newUsername;
     }
   });
 
