@@ -26,7 +26,7 @@ function showAlert(type, message) {
 
   // Create alert content
   const alertDiv = document.createElement("div");
-  alertDiv.className = `alert ${type}`;
+  alertDiv.className = `alert is-${type}`;
 
   const icon = document.createElement("i");
   icon.className =
@@ -58,7 +58,7 @@ function removeAlert(alertId) {
   const alertBox = document.getElementById(alertId);
   if (!alertBox) return;
 
-  alertBox.classList.add("removing");
+  alertBox.classList.add("is-removing");
 
   setTimeout(() => {
     if (alertBox.parentNode) {

@@ -69,11 +69,11 @@
                         <i class="fa-solid fa-globe" ></i>
                         <span class="nav-label">Gallery</span>
                     </li>
-                    <li class="nav-content disabled" id="camera-nav" style="opacity: 0.5; cursor: not-allowed;">
+                    <li class="nav-content is-disabled" id="camera-nav" style="opacity: 0.5; cursor: not-allowed;">
                         <i class="fa-solid fa-camera"></i>
                         <span class="nav-label">Camera</span>
                     </li>
-                    <li class="nav-content disabled" id="my-posts-nav" style="opacity: 0.5; cursor: not-allowed;">
+                    <li class="nav-content is-disabled" id="my-posts-nav" style="opacity: 0.5; cursor: not-allowed;">
                         <i class="fa-solid fa-image"></i>
                         <span class="nav-label">My photos</span>
                     </li>
@@ -81,13 +81,10 @@
             </nav>
             <div class="user-auth"> 
                 <div class="user-profile" id="user-profile" style="display: none;">
-                    <div id="my-notification-nav" style="cursor: pointer;">
-                        <i class="fa-solid fa-bell" style="margin: 0.5rem;"></i>
-                    </div>
                     <div class="user-avatar">
                         <img id="user-avatar-img" src="assets/profile/default-avatar.png" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
                     </div>
-                    <div class="user-profile--dropdown"> 
+                    <div class="user-profile-dropdown"> 
                         <a href="#" onclick="event.preventDefault(); navigateTo('profile', true);">My account</a>
                         <a href="#" onclick="logout()">Logout</a>   
                     </div>
@@ -131,7 +128,7 @@
                             <p>Sign in to continue to your account</p>
                         </div>
                         <div class="separator">
-                            <button class="login-component-button active" onclick="showLogin()">Login</button>
+                            <button class="login-component-button is-active" onclick="showLogin()">Login</button>
                             <button class="register-component-button" onclick="showRegister()">Register</button>
                         </div>
                         <div class="login-component-form">
@@ -152,7 +149,7 @@
                         </div>
                         <div class="separator">
                             <button class="login-component-button" onclick="showLogin()">Login</button>
-                            <button class="register-component-button active" onclick="showRegister()">Register</button>
+                            <button class="register-component-button is-active" onclick="showRegister()">Register</button>
                         </div>
                         <div class="login-component-form">
                             <!-- Avatar upload (optional) -->
@@ -208,7 +205,7 @@
                 <div style="display: flex; flex:1; flex-direction: column; align-items: center; gap: 20px">
                     <!-- Toggle buttons Camera / Upload -->
                     <div class="separator">
-                        <button class="camera-toggle-btn active" onclick="switchToCamera()">
+                        <button class="camera-toggle-btn is-active" onclick="switchToCamera()">
                             <i class="fa-solid fa-camera"></i> Take a photo
                         </button>
                         <button class="upload-toggle-btn" onclick="switchToUpload()">
@@ -219,11 +216,13 @@
                     <!-- Camera mode -->
                     <div id="camera-mode" class="camera-preview">
                         <h3>Take a photo</h3>
-                        <video id="video" autoplay playsinline muted>Video stream not available.</video>
-                        <img id="camera-effect"></img>
-                        <button id="start-btn">
-                            <i class="fa-solid fa-camera"></i>
-                        </button>
+                        <div class="video-wrapper">
+                            <video id="video" autoplay playsinline muted>Video stream not available.</video>
+                            <img id="camera-effect"></img>
+                            <button id="start-btn">
+                                <i class="fa-solid fa-camera"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Upload mode -->
@@ -240,8 +239,8 @@
                                 <img id="upload-effect-preview" />
                             </div>
                         </div>
-                        <button id="upload-save-btn" class="upload-save-btn" disabled>
-                            <i class="fa-solid fa-floppy-disk"></i> Save
+                        <button id="add-to-draft" class="add-to-draft" disabled>
+                            <i class="fa-solid fa-images"></i> Add to drafts
                         </button>
                     </div>
 
@@ -256,8 +255,18 @@
 
                 <!-- Display captured photo -->
                 <div class="photo-result">
-                    <h3>Captured photo: </h3>
-                    <img id="photo" class="camera-result" alt="The capture will appear here." />
+                    <h3>Selected draft</h3>
+                    <p class="draft-gallery-help">Photos taken and uploaded photos with effects appear here before posting.</p>
+                    <img id="photo" class="camera-result" alt="The capture will appear here." style="display: none;" />
+                    <div id="capture-draft-gallery" class="capture-draft-gallery" style="display: none;"></div>
+                    <div id="capture-confirm-actions" class="capture-confirm-actions" style="display: none;">
+                        <button id="retake-btn" class="btn-retake-photo">
+                            <i class="fa-solid fa-trash"></i> Discard selected
+                        </button>
+                        <button id="confirm-save-btn" class="btn-save-photo">
+                            <i class="fa-solid fa-floppy-disk"></i> Save selected
+                        </button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -265,19 +274,17 @@
 
         <section id="my-posts" style="display: none;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="margin: 0;">My photos</h2>
-                <button class="submit-btn" onclick="showUploadPhotoModal()" style="margin: 0; padding: 10px 20px;">
-                    <i class="fa-solid fa-upload" style="margin-right: 8px;"></i>
-                    Upload Photo
-                </button>
             </div>
-            <div class="my-photos-gallery" id="my-photos-gallery"></div>
+            <div class="post-component" id="my-photos-gallery"></div>
+            <nav class="pagination" id="myposts-pagination" style="display: none;">
+                <ul></ul>
+            </nav>
         </section>
 
 
         <section id="profile" style="display: none;">
             <div class="profile-container" style="max-width: 600px; margin: 0 auto; padding: 20px;">
-                <form id="profile-form" style="display: flex; flex-direction: column; gap: var(--gap-md);;">
+                <form id="profile-form" style="display: flex; flex-direction: column; gap: var(--gap-md); margin-bottom:50px ;">
                     <!-- Profile avatar -->
                     <div class="avatar-upload-section">
                         <div class="avatar-preview-wrapper avatar-preview-large" onclick="document.getElementById('profile-avatar-input').click()">
@@ -296,6 +303,32 @@
                     <div class="input-with-icon">
                         <i class="fa-solid fa-envelope input-icon"></i>
                         <input type="email" id="profile-email" class="input-info" placeholder="Email" />
+                    </div>
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" id="profile-notification-enabled" />
+                        <span>Receive email notifications for new comments</span>
+                    </label>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <span style="font-weight: 500;">Gallery mode</span>
+                        <div style="display: flex; gap: 8px; width: 100%;">
+                            <button type="button" id="profile-gallery-mode-pagination" class="btn-submit" style="flex: 1; padding: 10px; background: #e5e7eb; color: #1f2937; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                                Pagination
+                            </button>
+                            <button type="button" id="profile-gallery-mode-infinite" class="btn-submit" style="flex: 1; padding: 10px; background: #5784BA; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                                Infinite scroll
+                            </button>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <span style="font-weight: 500;">My posts mode</span>
+                        <div style="display: flex; gap: 8px; width: 100%;">
+                            <button type="button" id="profile-myposts-mode-pagination" class="btn-submit" style="flex: 1; padding: 10px; background: #e5e7eb; color: #1f2937; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                                Pagination
+                            </button>
+                            <button type="button" id="profile-myposts-mode-infinite" class="btn-submit" style="flex: 1; padding: 10px; background: #5784BA; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                                Infinite scroll
+                            </button>
+                        </div>
                     </div>
                     <button type="submit" class="btn-submit" style="padding: 12px; background: #5784BA; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
                         Update Profile

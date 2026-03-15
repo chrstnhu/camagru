@@ -20,26 +20,35 @@ class UserController extends BaseController {
     public function getStatus() {
         $response = [
             'logged_in' => isset($_SESSION['user_id']),
-            'user' => null
+            'user' => null,
+            'csrf_token' => $this->getCsrfToken()
         ];
         
         if (isset($_SESSION['user_id'])) {
+            $currentUser = $this->user->getById($_SESSION['user_id']);
             $response['user'] = [
                 'id' => $_SESSION['user_id'],
                 'username' => $_SESSION['username'] ?? null,
-                'email' => $_SESSION['email'] ?? null
+                'email' => $_SESSION['email'] ?? null,
+                'notification_enabled' => $currentUser['notification_enabled'] ?? 1
             ];
         }
         
         echo json_encode($response);
+        exit;
     }
 
     // POST /api/auth/login
     public function login() {
+        $this->requireCsrfProtection();
         $input = $this->getJsonInput();
         
         if (!isset($input['email']) || !isset($input['password'])) {
             $this->sendError(400, 'Email and password required');
+        }
+
+        if (!$this->isValidEmail($input['email'])) {
+            $this->sendError(400, 'Invalid email format');
         }
         
         if (!$this->user->emailExists($input['email'])) {
@@ -54,6 +63,8 @@ class UserController extends BaseController {
             if (!$userLogin['email_verified']) {
                 $this->sendError(403, 'Please verify your email address before logging in. Check your inbox for the verification link.');
             }
+
+            session_regenerate_id(true);
             
             // Save user info in session
             $_SESSION['user_id'] = $userLogin['id'];
@@ -65,7 +76,8 @@ class UserController extends BaseController {
                     'id' => $userLogin['id'],
                     'username' => $userLogin['username'],
                     'email' => $userLogin['email'],
-                    'email_verified' => $userLogin['email_verified']
+                    'email_verified' => $userLogin['email_verified'],
+                    'notification_enabled' => $userLogin['notification_enabled']
                 ]
             ]);
         } else {
@@ -76,6 +88,7 @@ class UserController extends BaseController {
 
     // POST /api/auth/register
     public function register() {
+        $this->requireCsrfProtection();
         $input = $this->getJsonInput();
         
         // Validation
@@ -90,6 +103,10 @@ class UserController extends BaseController {
             $this->sendError(409, 'Email already exists');
         }
 
+        if (!$this->isValidEmail($input['email'])) {
+            $this->sendError(400, 'Invalid email format');
+        }
+
         // Validation of username
         if (!preg_match('/^[a-zA-Z0-9_-]{3,20}$/', $input['username'])) {
             $this->sendError(400, 'Username must be 3-20 characters and contain only letters, numbers, underscores or hyphens');
@@ -100,8 +117,8 @@ class UserController extends BaseController {
         }
 
         // Validation of password
-        if (strlen($input['password']) < 8) {
-            $this->sendError(400, 'Password must be at least 8 characters long');
+        if (!$this->isStrongPassword($input['password'])) {
+            $this->sendError(400, 'Password must be at least 8 characters and contain uppercase, lowercase and a number');
         }
         
         // Create the user
@@ -109,34 +126,18 @@ class UserController extends BaseController {
         
         if ($result) {
             // Handle avatar upload if provided
-            error_log("📸 Register - avatar_data present: " . (isset($input['avatar_data']) ? 'YES (length: ' . strlen($input['avatar_data']) . ')' : 'NO'));
             if (isset($input['avatar_data']) && !empty($input['avatar_data'])) {
                 $avatarDir = __DIR__ . '/../uploads/avatars';
-                error_log("📸 Avatar dir: " . $avatarDir . " - exists: " . (is_dir($avatarDir) ? 'YES' : 'NO'));
                 if (!is_dir($avatarDir)) {
-                    $mkdirResult = mkdir($avatarDir, 0777, true);
-                    error_log("📸 mkdir result: " . ($mkdirResult ? 'OK' : 'FAILED'));
+                    mkdir($avatarDir, 0777, true);
                 }
                 $avatarPath = $avatarDir . '/' . $input['username'] . '.png';
-                $avatarData = $input['avatar_data'];
-                
-                // Extract base64 data and save
-                if (preg_match('/^data:image\/(\w+);base64,/', $avatarData, $type)) {
-                    error_log("📸 Image type detected: " . $type[1]);
-                    $avatarData = substr($avatarData, strpos($avatarData, ',') + 1);
-                    $decoded = base64_decode($avatarData);
-                    if ($decoded !== false) {
-                        $writeResult = file_put_contents($avatarPath, $decoded);
-                        error_log("📸 Avatar saved to: " . $avatarPath . " - bytes: " . $writeResult);
-                        $dbAvatarPath = '/api/avatar/' . $input['username'];
-                        $this->user->updateAvatar($result['user_id'], $dbAvatarPath);
-                        error_log("📸 DB updated with avatar path: " . $dbAvatarPath . " for user_id: " . $result['user_id']);
-                    } else {
-                        error_log("📸 ERROR: base64_decode failed");
-                    }
-                } else {
-                    error_log("📸 ERROR: avatar_data does not match base64 image pattern. First 50 chars: " . substr($input['avatar_data'], 0, 50));
-                }
+
+                $decodedAvatar = $this->decodeAndValidateImageData($input['avatar_data'], 5 * 1024 * 1024);
+                $this->saveAvatarAsPng($decodedAvatar, $avatarPath);
+
+                $dbAvatarPath = '/api/avatar/' . $input['username'];
+                $this->user->updateAvatar($result['user_id'], $dbAvatarPath);
             } else {
                 // No avatar provided: copy default avatar for this user
                 $avatarDir = __DIR__ . '/../uploads/avatars';
@@ -208,10 +209,15 @@ class UserController extends BaseController {
     
     // POST /api/auth/forgot-password
     public function forgotPassword() {
+        $this->requireCsrfProtection();
         $input = $this->getJsonInput();
         
         if (!isset($input['email']) || empty($input['email'])) {
             $this->sendError(400, 'Email required');
+        }
+
+        if (!$this->isValidEmail($input['email'])) {
+            $this->sendError(400, 'Invalid email format');
         }
         
         $user = $this->user->getByEmail($input['email']);
@@ -251,6 +257,7 @@ class UserController extends BaseController {
     
     // POST /api/auth/reset-password
     public function resetPassword() {
+        $this->requireCsrfProtection();
         $input = $this->getJsonInput();
         
         if (!isset($input['token']) || !isset($input['password'])) {
@@ -258,8 +265,8 @@ class UserController extends BaseController {
         }
         
         // Validation of password complexity
-        if (strlen($input['password']) < 8) {
-            $this->sendError(400, 'Password must be at least 8 characters long');
+        if (!$this->isStrongPassword($input['password'])) {
+            $this->sendError(400, 'Password must be at least 8 characters and contain uppercase, lowercase and a number');
         }
 
         // Attempt to reset the password using the provided token
@@ -294,6 +301,15 @@ class UserController extends BaseController {
 
     // POST /api/auth/logout
     public function logout() {
+        $this->requireCsrfProtection();
+
+        $_SESSION = [];
+
+        if (ini_get('session.use_cookies')) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'] ?? '', $params['secure'], $params['httponly']);
+        }
+
         session_destroy();
         $this->sendSuccess('Logged out successfully');
     }
@@ -301,6 +317,7 @@ class UserController extends BaseController {
     // POST /api/user/avatar
     public function uploadAvatar() {
         $this->checkUserAuth('upload avatar');
+        $this->requireCsrfProtection();
         
         $input = $this->getJsonInput();
         
@@ -318,34 +335,15 @@ class UserController extends BaseController {
             mkdir($avatarDir, 0777, true);
         }
         $avatarPath = $avatarDir . '/' . $username . '.png';
+
+        $decodedAvatar = $this->decodeAndValidateImageData($avatarData, 5 * 1024 * 1024);
+        $this->saveAvatarAsPng($decodedAvatar, $avatarPath);
+
+        // Update database with avatar path
+        $dbAvatarPath = '/api/avatar/' . $username;
+        $this->user->updateAvatar($userId, $dbAvatarPath);
         
-        // Extract base64 data and save
-        if (preg_match('/^data:image\/(\w+);base64,/', $avatarData, $type)) {
-            $allowedTypes = ['png', 'jpeg', 'jpg'];
-
-            if (!in_array($type[1], $allowedTypes)) {
-                $this->sendError(400, 'Invalid image type');
-            }
-
-            $avatarData = substr($avatarData, strpos($avatarData, ',') + 1);
-            $avatarData = base64_decode($avatarData);
-            
-            if ($avatarData === false) {
-                $this->sendError(400, 'Invalid image data');
-            }
-            
-            if (file_put_contents($avatarPath, $avatarData) === false) {
-                $this->sendError(500, 'Failed to save avatar');
-            }
-            
-            // Update database with avatar path
-            $dbAvatarPath = '/api/avatar/' . $username;
-            $this->user->updateAvatar($userId, $dbAvatarPath);
-            
-            $this->sendSuccess('Avatar uploaded successfully', ['avatar_path' => $dbAvatarPath]);
-        } else {
-            $this->sendError(400, 'Invalid image format');
-        }
+        $this->sendSuccess('Avatar uploaded successfully', ['avatar_path' => $dbAvatarPath]);
     }
     
     // GET /api/avatar/{username}
@@ -385,24 +383,37 @@ class UserController extends BaseController {
     // PUT /api/user/profile
     public function updateProfile() {
         $this->checkUserAuth('update profile');
+        $this->requireCsrfProtection();
         
         $input = $this->getJsonInput();
         $userId = $_SESSION['user_id'];
+
+        if (array_key_exists('notification_enabled', $input)) {
+            $input['notification_enabled'] = (bool)$input['notification_enabled'];
+        }
         
         // Check if at least one field is provided
-        if (empty($input['username']) && empty($input['email'])) {
-            $this->sendError(400, 'At least one field (username, email) required');
+        if (
+            empty($input['username']) &&
+            empty($input['email']) &&
+            !array_key_exists('notification_enabled', $input)
+        ) {
+            $this->sendError(400, 'At least one field (username, email, notification preference) required');
         }
         
         // Validation of password
         if (isset($input['password']) && !empty($input['password'])) {
-            if (strlen($input['password']) < 8) {
-                $this->sendError(400, 'Password must be at least 8 characters long');
+            if (!$this->isStrongPassword($input['password'])) {
+                $this->sendError(400, 'Password must be at least 8 characters and contain uppercase, lowercase and a number');
             }
         }
         
         // Check if the new email is already taken by another user
         if (isset($input['email']) && !empty($input['email'])) {
+            if (!$this->isValidEmail($input['email'])) {
+                $this->sendError(400, 'Invalid email format');
+            }
+
             $existingUser = $this->user->getByEmail($input['email']);
             if ($existingUser && $existingUser['id'] != $userId) {
                 $this->sendError(409, 'Email already in use');
@@ -411,6 +422,10 @@ class UserController extends BaseController {
         
         // Check if the new username is already taken by another user
         if (isset($input['username']) && !empty($input['username'])) {
+            if (!preg_match('/^[a-zA-Z0-9_-]{3,20}$/', $input['username'])) {
+                $this->sendError(400, 'Username must be 3-20 characters and contain only letters, numbers, underscores or hyphens');
+            }
+
             if ($this->user->usernameExists($input['username'])) {
                 $currentUser = $this->user->getById($userId);
                 if ($currentUser['username'] != $input['username']) {
@@ -434,7 +449,8 @@ class UserController extends BaseController {
                 'user' => [
                     'id' => $userId,
                     'username' => $currentUser['username'],
-                    'email' => $currentUser['email']
+                    'email' => $currentUser['email'],
+                    'notification_enabled' => (bool) ($currentUser['notification_enabled'] ?? 1)
                 ]
             ]);
         } else {
@@ -445,6 +461,7 @@ class UserController extends BaseController {
     // POST /api/user/profile/password
     public function changePassword() {
         $this->checkUserAuth('change password');
+        $this->requireCsrfProtection();
         
         $input = $this->getJsonInput();
         $userId = $_SESSION['user_id'];
@@ -469,8 +486,8 @@ class UserController extends BaseController {
         }
         
         // Validate new password complexity
-        if (strlen($input['new_password']) < 8) {
-            $this->sendError(400, 'New password must be at least 8 characters long');
+        if (!$this->isStrongPassword($input['new_password'])) {
+            $this->sendError(400, 'New password must be at least 8 characters and contain uppercase, lowercase and a number');
         }
         
         // Update password in database
@@ -483,5 +500,55 @@ class UserController extends BaseController {
         } else {
             $this->sendError(500, 'Failed to update password');
         }
+    }
+
+    private function isValidEmail($email) {
+        return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+    }
+
+    private function isStrongPassword($password) {
+        return is_string($password)
+            && strlen($password) >= 8
+            && preg_match('/[A-Z]/', $password)
+            && preg_match('/[a-z]/', $password)
+            && preg_match('/[0-9]/', $password);
+    }
+
+    private function decodeAndValidateImageData($imageData, $maxBytes) {
+        if (!is_string($imageData) || !preg_match('/^data:(image\/(png|jpeg));base64,/', $imageData)) {
+            $this->sendError(400, 'Invalid image format');
+        }
+
+        $encoded = substr($imageData, strpos($imageData, ',') + 1);
+        $binary = base64_decode($encoded, true);
+
+        if ($binary === false) {
+            $this->sendError(400, 'Invalid image data');
+        }
+
+        if (strlen($binary) > $maxBytes) {
+            $this->sendError(400, 'Image size exceeds the allowed limit');
+        }
+
+        $imageInfo = @getimagesizefromstring($binary);
+        if ($imageInfo === false || !in_array($imageInfo['mime'], ['image/png', 'image/jpeg'], true)) {
+            $this->sendError(400, 'Unsupported image type');
+        }
+
+        return $binary;
+    }
+
+    private function saveAvatarAsPng($binary, $targetPath) {
+        $image = @imagecreatefromstring($binary);
+        if ($image === false) {
+            $this->sendError(400, 'Invalid image content');
+        }
+
+        if (!imagepng($image, $targetPath)) {
+            imagedestroy($image);
+            $this->sendError(500, 'Failed to save avatar');
+        }
+
+        imagedestroy($image);
     }
 }

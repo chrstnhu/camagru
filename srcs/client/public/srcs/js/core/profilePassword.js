@@ -43,9 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const response = await fetch("/api/user/profile/password", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: await getJsonHeaders(),
           body: JSON.stringify({
             current_password: currentPassword,
             new_password: password,

@@ -2,14 +2,26 @@
 // Server Entry Point: Handle all incoming requests and route them to the appropriate controllers
 
 // Session configuration for 1 hour lifetime
-ini_set('session.gc_maxlifetime', 3600); 
-session_set_cookie_params(3600);
+ini_set('session.gc_maxlifetime', 3600);
+session_set_cookie_params([
+    'lifetime' => 3600,
+    'path' => '/',
+    'secure' => true,
+    'httponly' => true,
+    'samesite' => 'Lax'
+]);
 session_start();
 
 // CORS headers - allow requests from any origin (adjust in production)
-header('Access-Control-Allow-Origin: *');  // Allow all request (change to specific domain in production)
+if (!empty($_SERVER['HTTP_ORIGIN'])) {
+    $allowedOrigin = $_ENV['FRONTEND_ORIGIN'] ?? 'https://localhost:8080';
+    if ($_SERVER['HTTP_ORIGIN'] === $allowedOrigin) {
+        header('Access-Control-Allow-Origin: ' . $allowedOrigin);
+        header('Vary: Origin');
+    }
+}
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');  // Allow these HTTP methods
-header('Access-Control-Allow-Headers: Content-Type');  // Allow Content-Type header for JSON requests
+header('Access-Control-Allow-Headers: Content-Type, X-CSRF-Token, Authorization');  // Allow JSON, CSRF and auth headers
 
 // Handle preflight OPTIONS request for CORS
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {

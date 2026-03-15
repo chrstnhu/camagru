@@ -27,12 +27,32 @@ class PostController extends BaseController {
         try {
             $limit = $_GET['limit'] ?? 10;
             $page = $_GET['page'] ?? 1;
+
+            if (!ctype_digit((string) $limit) || (int) $limit < 1 || (int) $limit > 100) {
+                $this->sendError(400, 'Invalid limit');
+            }
+
+            if (!ctype_digit((string) $page) || (int) $page < 1) {
+                $this->sendError(400, 'Invalid page');
+            }
+
+            $limit = (int) $limit;
+            $page = (int) $page;
             $offset = ($page - 1) * $limit;
+            $authorId = null;
+
+            if (isset($_GET['author_id']) && $_GET['author_id'] !== '') {
+                if (!ctype_digit((string) $_GET['author_id'])) {
+                    $this->sendError(400, 'Invalid author ID');
+                }
+
+                $authorId = (int) $_GET['author_id'];
+            }
 
             // Retrieve posts with like status if user is logged in
             $userId = $_SESSION['user_id'] ?? null;
-            $posts = $this->post->getAllPosts($limit, $offset, $userId);
-            $total = $this->post->getTotalCount();
+            $posts = $this->post->getAllPosts($limit, $offset, $userId, $authorId);
+            $total = $this->post->getTotalCount($authorId);
 
             // Add default avatar
             foreach ($posts as &$post) {
@@ -60,6 +80,7 @@ class PostController extends BaseController {
     // POST /api/posts/{postId}/like
     public function toggleLike() {
         $this->checkUserAuth('like posts');
+        $this->requireCsrfProtection();
 
         // Retrieve the post ID from the URL
         $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -120,6 +141,7 @@ class PostController extends BaseController {
     // POST /api/posts/{postId}/comment
     public function userComment() {
         $this->checkUserAuth('comment posts');
+        $this->requireCsrfProtection();
 
         // Retrieve the post ID from the URL
         $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -154,7 +176,11 @@ class PostController extends BaseController {
 
             // Send notification email to post owner (without itself)
             if ($success) {
-                if ($post['user_id'] != $userId && !empty($post['email'])) {
+                if (
+                    $post['user_id'] != $userId &&
+                    !empty($post['email']) &&
+                    !empty($post['notification_enabled'])
+                ) {
                     $this->sendCommentNotification(
                         $post['email'], 
                         $post['alias'], 
@@ -168,23 +194,6 @@ class PostController extends BaseController {
             } else {
                 $this->sendError(500, 'Failed to add comment');
             }
-
-            // Email content
-            $userPost = "SELECT user_id FROM " . $this->table_name . " WHERE id = ?";
-            $to = $input['userPost'];
-            $subject = "Email Verification - Camagru";
-            $message = "Hello " . $input['username'] . ",\n\n";
-            $message .= "Comment your post\n\n";
-            
-            // Send the email
-            $mailSent = mail($to, $subject, $message, $headers);
-
-            if ($mailSent) {
-                error_log("Mail sent to: " . $to);
-            } else {
-                error_log("Failed to send Mail " . $to);
-            }
-            
 
         } catch (Exception $e) {
             $this->sendError(500, 'Database error: ' . $e->getMessage());
@@ -231,6 +240,7 @@ class PostController extends BaseController {
     // DELETE /api/posts/{postId}/comments/{commentId}
     public function deleteComment() {
         $this->checkUserAuth('delete comments');
+        $this->requireCsrfProtection();
 
         // Extract commentId from URL: /api/posts/{postId}/comments/{commentId}
         $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);

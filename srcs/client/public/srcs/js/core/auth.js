@@ -1,11 +1,8 @@
 // Check if user is logged in
 async function checkUserStatus() {
   try {
-    const response = await fetch("/api/user/status");
-    const data = await response.json();
-
-    if (data.logged_in) {
-      showUserAvatar(data.user ? data.user.username : "User");
+    if (typeof refreshServerSession === "function") {
+      await refreshServerSession();
     }
   } catch (error) {
     console.error("Error checking user status:", error);
@@ -14,27 +11,9 @@ async function checkUserStatus() {
 
 // Show user profile and hide login button
 function showUserAvatar(username) {
-  const userProfile = document.getElementById("user-profile");
-
-  if (userProfile) {
-    userProfile.style.display = "block";
+  if (typeof updateUIAfterLogin === "function") {
+    updateUIAfterLogin({ username: username });
   }
-
-  const myPostsNav = document.getElementById("my-posts-nav");
-  if (myPostsNav) {
-    myPostsNav.onclick = () => navigateTo("my-posts", true);
-  }
-
-  fetch("/api/user/avatar")
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.avatar_url) {
-        document.getElementById("user-avatar").src = data.avatar_url;
-      }
-    })
-    .catch((error) => {
-      console.error("Error fetching avatar:", error);
-    });
 }
 
 // Handle login

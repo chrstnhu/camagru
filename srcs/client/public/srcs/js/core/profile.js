@@ -1,4 +1,62 @@
-// Load current user data when profile page is shown
+const PROFILE_GALLERY_FEED_MODE_STORAGE_KEY = "galleryFeedDisplayMode";
+const PROFILE_MY_POSTS_FEED_MODE_STORAGE_KEY = "myPostsFeedDisplayMode";
+
+function setFeedModeButtons(infiniteBtnId, paginationBtnId, mode) {
+  const infiniteBtn = document.getElementById(infiniteBtnId);
+  const paginationBtn = document.getElementById(paginationBtnId);
+
+  if (!infiniteBtn || !paginationBtn) {
+    return;
+  }
+
+  const isPagination = mode === "pagination";
+  infiniteBtn.style.background = isPagination ? "#e5e7eb" : "#5784BA";
+  infiniteBtn.style.color = isPagination ? "#1f2937" : "white";
+  paginationBtn.style.background = isPagination ? "#5784BA" : "#e5e7eb";
+  paginationBtn.style.color = isPagination ? "white" : "#1f2937";
+}
+
+async function applySectionFeedMode(section, mode) {
+  const normalizedMode = mode === "pagination" ? "pagination" : "infinite";
+
+  if (section === "gallery") {
+    localStorage.setItem(PROFILE_GALLERY_FEED_MODE_STORAGE_KEY, normalizedMode);
+    setFeedModeButtons(
+      "profile-gallery-mode-infinite",
+      "profile-gallery-mode-pagination",
+      normalizedMode,
+    );
+
+    window._galleryNeedsRefresh = true;
+    const gallerySection = document.getElementById("gallery");
+    if (
+      gallerySection &&
+      gallerySection.style.display !== "none" &&
+      typeof window.initializepostsData === "function"
+    ) {
+      await window.initializepostsData();
+    }
+    return;
+  }
+
+  localStorage.setItem(PROFILE_MY_POSTS_FEED_MODE_STORAGE_KEY, normalizedMode);
+  setFeedModeButtons(
+    "profile-myposts-mode-infinite",
+    "profile-myposts-mode-pagination",
+    normalizedMode,
+  );
+
+  window._myPostsNeedsRefresh = true;
+  const myPostsSection = document.getElementById("my-posts");
+  if (
+    myPostsSection &&
+    myPostsSection.style.display !== "none" &&
+    typeof initializeMyPosts === "function"
+  ) {
+    await initializeMyPosts({ force: true });
+  }
+}
+
 function loadUserProfile() {
   fetch("/api/user/status")
     .then((response) => response.json())
@@ -10,11 +68,36 @@ function loadUserProfile() {
         document.getElementById("profile-password").value = "";
         document.getElementById("profile-confirm-password").value = "";
 
+        const notificationCheckbox = document.getElementById(
+          "profile-notification-enabled",
+        );
+        if (notificationCheckbox) {
+          notificationCheckbox.checked = Boolean(
+            data.user.notification_enabled,
+          );
+        }
+
+        setFeedModeButtons(
+          "profile-gallery-mode-infinite",
+          "profile-gallery-mode-pagination",
+          localStorage.getItem(PROFILE_GALLERY_FEED_MODE_STORAGE_KEY) ||
+            "pagination",
+        );
+        setFeedModeButtons(
+          "profile-myposts-mode-infinite",
+          "profile-myposts-mode-pagination",
+          localStorage.getItem(PROFILE_MY_POSTS_FEED_MODE_STORAGE_KEY) ||
+            "pagination",
+        );
+
         // Load avatar
         const avatarPreview = document.getElementById("profile-avatar-preview");
         if (avatarPreview && data.user.username) {
-          const ts = Date.now();
-          avatarPreview.src = `/api/avatar/${data.user.username}?ts=${ts}`;
+          const avatarUrl =
+            typeof buildAvatarUrl === "function"
+              ? buildAvatarUrl(data.user.username, Date.now())
+              : `/api/avatar/${encodeURIComponent(data.user.username)}?ts=${Date.now()}`;
+          avatarPreview.src = avatarUrl;
           avatarPreview.onerror = () => {
             avatarPreview.src = "assets/profile/default-avatar.png";
           };
@@ -29,6 +112,54 @@ function loadUserProfile() {
 // Handle profile form submission
 document.addEventListener("DOMContentLoaded", () => {
   const profileForm = document.getElementById("profile-form");
+  const galleryInfiniteBtn = document.getElementById(
+    "profile-gallery-mode-infinite",
+  );
+  const galleryPaginationBtn = document.getElementById(
+    "profile-gallery-mode-pagination",
+  );
+  const myPostsInfiniteBtn = document.getElementById(
+    "profile-myposts-mode-infinite",
+  );
+  const myPostsPaginationBtn = document.getElementById(
+    "profile-myposts-mode-pagination",
+  );
+
+  setFeedModeButtons(
+    "profile-gallery-mode-infinite",
+    "profile-gallery-mode-pagination",
+    localStorage.getItem(PROFILE_GALLERY_FEED_MODE_STORAGE_KEY) || "pagination",
+  );
+  setFeedModeButtons(
+    "profile-myposts-mode-infinite",
+    "profile-myposts-mode-pagination",
+    localStorage.getItem(PROFILE_MY_POSTS_FEED_MODE_STORAGE_KEY) ||
+      "pagination",
+  );
+
+  if (galleryInfiniteBtn) {
+    galleryInfiniteBtn.addEventListener("click", async () => {
+      await applySectionFeedMode("gallery", "infinite");
+    });
+  }
+
+  if (galleryPaginationBtn) {
+    galleryPaginationBtn.addEventListener("click", async () => {
+      await applySectionFeedMode("gallery", "pagination");
+    });
+  }
+
+  if (myPostsInfiniteBtn) {
+    myPostsInfiniteBtn.addEventListener("click", async () => {
+      await applySectionFeedMode("my-posts", "infinite");
+    });
+  }
+
+  if (myPostsPaginationBtn) {
+    myPostsPaginationBtn.addEventListener("click", async () => {
+      await applySectionFeedMode("my-posts", "pagination");
+    });
+  }
 
   // Profile avatar preview on file select
   const profileAvatarInput = document.getElementById("profile-avatar-input");
@@ -75,14 +206,15 @@ document.addEventListener("DOMContentLoaded", () => {
       const updateData = {
         username: username,
         email: email,
+        notification_enabled: document.getElementById(
+          "profile-notification-enabled",
+        )?.checked,
       };
 
       try {
         const response = await fetch("/api/user/profile", {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: await getJsonHeaders(),
           body: JSON.stringify(updateData),
         });
 
@@ -90,37 +222,63 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Upload avatar if changed
         if (response.ok) {
+          const newUsername = data.user?.username || updateData.username;
+
           if (window._profileAvatarData) {
             try {
-              await fetch("/api/user/avatar", {
+              const avatarResponse = await fetch("/api/user/avatar", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: await getJsonHeaders(),
                 body: JSON.stringify({
                   avatar_data: window._profileAvatarData,
                 }),
               });
+
+              const avatarData = await avatarResponse.json();
+              if (!avatarResponse.ok) {
+                showErrorAlert(avatarData.error || "Failed to update avatar");
+                return;
+              }
+
               window._profileAvatarData = null;
-              // Update ALL avatars of the logged user across the page
-              refreshAllUserAvatars(data.user?.username || updateData.username);
             } catch (err) {
               console.error("Error uploading avatar:", err);
+              showErrorAlert("Failed to update avatar");
+              return;
             }
           }
 
+          let syncedUser = data.user;
+          try {
+            const sessionData = await refreshServerSession();
+            if (sessionData.logged_in && sessionData.user) {
+              syncedUser = sessionData.user;
+            }
+          } catch (syncError) {
+            console.error(
+              "Error refreshing session after profile update:",
+              syncError,
+            );
+          }
+
+          const effectiveUser = syncedUser || data.user || updateData;
+
+          if (effectiveUser) {
+            window.currentUser = effectiveUser;
+            setUserSessionCookie(effectiveUser);
+          }
+
+          refreshAllUserAvatars(
+            effectiveUser?.username || newUsername,
+            oldUsername,
+          );
+
           // Update all usernames across the page if username changed
-          const newUsername = data.user?.username || updateData.username;
           if (oldUsername && oldUsername !== newUsername) {
             refreshAllUsername(oldUsername, newUsername);
-            // Also refresh avatars since avatar URL depends on username
-            refreshAllUserAvatars(newUsername);
           }
 
           showSuccessAlert("Profile updated successfully!");
-
-          // Update session data
-          if (data.user) {
-            window.currentUser = data.user;
-          }
 
           // Clear password fields
           document.getElementById("profile-password").value = "";

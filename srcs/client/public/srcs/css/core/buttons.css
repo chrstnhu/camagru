@@ -93,7 +93,7 @@
     font-size: var(--font-md);
     font-weight: 500;
     cursor: pointer;
-    transition: background-color var(--transition);
+    transition: background-color var(--transition-normal);
 }
 
 .submit-btn:hover {
@@ -122,8 +122,8 @@
     background-color: #f8fafc;
 }
 
-.like-btn.liked {
-    animation: likeAnimation 0.3s ease-in-out;
+.like-btn.is-liked {
+    animation: like-animation 0.3s ease-in-out;
 }
 
 .like-btn i {

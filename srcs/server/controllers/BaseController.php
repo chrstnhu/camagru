@@ -25,10 +25,28 @@ class BaseController {
             'success' => true,
             'message' => $message
         ], $data));
+        exit();
     }
     
     // Get JSON input from request body
     protected function getJsonInput() {
         return json_decode(file_get_contents('php://input'), true) ?? [];
+    }
+
+    protected function getCsrfToken() {
+        if (empty($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+
+        return $_SESSION['csrf_token'];
+    }
+
+    protected function requireCsrfProtection() {
+        $headerToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+        $sessionToken = $this->getCsrfToken();
+
+        if (!$headerToken || !hash_equals($sessionToken, $headerToken)) {
+            $this->sendError(403, 'Invalid CSRF token');
+        }
     }
 }
