@@ -2,8 +2,6 @@
 
 /* ========== Layout Container ========== */
 .home-container {
-  /* display: grid; */
-  /* grid-template-columns: 1fr 1fr; */
   display: flex;
   flex-direction: row;
   gap: 2rem;
@@ -15,7 +13,6 @@
 
 @media (max-width: 1024px) {
   .home-container {
-    /* grid-template-columns: 1fr; */
     flex-direction: column;
     gap: 1rem;
     padding: 1rem;
@@ -138,18 +135,20 @@
   flex-direction: column;
   flex: 1;
   padding: 2rem;
-  /* background: rgba(255, 255, 255, 0.9); */
   border-radius: var(--radius);
   backdrop-filter: blur(10px);
   box-shadow: 0 8px 8px rgba(0, 0, 0, 0.1);
   justify-content: center;
+  min-height: 0;
 }
 
 .login-component,
 .register-component {
   display: flex;
   flex-direction: column;
+  min-height: 0;
   gap: 2rem;
+  overflow-y: auto;
 }
 
 /* ========== Form Headers ========== */
@@ -200,8 +199,8 @@
   box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
 }
 
-.login-component-button.active,
-.register-component-button.active {
+.login-component-button.is-active,
+.register-component-button.is-active {
   background: #3498db;
   color: white;
 }
@@ -331,6 +330,13 @@
     padding: 1.5rem;
     display: flex;
     flex: 2;
+    min-height: 0;
+  }
+
+  .login-component,
+  .register-component {
+    min-height: 0;
+    overflow-y: auto;
   }
 
   .login-header h3,
@@ -350,17 +356,16 @@
   justify-content: center;
   align-items: center;
   color: white;
-
   background-color: rgb(221, 232, 236);
   border-radius: 30px;
 }
 
 
-.liked {
-  animation: likeAnimation 0.3s ease-in-out;
+.is-liked {
+  animation: like-animation 0.3s ease-in-out;
 }
 
-@keyframes likeAnimation {
+@keyframes like-animation {
   0% {
     transform: scale(1);
   }
@@ -393,7 +398,7 @@
   padding: 25px;
 }
 
-.auth-container.active-popup {
+.auth-container.is-open {
   transform: translate(-50%, -50%);
   visibility: visible;
   opacity: 1;
@@ -413,7 +418,7 @@
   transition: all var(--transition-normal);
 }
 
-.popup-overlay.active {
+.popup-overlay.is-active {
   opacity: 1;
   visibility: visible;
 }
@@ -446,7 +451,7 @@
     transform: translate(-50%, -50%) scale(0);
   }
 
-  .auth-container.active-popup {
+  .auth-container.is-open {
     transform: translate(-50%, -50%) scale(1);
   }
 }

@@ -12,8 +12,10 @@ function toggleAuthForm(showLoginForm) {
     registerSection.style.display = showLoginForm ? "none" : "block";
   }
 
-  loginBtns.forEach((btn) => btn.classList.toggle("active", showLoginForm));
-  registerBtns.forEach((btn) => btn.classList.toggle("active", !showLoginForm));
+  loginBtns.forEach((btn) => btn.classList.toggle("is-active", showLoginForm));
+  registerBtns.forEach((btn) =>
+    btn.classList.toggle("is-active", !showLoginForm),
+  );
 }
 
 // Show login form by default
@@ -27,17 +29,24 @@ function showRegister() {
 }
 
 async function handleApiError(response) {
-  if (response.status === 403) {
-    return showErrorAlert(
-      "Please verify your email address before logging in. Check your inbox!",
-    );
-  }
-
   let errorMessage;
   try {
     const errorData = await response.json();
     errorMessage =
       errorData.error || "Login failed. Please check your credentials.";
+
+    if (response.status === 403) {
+      if (/csrf/i.test(errorMessage)) {
+        window.csrfToken = null;
+        return showErrorAlert("Session expired. Please try logging in again.");
+      }
+
+      if (/verify your email/i.test(errorMessage)) {
+        return showErrorAlert(
+          "Please verify your email address before logging in. Check your inbox!",
+        );
+      }
+    }
   } catch (e) {
     const errorText = await response.text();
     console.error(
@@ -48,16 +57,6 @@ async function handleApiError(response) {
   }
   console.error("Login failed:", errorMessage);
   return showErrorAlert(errorMessage);
-}
-
-// Store user session in cookie
-function saveUserSession(userData, email) {
-  document.cookie = `user_session=${JSON.stringify({
-    user_id: userData.id || userData.user_id,
-    username: userData.username,
-    email: userData.email || email,
-    logged_in: true,
-  })}; path=/; max-age=3600`;
 }
 
 // Handle login from page form
@@ -75,9 +74,7 @@ async function loginCheck(event) {
   try {
     const response = await fetch("/api/auth/login", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: await getJsonHeaders(),
       body: JSON.stringify({
         email: email,
         password: password,
@@ -96,11 +93,17 @@ async function loginCheck(event) {
     console.log("Login successful:", data);
     console.log("User data:", userData);
 
-    saveUserSession(userData, email);
-    updateUIAfterLogin({
-      username: userData.username,
-      email: userData.email || email,
-    });
+    const syncedSession = await refreshServerSession();
+    const finalUser =
+      syncedSession.logged_in && syncedSession.user
+        ? syncedSession.user
+        : {
+            ...userData,
+            email: userData.email || email,
+          };
+
+    setUserSessionCookie(finalUser);
+    updateUIAfterLogin(finalUser);
 
     // Clear form
     document.getElementById("login-email").value = "";

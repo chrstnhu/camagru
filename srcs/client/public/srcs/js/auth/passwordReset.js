@@ -1,7 +1,7 @@
 // Forgot Password Popup
 function showForgotPasswordPopup() {
   const popup = document.createElement("div");
-  popup.className = "auth-container active-popup";
+  popup.className = "auth-container is-open";
   popup.id = "forgot-password-popup";
 
   popup.innerHTML = `
@@ -37,7 +37,7 @@ function showForgotPasswordPopup() {
 
   // Add overlay
   const overlay = document.createElement("div");
-  overlay.className = "popup-overlay active";
+  overlay.className = "popup-overlay is-active";
   overlay.id = "forgot-password-overlay";
   overlay.onclick = closeForgotPasswordPopup;
   document.body.insertBefore(overlay, popup);
@@ -63,7 +63,7 @@ async function handleForgotPassword(event) {
   try {
     const response = await fetch("/api/auth/forgot-password", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: await getJsonHeaders(),
       body: JSON.stringify({ email }),
     });
 
@@ -84,7 +84,7 @@ async function handleForgotPassword(event) {
 // Reset password form (when user clicks link in email)
 function showResetPasswordForm(token) {
   const popup = document.createElement("div");
-  popup.className = "auth-container active-popup";
+  popup.className = "auth-container is-open";
   popup.id = "reset-password-popup";
 
   popup.innerHTML = `
@@ -132,7 +132,7 @@ function showResetPasswordForm(token) {
 
   // Add overlay
   const overlay = document.createElement("div");
-  overlay.className = "popup-overlay active";
+  overlay.className = "popup-overlay is-active";
   overlay.id = "reset-password-overlay";
   overlay.onclick = closeResetPasswordPopup;
   document.body.insertBefore(overlay, popup);
@@ -168,7 +168,7 @@ async function handleResetPassword(event, token) {
   try {
     const response = await fetch("/api/auth/reset-password", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: await getJsonHeaders(),
       body: JSON.stringify({ token, password: newPassword }),
     });
 

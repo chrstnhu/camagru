@@ -44,7 +44,13 @@ function checkPasswordMatch(password, confirmPassword) {
 }
 
 // Client-side validations
-function checkClientSideValidation(username, email, password, confirmPassword, termsAgreed) {
+function checkClientSideValidation(
+  username,
+  email,
+  password,
+  confirmPassword,
+  termsAgreed,
+) {
   if (!username || !email || !password || !confirmPassword) {
     showErrorAlert("Please fill in all fields!");
     return false;
@@ -89,19 +95,27 @@ async function registerCheck(event) {
   const username = document.getElementById("register-username")?.value;
   const email = document.getElementById("register-email")?.value;
   const password = document.getElementById("register-password")?.value;
-  const confirmPassword = document.getElementById("register-confirm-password")?.value;
+  const confirmPassword = document.getElementById(
+    "register-confirm-password",
+  )?.value;
   const termsAgreed = document.getElementById("terms-agreement")?.checked;
 
-  if (!checkClientSideValidation(username, email, password, confirmPassword, termsAgreed)) {
+  if (
+    !checkClientSideValidation(
+      username,
+      email,
+      password,
+      confirmPassword,
+      termsAgreed,
+    )
+  ) {
     return;
   }
 
   try {
     const response = await fetch("/api/auth/register", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: await getJsonHeaders(),
       body: JSON.stringify({
         username: username,
         email: email,
@@ -172,7 +186,6 @@ function setupRegisterPasswordToggles() {
     });
   }
 }
-
 
 // Initialize register form on DOM load
 document.addEventListener("DOMContentLoaded", () => {
