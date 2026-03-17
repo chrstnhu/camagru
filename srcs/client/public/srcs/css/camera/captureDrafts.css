@@ -1,0 +1,106 @@
+#start-btn {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    font-size: var(--font-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    z-index: 10;
+}
+
+#start-btn:hover {
+    background-color: #c0392b;
+    transform: translateX(-50%) scale(1.05);
+}
+
+.start-btn.is-clicked {
+    transform: translateX(-50%) scale(0.95);
+    background-color: #a93226;
+}
+
+/* Button states */
+#start-btn:disabled,
+#start-btn.is-disabled {
+    background: #ccc !important;
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: translateX(-50%);
+}
+
+#start-btn:disabled:hover {
+    transform: translateX(-50%);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* captureDrafts.css */
+.capture-draft-gallery {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+    max-height: 220px;
+    overflow-y: auto;
+    margin-top: 10px;
+}
+
+.capture-draft-item {
+    width: 320px;
+    height: 240px;
+    aspect-ratio: 4 / 3;
+    object-fit: contain;
+    background: var(--comment-bg);
+    border-radius: 8px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.capture-draft-item:hover {
+    transform: translateY(-1px);
+}
+
+.capture-draft-item.is-selected {
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+
+.add-to-draft {
+    padding: 12px 30px;
+    border: 2px solid var(--color-primary);
+    /* background: var(--card-bg); */
+    background: var(--camera-bg);
+    color: var(--color-primary);
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.add-to-draft:hover:not(:disabled) {
+    background: var(--color-primary);
+    color: var(--text-color);
+    transform: scale(1.02);
+}
+
+.add-to-draft:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.draft-gallery-help {
+    margin: -6px 0 6px;
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
