@@ -90,3 +90,54 @@ function homePhoto() {
 document.addEventListener("DOMContentLoaded", () => {
   homePhoto();
 });
+
+// Appliquer le mode au chargement
+document.addEventListener("DOMContentLoaded", () => {
+  const theme = localStorage.getItem("theme");
+  if (theme === "dark") {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
+});
+
+// Update logo based on theme
+function updateLogoForTheme() {
+  const logo = document.querySelector(".logo");
+  if (!logo) return;
+  if (document.documentElement.classList.contains("dark")) {
+    logo.src = "assets/Camagru-logo-dark.png";
+  } else {
+    logo.src = "assets/camagru-logo.png";
+  }
+}
+
+
+// Button toggle
+document.addEventListener("DOMContentLoaded", () => {
+    const btn = document.getElementById("toggle-theme");
+    const sunIcon = btn?.querySelector(".fa-sun");
+    const moonIcon = btn?.querySelector(".fa-moon");
+    
+    function updateThemeIcon() {
+    
+      if (document.documentElement.classList.contains("dark")) {
+        sunIcon.style.display = "inline";
+        moonIcon.style.display = "none";
+      } else {
+        sunIcon.style.display = "none";
+        moonIcon.style.display = "inline";
+      }
+    }
+    if (btn) {
+    btn.onclick = function () {
+      document.documentElement.classList.toggle("dark");
+      const isDark = document.documentElement.classList.contains("dark");
+      localStorage.setItem("theme", isDark ? "dark" : "light");
+      updateLogoForTheme();
+      updateThemeIcon();
+    };
+    updateThemeIcon();
+  }
+  updateLogoForTheme();
+});

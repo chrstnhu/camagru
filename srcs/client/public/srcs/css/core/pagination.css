@@ -16,37 +16,39 @@ nav.pagination ul {
     gap: 0.6rem;
 }
 
+
+
 nav.pagination ul .page {
     cursor: pointer;
     user-select: none;
-    color: #222;
+    color: var(--text-color);
     width: 3rem;
     height: 3rem;
     line-height: 3rem;
     text-align: center;
     font-size: 1rem;
-
-    user-select: none;
-    cursor: pointer;
-    border: 1px solid #888;
-    transition: .2s linear
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    transition: .2s linear;
 }
 
 nav.pagination ul .page:hover {
-    background-color: #999;
+    background-color: var(--comment-bg);
+    color: var(--text-header);
     scale: 1.1;
 }
 
 nav.pagination ul .page:active {
-    background-color: #999;
+    background-color: var(--comment-bg);
+    color: var(--text-header);
 }
 
 nav.pagination ul .page.is-active {
-    background-color: #3498db;
+    background-color: var(--color-primary);
     color: white;
     font-weight: bold;
-    border: 1px solid #2980b9;
-    box-shadow: 0 2px 5px rgba(52, 152, 219, 0.3);
+    border: 1px solid var(--color-primary-dark);
+    box-shadow: 0 2px 5px var(--color-primary-dark, rgba(52, 152, 219, 0.3));
 }
 
 nav.pagination ul .page.is-hidden {

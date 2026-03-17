@@ -66,6 +66,7 @@
     <header>
         <div class="header-container" style="display: flex; justify-content: space-between; align-items: center">
             <img src="assets/camagru-logo.png" alt="Camagru Logo" class="logo" onclick="navigateTo('home', true);"></img>
+            
             <nav class="nav-menu">
                 <ul style="display: flex; padding:0; margin:0; align-items: center;">
                     <li class="nav-content" onclick="navigateTo('home', true);">
@@ -86,14 +87,22 @@
                     </li>
                 </ul>
             </nav>
-            <div class="user-auth"> 
-                <div class="user-profile" id="user-profile" style="display: none;">
-                    <div class="user-avatar">
-                        <img id="user-avatar-img" src="assets/profile/default-avatar.png" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
-                    </div>
-                    <div class="user-profile-dropdown"> 
-                        <a href="#" onclick="event.preventDefault(); navigateTo('profile', true);">My account</a>
-                        <a href="#" onclick="logout()">Logout</a>   
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button id="toggle-theme" class="theme-toggle-btn" aria-label="Toggle dark mode">
+                    <span class="theme-icon">
+                        <i class="fa-solid fa-sun"></i>
+                        <i class="fa-solid fa-moon"></i>
+                    </span>
+                </button>
+                <div class="user-auth"> 
+                    <div class="user-profile" id="user-profile" style="display: none;">
+                        <div class="user-avatar">
+                            <img id="user-avatar-img" src="assets/profile/default-avatar.png" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+                        </div>
+                        <div class="user-profile-dropdown"> 
+                            <a href="#" onclick="event.preventDefault(); navigateTo('profile', true);">My account</a>
+                            <a href="#" onclick="logout()">Logout</a>   
+                        </div>
                     </div>
                 </div>
             </div>
