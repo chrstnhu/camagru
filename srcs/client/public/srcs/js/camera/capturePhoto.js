@@ -214,8 +214,8 @@ function takePicture() {
     image.src = cameraEffect.src;
 
     image.onload = function () {
-      const effectWidth = parseInt(cameraEffect.style.width) || 100;
-      const effectHeight = parseInt(cameraEffect.style.height) || 80;
+      const effectWidth = width;
+      const effectHeight = height;
 
       const posX = (width - effectWidth) / 2;
       const posY = (height - effectHeight) / 2;
@@ -254,3 +254,4 @@ function stopWebcam() {
 
 // Clean up when navigating away
 window.addEventListener("beforeunload", stopWebcam);
+

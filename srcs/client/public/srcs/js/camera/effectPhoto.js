@@ -7,7 +7,17 @@ function handleEffectSelection() {
 
   const effects = [
     { name: "summerHat", img: "assets/photosEffects/summerHat.png" },
+    { name: "bubble", img: "assets/photosEffects/bubble.png" },
+    { name: "snow", img: "assets/photosEffects/snow.png" },
+    { name: "light", img: "assets/photosEffects/light.png" },
     { name: "confettis", img: "assets/photosEffects/confettis.png" },
+    { name: "decorSun", img: "assets/photosEffects/decorSun.png" },
+    { name: "decorXmas", img: "assets/photosEffects/decorXmas.png" },
+    { name: "happyBirthday", img: "assets/photosEffects/happyBirthday.png" },
+    { name: "decorLego", img: "assets/photosEffects/decorLego.png" },    
+    { name: "filterCamera", img: "assets/photosEffects/filterCamera.png" },
+    { name: "filterVignette", img: "assets/photosEffects/filterVignette.png" },
+
   ];
 
   effectsContainer.innerHTML = "";
