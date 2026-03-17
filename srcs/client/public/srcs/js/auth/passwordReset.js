@@ -1,48 +1,26 @@
-// Forgot Password Popup
-function showForgotPasswordPopup() {
-  const popup = document.createElement("div");
-  popup.className = "auth-container active-popup";
-  popup.id = "forgot-password-popup";
+function mountTemplate(templateId) {
+  const template = document.getElementById(templateId);
+  if (!template) {
+    console.error(`Template not found: ${templateId}`);
+    return false;
+  }
 
-  popup.innerHTML = `
-    <span class="icon-close" onclick="closeForgotPasswordPopup()">
-      <i class="fa-solid fa-xmark"></i>
-    </span>
-    <div class="header-login-container">
-      <h2>Reset Password</h2>
-      <p class="password-reset-description">Enter your email to receive a password reset link</p>
-    </div>
-    <form id="forgot-password-form" class="password-reset-form" onsubmit="handleForgotPassword(event)">
-      <div class="login-inputs">
-        <label>Email Address</label>
-        <div class="input-with-icon">
-          <i class="fa-solid fa-envelope input-icon"></i>
-          <input 
-            type="email" 
-            id="forgot-email" 
-            class="input-info" 
-            placeholder="Enter your email" 
-            required
-          />
-        </div>
-      </div>
-      <button class="submit-btn" type="submit">Send Reset Link</button>
-      <div class="login-register password-reset-back">
-        <p><a href="#" onclick="event.preventDefault(); closeForgotPasswordPopup(); activateLoginPopup();">Back to Login</a></p>
-      </div>
-    </form>
-  `;
-
-  document.body.appendChild(popup);
-
-  // Add overlay
-  const overlay = document.createElement("div");
-  overlay.className = "popup-overlay active";
-  overlay.id = "forgot-password-overlay";
-  overlay.onclick = closeForgotPasswordPopup;
-  document.body.insertBefore(overlay, popup);
+  document.body.appendChild(template.content.cloneNode(true));
+  return true;
 }
 
+function openLoginFromResetFlow() {
+  if (typeof window.activateLoginPopup === "function") {
+    window.activateLoginPopup();
+    return;
+  }
+
+  if (typeof showLogin === "function") {
+    showLogin();
+  }
+}
+
+// Close forgot popup
 function closeForgotPasswordPopup() {
   const popup = document.getElementById("forgot-password-popup");
   const overlay = document.getElementById("forgot-password-overlay");
@@ -63,7 +41,7 @@ async function handleForgotPassword(event) {
   try {
     const response = await fetch("/api/auth/forgot-password", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: await getJsonHeaders(),
       body: JSON.stringify({ email }),
     });
 
@@ -81,63 +59,37 @@ async function handleForgotPassword(event) {
   }
 }
 
-// Reset password form (when user clicks link in email)
-function showResetPasswordForm(token) {
-  const popup = document.createElement("div");
-  popup.className = "auth-container active-popup";
-  popup.id = "reset-password-popup";
+// Forgot Password Popup
+function showForgotPasswordPopup() {
+  if (!mountTemplate("forgot-password-template")) {
+    return;
+  }
 
-  popup.innerHTML = `
-    <span class="icon-close" onclick="closeResetPasswordPopup()">
-      <i class="fa-solid fa-xmark"></i>
-    </span>
-    <div class="header-login-container">
-      <h2>Set New Password</h2>
-      <p class="password-reset-description">Enter your new password</p>
-    </div>
-    <form id="reset-password-form" class="password-reset-form" onsubmit="handleResetPassword(event, '${token}')">
-      <div class="login-inputs">
-        <label>New Password</label>
-        <div class="input-with-icon">
-          <i class="fa-solid fa-lock input-icon"></i>
-          <input 
-            type="password" 
-            id="new-password" 
-            class="input-info" 
-            placeholder="Enter new password" 
-            required
-            minlength="8"
-          />
-          <i class="fa-solid fa-eye eye-icon" onclick="togglePasswordVisibility('new-password', this)"></i>
-        </div>
-        <label>Confirm Password</label>
-        <div class="input-with-icon">
-          <i class="fa-solid fa-lock input-icon"></i>
-          <input 
-            type="password" 
-            id="confirm-password" 
-            class="input-info" 
-            placeholder="Confirm new password" 
-            required
-            minlength="8"
-          />
-          <i class="fa-solid fa-eye eye-icon" onclick="togglePasswordVisibility('confirm-password', this)"></i>
-        </div>
-      </div>
-      <button class="submit-btn" type="submit">Reset Password</button>
-    </form>
-  `;
+  const overlay = document.getElementById("forgot-password-overlay");
+  const closeBtn = document.querySelector("[data-close-forgot-password]");
+  const backToLoginLink = document.querySelector("[data-back-to-login]");
+  const form = document.getElementById("forgot-password-form");
 
-  document.body.appendChild(popup);
+  if (overlay) {
+    overlay.addEventListener("click", closeForgotPasswordPopup);
+  }
 
-  // Add overlay
-  const overlay = document.createElement("div");
-  overlay.className = "popup-overlay active";
-  overlay.id = "reset-password-overlay";
-  overlay.onclick = closeResetPasswordPopup;
-  document.body.insertBefore(overlay, popup);
+  if (closeBtn) {
+    closeBtn.addEventListener("click", closeForgotPasswordPopup);
+  }
+
+  if (backToLoginLink) {
+    backToLoginLink.addEventListener("click", (event) => {
+      event.preventDefault();
+      closeForgotPasswordPopup();
+      openLoginFromResetFlow();
+    });
+  }
+
+  if (form) {
+    form.addEventListener("submit", handleForgotPassword);
+  }
 }
-
 function closeResetPasswordPopup() {
   const popup = document.getElementById("reset-password-popup");
   const overlay = document.getElementById("reset-password-overlay");
@@ -151,6 +103,7 @@ function closeResetPasswordPopup() {
   window.history.replaceState({}, document.title, window.location.pathname);
 }
 
+// Handle reset password form submission
 async function handleResetPassword(event, token) {
   event.preventDefault();
 
@@ -168,7 +121,7 @@ async function handleResetPassword(event, token) {
   try {
     const response = await fetch("/api/auth/reset-password", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: await getJsonHeaders(),
       body: JSON.stringify({ token, password: newPassword }),
     });
 
@@ -178,7 +131,7 @@ async function handleResetPassword(event, token) {
       closeResetPasswordPopup();
       showSuccessAlert(data.message);
       setTimeout(() => {
-        activateLoginPopup();
+        openLoginFromResetFlow();
       }, 1500);
     } else {
       showErrorAlert(data.error || "Failed to reset password");
@@ -200,6 +153,37 @@ function togglePasswordVisibility(inputId, icon) {
     input.type = "password";
     icon.classList.remove("fa-eye-slash");
     icon.classList.add("fa-eye");
+  }
+}
+
+// Reset password form (when user clicks link in email)
+function showResetPasswordForm(token) {
+  if (!mountTemplate("reset-password-template")) {
+    return;
+  }
+
+  const overlay = document.getElementById("reset-password-overlay");
+  const closeBtn = document.querySelector("[data-close-reset-password]");
+  const form = document.getElementById("reset-password-form");
+
+  if (overlay) {
+    overlay.addEventListener("click", closeResetPasswordPopup);
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener("click", closeResetPasswordPopup);
+  }
+
+  document.querySelectorAll("[data-password-target]").forEach((icon) => {
+    icon.addEventListener("click", () => {
+      togglePasswordVisibility(icon.dataset.passwordTarget, icon);
+    });
+  });
+
+  if (form) {
+    form.addEventListener("submit", (event) => {
+      handleResetPassword(event, token);
+    });
   }
 }
 

@@ -3,9 +3,15 @@
 
 // Configure CORS and JSON headers
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
+if (!empty($_SERVER['HTTP_ORIGIN'])) {
+    $allowedOrigin = $_ENV['FRONTEND_ORIGIN'] ?? 'https://localhost:8080';
+    if ($_SERVER['HTTP_ORIGIN'] === $allowedOrigin) {
+        header('Access-Control-Allow-Origin: ' . $allowedOrigin);
+        header('Vary: Origin');
+    }
+}
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-CSRF-Token');
 
 // Manage OPTIONS requests (preflight CORS)
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -128,6 +134,7 @@ $router->addRoute('DELETE', '/api/posts/*/comments/*', 'PostController', 'delete
 
 // Image routes
 $router->addRoute('POST', '/api/images', 'ImageController', 'saveImage');
+$router->addRoute('GET', '/api/images/user/*', 'ImageController', 'getUserImages');
 $router->addRoute('GET', '/api/user/*/images', 'ImageController', 'getUserImages');
 $router->addRoute('DELETE', '/api/images/*', 'ImageController', 'deleteImage');
 

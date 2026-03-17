@@ -1,12 +1,20 @@
 :root {
   /* ========== COLORS ========== */
   --color-primary: #3498db;
+  --color-primary-dark: #7dcfff;
   --bg-color: #ffffff;
-  --text-color: #222222;
   --background-color: rgb(221, 232, 236);
+  --text-color: #222222;
+  --text-header: #1e40af;
   --comment-bg: #f8fafc;
-
   --color-error: #ef4444;
+  --color-success: #0abf30;
+  --border-color: #e2e8f0;
+  --card-bg: #fff;
+  --camera-bg: rgb(255, 255, 255, 0.4);
+  --input-bg: #fff;
+  --input-border: #d1d5db;
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
 
   /* ========== BORDER RADIUS ========== */
   --radius-sm: 4px;
@@ -29,16 +37,108 @@
   --gap-md: 16px;
   --gap-lg: 24px;
 
-  /* ========== SHADOWS ========== */
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-
   /* ========== TRANSITIONS ========== */
   --transition-fast: 0.2s ease;
   --transition-normal: 0.3s ease;
   --transition-slow: 0.5s ease;
 }
 
+/* Global input styles */
+input,
+textarea,
+select{
+  background: var(--input-bg);
+  border: 2px solid var(--input-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-md);
+  transition: border-color var(--transition-normal);
+}
+
+/* Global popup and alert styles */
+.user-profile-dropdown,
+.alert-box,
+.confirm-popup,
+.auth-container,
+.verification-container {
+  background: var(--card-bg) !important;
+  color: var(--text-color) !important;
+}
+
+.forgot-reset-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.forgot-reset-overlay>#forgot-password-popup,
+.forgot-reset-overlay>#reset-password-popup {
+  background: var(--card-bg) !important;
+  color: var(--text-color) !important;
+  border-radius: 15px;
+  box-shadow: var(--shadow-md);
+  padding: 40px 30px;
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+  position: relative;
+  z-index: 10001;
+  animation: slide-in 0.5s ease-out;
+}
+
+.forgot-reset-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .dark {
-  --bg-color: #222222;
-  --text-color: #ffffff;
+  --bg-color: #23272f;
+  --background-color: #23272f;
+  --text-color: #f3f4f6;
+  --text-header: #e2e8f0;
+  --color-primary: #3390c9;
+  --color-primary-dark: #256fa1;
+  --comment-bg: #2d323c;
+  --color-error: #ff6b6b;
+  --color-success: #48bb78;
+  --border-color: #3b4252;
+  --card-bg: #2d323c;
+  --camera-bg: #2d323c;
+  --input-bg: #23272f;
+  --input-border: #3b4252;
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.6);
+}
+
+.dark body {
+  background: var(--bg-color) !important;
+}
+
+.dark .header-container {
+  background-color: rgb(8, 17, 35, 0.2);
 }

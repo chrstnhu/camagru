@@ -1,56 +1,222 @@
-function deletePhoto() {
-  // Create delete button for this photo
-  const deleteBtn = document.createElement("button");
-  deleteBtn.className = "delete-btn";
-  deleteBtn.innerHTML = "<i class='fa-solid fa-trash'></i>";
-  deleteBtn.setAttribute("aria-label", "Delete photo");
+const MY_POSTS_INFINITE_BATCH_SIZE = 10;
+const MY_POSTS_PAGINATION_PAGE_SIZE = 8;
+const MY_POSTS_FEED_MODE_STORAGE_KEY = "myPostsFeedDisplayMode";
+let myPostsCurrentPage = 1;
+let myPostsIsLoading = false;
+let myPostsHasMore = true;
 
-  // Add click handler with database deletion
-  deleteBtn.addEventListener("click", async (ev) => {
-    ev.stopPropagation();
-    const confirmDelete = await showConfirmPopup(
-      "Delete Photo",
-      "Are you sure you want to delete this photo? This action cannot be undone.",
-    );
-    if (confirmDelete) {
-      try {
-        // Delete from database
-        const response = await fetch(`/api/images/${imageData.id}`, {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-        });
+function getMyPostsFeedDisplayMode() {
+  const savedMode = localStorage.getItem(MY_POSTS_FEED_MODE_STORAGE_KEY);
+  return savedMode === "infinite" ? "infinite" : "pagination";
+}
 
-        const result = await response.json();
+function isMyPostsInfiniteMode() {
+  return getMyPostsFeedDisplayMode() === "infinite";
+}
 
-        if (response.ok && result.success) {
-          gallery.removeChild(photoItem);
-          console.log("🗑️ Photo deleted from database and gallery");
+function filterPostsForCurrentUser(posts, userId) {
+  return (posts || []).filter(
+    (post) => Number(post.user_id) === Number(userId),
+  );
+}
 
-          showSuccessAlert("Photo deleted successfully");
+function transformPostForMyPosts(postData) {
+  return {
+    id: postData.id,
+    image_id: postData.image_id,
+    user_id: postData.user_id,
+    alias: postData.alias,
+    avatar:
+      postData.image_data || postData.image_path || "assets/profile/photo1.jpg",
+    caption: postData.caption || "",
+    created_at: postData.created_at,
+    likes_count: postData.likes_count || 0,
+    comments_count: postData.comments_count || 0,
+    is_liked: postData.is_liked || false,
+  };
+}
 
-          // Check if gallery is now empty
-          if (gallery.children.length === 0) {
-            gallery.innerHTML =
-              '<p style="text-align: center; padding: 2rem; color: #666;">No photos yet. Go to Camera to capture your first photo!</p>';
+async function fetchAllMyPosts(userId) {
+  const firstResponse = await fetch(
+    `/api/posts?author_id=${userId}&limit=10&page=1`,
+  );
+  const firstData = await firstResponse.json();
+
+  if (!firstResponse.ok) {
+    throw new Error(firstData.error || "Failed to load user posts");
+  }
+
+  const allPosts = [...(firstData.posts || [])];
+  const totalPages = firstData.total_pages || 1;
+
+  if (totalPages <= 1) {
+    return allPosts;
+  }
+
+  const remainingRequests = [];
+  for (let page = 2; page <= totalPages; page++) {
+    remainingRequests.push(
+      fetch(`/api/posts?author_id=${userId}&limit=10&page=${page}`).then(
+        async (response) => {
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || "Failed to load user posts");
           }
-        } else {
-          console.error("❌ Failed to delete photo:", result.error);
-          showErrorAlert("Failed to delete photo: " + result.error);
-        }
-      } catch (error) {
-        console.error("❌ Error deleting photo:", error);
-        showErrorAlert("Error deleting photo");
-      }
+          return data.posts || [];
+        },
+      ),
+    );
+  }
+
+  const remainingPosts = await Promise.all(remainingRequests);
+  remainingPosts.forEach((posts) => allPosts.push(...posts));
+
+  return filterPostsForCurrentUser(allPosts, userId);
+}
+
+function renderMyPosts(posts, startIndex = 0) {
+  posts.forEach((postData, offset) => {
+    const transformedPost = transformPostForMyPosts(postData);
+    generatepostHTML(
+      transformedPost,
+      `my-posts-${postData.id}-${startIndex + offset}`,
+      {
+        targetId: "my-photos-gallery",
+        storeInObjJson: false,
+        showDeleteButton: true,
+        compact: false,
+      },
+    );
+  });
+}
+
+async function loadMoreMyPosts(userId) {
+  if (myPostsIsLoading || !myPostsHasMore) {
+    return;
+  }
+
+  myPostsIsLoading = true;
+
+  try {
+    const response = await fetch(
+      `/api/posts?author_id=${userId}&limit=${MY_POSTS_INFINITE_BATCH_SIZE}&page=${myPostsCurrentPage}`,
+    );
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to load user posts");
+    }
+
+    const posts = filterPostsForCurrentUser(data.posts || [], userId);
+    if (posts.length === 0) {
+      myPostsHasMore = false;
+      return;
+    }
+
+    const gallery = document.getElementById("my-photos-gallery");
+    const startIndex = gallery ? gallery.childElementCount : 0;
+    renderMyPosts(posts, startIndex);
+    myPostsCurrentPage++;
+
+    if (posts.length < MY_POSTS_INFINITE_BATCH_SIZE) {
+      myPostsHasMore = false;
+    }
+  } catch (error) {
+    console.error("Error loading my posts:", error);
+    showErrorAlert("Failed to load your photos");
+    myPostsHasMore = false;
+  } finally {
+    myPostsIsLoading = false;
+  }
+}
+
+function setupMyPostsInfiniteScroll() {
+  if (window._myPostsInfiniteScrollBound) {
+    return;
+  }
+
+  window._myPostsInfiniteScrollBound = true;
+  window.addEventListener("scroll", () => {
+    if (!isMyPostsInfiniteMode()) {
+      return;
+    }
+
+    const myPostsSection = document.getElementById("my-posts");
+    if (!myPostsSection || myPostsSection.style.display === "none") {
+      return;
+    }
+
+    const session = getUserSession();
+    if (!session || !session.user_id) {
+      return;
+    }
+
+    let size = window.innerHeight + window.scrollY;
+    let height = document.body.offsetHeight - 500;
+
+    if (size >= height) {
+      loadMoreMyPosts(session.user_id);
     }
   });
 }
 
-// Initialize posts data from API
-async function initializeMyPosts() {
-  window.objJson = [];
+function initializeMyPostsPagination(postPerPage = 6, currentPage = 1) {
+  const paginationNav = document.getElementById("myposts-pagination");
+  const ul = paginationNav?.querySelector("ul");
+  const posts = document.querySelectorAll("#my-photos-gallery .post");
 
+  if (!paginationNav || !ul || posts.length === 0) {
+    return;
+  }
+
+  const updatePage = (page) => {
+    const prevRange = (page - 1) * postPerPage;
+    const currRange = page * postPerPage;
+
+    posts.forEach((post, index) => {
+      const isVisible = index >= prevRange && index < currRange;
+      post.classList.toggle("is-hidden", !isVisible);
+    });
+  };
+
+  const totalPages = Math.ceil(posts.length / postPerPage);
+  const buildPagination = (page) => {
+    let li = "";
+
+    li += `<li class="page ${page <= 1 ? "is-hidden" : ""}" data-page="${page - 1}"><span class="icon"> &lt; </span></li>`;
+
+    for (let pageNo = 1; pageNo <= totalPages; pageNo++) {
+      li += `<li class="page ${page === pageNo ? "is-active" : ""}" data-page="${pageNo}">${pageNo}</li>`;
+    }
+
+    li += `<li class="page ${page >= totalPages ? "is-hidden" : ""}" data-page="${page + 1}"><span class="icon"> &gt; </span></li>`;
+
+    ul.innerHTML = li;
+
+    ul.querySelectorAll("li.page[data-page]").forEach((item) => {
+      item.addEventListener("click", () => {
+        const nextPage = Number(item.dataset.page);
+        if (
+          !Number.isFinite(nextPage) ||
+          nextPage < 1 ||
+          nextPage > totalPages
+        ) {
+          return;
+        }
+        updatePage(nextPage);
+        buildPagination(nextPage);
+      });
+    });
+  };
+
+  updatePage(currentPage);
+  buildPagination(currentPage);
+}
+
+async function initializeMyPosts(options = {}) {
   try {
     const session = getUserSession();
+    const forceRefresh = options.force === true;
 
     if (!session || !session.user_id || !session.logged_in) {
       console.error("User not logged in or user data not available");
@@ -59,105 +225,94 @@ async function initializeMyPosts() {
 
     const userId = session.user_id;
     const username = session.username;
-    console.log("Fetching photos for user:", username, "ID:", userId);
+    const gallery = document.getElementById("my-photos-gallery");
+    const paginationNav = document.getElementById("myposts-pagination");
+    const mode = getMyPostsFeedDisplayMode();
 
-    // Fetch user's images from API
-    const response = await fetch(`/api/images/user/${userId}`);
-    const data = await response.json();
-
-    if (response.ok && data.images) {
-      console.log("Images loaded from API:", data.images.length);
-
-      const gallery = document.getElementById("my-photos-gallery");
-      if (!gallery) {
-        console.error("Gallery container not found");
-        return showErrorAlert("Gallery not available");
-      }
-
-      // Clear existing content
-      gallery.innerHTML = "";
-
-      // Check if user has photos
-      if (data.images.length === 0) {
-        gallery.innerHTML =
-          '<p style="text-align: center; padding: 2rem; color: #666;">No photos yet. Go to Camera to capture your first photo!</p>';
-        return;
-      }
-
-      // Add each image to the gallery
-      data.images.forEach((imageData) => {
-        const photoItem = document.createElement("div");
-        photoItem.className = "gallery-photo-item";
-
-        const img = document.createElement("img");
-        img.src = imageData.image_data;
-        img.alt = imageData.caption || "Captured photo";
-        img.className = "gallery-photo";
-
-        deletePhoto();
-
-        photoItem.appendChild(img);
-        photoItem.appendChild(deleteBtn);
-
-        // Add caption if exists
-        if (imageData.caption) {
-          const caption = document.createElement("p");
-          caption.className = "gallery-caption";
-          caption.textContent = imageData.caption;
-          photoItem.appendChild(caption);
-        }
-
-        gallery.appendChild(photoItem);
-      });
-
-      console.log(
-        "Gallery initialized:",
-        data.images.length,
-        "photos displayed",
-      );
-    } else {
-      console.log("No images found for this user");
+    if (!gallery) {
+      console.error("My posts container not found");
+      return showErrorAlert("My posts view not available");
     }
+
+    const shouldReuseRenderedView =
+      !forceRefresh &&
+      window._myPostsNeedsRefresh !== true &&
+      window._myPostsUserId === userId &&
+      gallery.childElementCount > 0;
+
+    if (shouldReuseRenderedView) {
+      return;
+    }
+
+    console.log("Fetching posts for user:", username, "ID:", userId);
+    gallery.innerHTML = "";
+
+    myPostsCurrentPage = 1;
+    myPostsHasMore = true;
+
+    if (paginationNav) {
+      const ul = paginationNav.querySelector("ul");
+      if (ul) {
+        ul.innerHTML = "";
+      }
+    }
+
+    if (mode === "infinite") {
+      if (paginationNav) {
+        paginationNav.style.display = "none";
+      }
+
+      setupMyPostsInfiniteScroll();
+      await loadMoreMyPosts(userId);
+
+      if (gallery.childElementCount === 0) {
+        gallery.innerHTML =
+          '<p style="text-align: center; padding: 2rem; color: #666;">No posts yet. Go to Camera to publish your first photo!</p>';
+      }
+
+      window._myPostsNeedsRefresh = false;
+      window._myPostsUserId = userId;
+      return;
+    }
+
+    const posts = await fetchAllMyPosts(userId);
+
+    if (posts.length === 0) {
+      gallery.innerHTML =
+        '<p style="text-align: center; padding: 2rem; color: #666;">No posts yet. Go to Camera to publish your first photo!</p>';
+      window._myPostsNeedsRefresh = false;
+      window._myPostsUserId = userId;
+      return;
+    }
+
+    renderMyPosts(posts, 0);
+
+    if (paginationNav) {
+      paginationNav.style.display = "block";
+      initializeMyPostsPagination(MY_POSTS_PAGINATION_PAGE_SIZE, 1);
+    }
+
+    window._myPostsNeedsRefresh = false;
+    window._myPostsUserId = userId;
+    console.log("My posts initialized:", posts.length, "posts displayed");
   } catch (error) {
     console.error("Error loading posts:", error);
     showErrorAlert("Failed to load your photos");
   }
 }
 
-// Initialize when navigating to my-posts section
-document.addEventListener("DOMContentLoaded", function () {
-  const observer = new MutationObserver(function (mutations) {
-    const myPostsSection = document.getElementById("my-posts");
-    // Section is visible, always reload to get latest photos
-    if (myPostsSection && myPostsSection.style.display !== "none") {
-      initializeMyPosts();
-    }
-  });
-
-  const myPostsSection = document.getElementById("my-posts");
-  if (myPostsSection) {
-    observer.observe(myPostsSection, {
-      attributes: true,
-      attributeFilter: ["style"],
-    });
-  }
-});
-
-// Show upload photo modal
 function showUploadPhotoModal() {
   const session = getUserSession();
   if (!session || !session.logged_in) {
     return showErrorAlert("Please login to upload photos");
   }
 
-  // Create modal overlay
   const overlay = document.createElement("div");
-  overlay.className = "popup-overlay active";
+  overlay.className = "popup-overlay is-active";
   overlay.id = "upload-photo-overlay";
 
-  // Create modal
   const modal = document.createElement("div");
-  modal.className = "auth-container active-popup";
+  modal.className = "auth-container is-open";
   modal.id = "upload-photo-modal";
   modal.style.cssText =
     "position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000; max-width: 500px; width: 90%;";
@@ -202,7 +357,6 @@ function showUploadPhotoModal() {
   document.body.appendChild(overlay);
   document.body.appendChild(modal);
 
-  // Setup preview
   const input = document.getElementById("upload-photo-input");
   input.addEventListener("change", function (e) {
     const file = e.target.files[0];
@@ -221,7 +375,6 @@ function showUploadPhotoModal() {
   overlay.onclick = closeUploadPhotoModal;
 }
 
-// Close upload photo modal
 function closeUploadPhotoModal() {
   const modal = document.getElementById("upload-photo-modal");
   const overlay = document.getElementById("upload-photo-overlay");
@@ -229,7 +382,6 @@ function closeUploadPhotoModal() {
   if (overlay) overlay.remove();
 }
 
-// Handle photo upload
 async function handlePhotoUpload(event) {
   event.preventDefault();
 
@@ -241,17 +393,14 @@ async function handlePhotoUpload(event) {
     return showErrorAlert("Please select a photo");
   }
 
-  // Validate file type
   if (!file.type.startsWith("image/")) {
     return showErrorAlert("Please select a valid image file");
   }
 
-  // Validate file size (max 10MB)
   if (file.size > 10 * 1024 * 1024) {
     return showErrorAlert("Image size must be less than 10MB");
   }
 
-  // Read file as base64
   const reader = new FileReader();
   reader.onload = async function (e) {
     const imageData = e.target.result;
@@ -259,7 +408,7 @@ async function handlePhotoUpload(event) {
     try {
       const response = await fetch("/api/images", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: await getJsonHeaders(),
         body: JSON.stringify({
           image_data: imageData,
           caption: caption || "",
@@ -270,14 +419,12 @@ async function handlePhotoUpload(event) {
 
       if (response.ok && data.success) {
         console.log("✅ Photo uploaded successfully:", data.image_id);
-
         closeUploadPhotoModal();
-
         showSuccessAlert("Photo uploaded successfully!");
+        invalidatePostViews();
 
-        // Refresh My Posts gallery
         setTimeout(() => {
-          initializeMyPosts();
+          initializeMyPosts({ force: true });
         }, 500);
       } else {
         console.error("❌ Failed to upload photo:", data.error);

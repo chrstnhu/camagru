@@ -14,7 +14,9 @@ let alertIdCounter = 0;
 // Show alert (creates a new stacked notification)
 function showAlert(type, message) {
   const container = document.getElementById("alert-container");
-  if (!container) return;
+  if (!container) {
+    return;
+  }
 
   // Create unique ID for this alert
   const alertId = `alert-${alertIdCounter++}`;
@@ -26,13 +28,12 @@ function showAlert(type, message) {
 
   // Create alert content
   const alertDiv = document.createElement("div");
-  alertDiv.className = `alert ${type}`;
+  alertDiv.className = `alert is-${type}`;
 
   const icon = document.createElement("i");
   icon.className =
     type === "success"
-      ? "fa-solid fa-circle-check"
-      : "fa-solid fa-circle-xmark";
+      ? "fa-solid fa-circle-check" : "fa-solid fa-circle-xmark";
 
   const messageSpan = document.createElement("span");
   messageSpan.textContent = message;
@@ -56,9 +57,11 @@ function showAlert(type, message) {
 // Remove specific alert with animation
 function removeAlert(alertId) {
   const alertBox = document.getElementById(alertId);
-  if (!alertBox) return;
+  if (!alertBox) {
+    return;
+  }
 
-  alertBox.classList.add("removing");
+  alertBox.classList.add("is-removing");
 
   setTimeout(() => {
     if (alertBox.parentNode) {

@@ -1,9 +1,5 @@
 function updatePageView(viewId, target) {
   if (viewId === "my-posts") {
-    const postComponent = target.querySelector(".post-component");
-    if (postComponent) {
-      postComponent.innerHTML = "";
-    }
     initializeMyPosts();
   }
 
@@ -11,13 +7,25 @@ function updatePageView(viewId, target) {
   if (viewId === "gallery") {
     const session = getUserSession();
     const currentUser = session?.username || null;
-    if (window._lastGalleryUser !== currentUser) {
+    const postComponent = document.getElementById("post-component");
+    const shouldReloadGallery =
+      window._galleryNeedsRefresh === true ||
+      window._lastGalleryUser !== currentUser ||
+      !postComponent ||
+      postComponent.childElementCount === 0;
+
+    if (shouldReloadGallery) {
       const postComponent = document.getElementById("post-component");
       if (postComponent) {
         postComponent.innerHTML = "";
       }
-      initializepostsData();
+      if (typeof window.initializepostsData === "function") {
+        window.initializepostsData();
+      } else {
+        console.error("initializepostsData is not available on window");
+      }
       window._lastGalleryUser = currentUser;
+      window._galleryNeedsRefresh = false;
     }
   }
 

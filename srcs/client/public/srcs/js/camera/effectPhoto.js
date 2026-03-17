@@ -1,15 +1,46 @@
 // Handle effect selection
 function handleEffectSelection() {
   const effectsContainer = document.getElementById("effects-container");
-  if (!effectsContainer) return;
+  if (!effectsContainer) {
+    return;
+  }
 
   const effects = [
     { name: "summerHat", img: "assets/photosEffects/summerHat.png" },
+    { name: "bubble", img: "assets/photosEffects/bubble.png" },
+    { name: "snow", img: "assets/photosEffects/snow.png" },
+    { name: "light", img: "assets/photosEffects/light.png" },
     { name: "confettis", img: "assets/photosEffects/confettis.png" },
+    { name: "decorSun", img: "assets/photosEffects/decorSun.png" },
+    { name: "decorXmas", img: "assets/photosEffects/decorXmas.png" },
+    { name: "happyBirthday", img: "assets/photosEffects/happyBirthday.png" },
+    { name: "decorLego", img: "assets/photosEffects/decorLego.png" },    
+    { name: "filterCamera", img: "assets/photosEffects/filterCamera.png" },
+    { name: "filterVignette", img: "assets/photosEffects/filterVignette.png" },
+
   ];
 
   effectsContainer.innerHTML = "";
   effects.forEach((effect) => createEffectElement(effect, effectsContainer));
+}
+
+// Ensure effect data URL
+async function ensureEffectDataUrl(effect) {
+  if (effect.dataUrl) {
+    return effect.dataUrl;
+  }
+
+  const response = await fetch(effect.img);
+  const blob = await response.blob();
+
+  effect.dataUrl = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+
+  return effect.dataUrl;
 }
 
 // Create effect element
@@ -31,47 +62,63 @@ function createEffectElement(effect, container) {
   container.appendChild(effectDiv);
 }
 
-// Toggle effect selection
-function toggleEffectSelection(effectDiv, effect) {
-  const alreadySelected = effectDiv.classList.contains("selected");
+function clearCurrentEffect(uploadEffectPreview, addToDraft) {
+  selectedEffect = null;
+  cameraEffect.src = "";
+  cameraEffect.style.display = "none";
+  startBtn.disabled = true;
+  startBtn.classList.add("is-disabled");
 
-  document
-    .querySelectorAll(".effect")
-    .forEach((el) => el.classList.remove("selected"));
-
-  const uploadEffectPreview = document.getElementById("upload-effect-preview");
-  const uploadSaveBtn = document.getElementById("upload-save-btn");
-
-  if (alreadySelected) {
-    selectedEffect = null;
-    cameraEffect.src = "";
-    cameraEffect.style.display = "none";
-    startBtn.disabled = true;
-    startBtn.classList.add("disabled");
-
-    // Hide effect on upload preview
-    if (uploadEffectPreview) {
-      uploadEffectPreview.style.display = "none";
-    }
-    if (uploadSaveBtn) {
-      uploadSaveBtn.disabled = true;
-    }
-    return;
+  if (uploadEffectPreview) {
+    uploadEffectPreview.style.display = "none";
   }
+  if (addToDraft) {
+    addToDraft.disabled = true;
+  }
+}
 
-  effectDiv.classList.add("selected");
+function applySelectedEffect(effect, uploadEffectPreview, addToDraft) {
   selectedEffect = effect;
   cameraEffect.src = effect.img;
   cameraEffect.style.display = "block";
   startBtn.disabled = false;
-  startBtn.classList.remove("disabled");
+  startBtn.classList.remove("is-disabled");
 
-  // Show effect on upload preview if image is uploaded
   if (uploadEffectPreview && window._uploadedImageData) {
     uploadEffectPreview.src = effect.img;
     uploadEffectPreview.style.display = "block";
   }
-  if (uploadSaveBtn && window._uploadedImageData) {
-    uploadSaveBtn.disabled = false;
+  if (addToDraft && window._uploadedImageData) {
+    addToDraft.disabled = false;
+  }
+}
+
+// Toggle effect selection
+async function toggleEffectSelection(effectDiv, effect) {
+  const alreadySelected = effectDiv.classList.contains("is-selected");
+
+  document
+    .querySelectorAll(".effect")
+    .forEach((el) => el.classList.remove("is-selected"));
+
+  const uploadEffectPreview = document.getElementById("upload-effect-preview");
+  const addToDraft = document.getElementById("add-to-draft");
+
+  if (alreadySelected) {
+    clearCurrentEffect(uploadEffectPreview, addToDraft);
+    return;
+  }
+
+  effectDiv.classList.add("is-selected");
+
+  try {
+    await ensureEffectDataUrl(effect);
+    applySelectedEffect(effect, uploadEffectPreview, addToDraft);
+  } catch (error) {
+    console.error("Failed to load effect image:", error);
+    clearCurrentEffect(uploadEffectPreview, addToDraft);
+    effectDiv.classList.remove("is-selected");
+    showErrorAlert("Failed to load selected effect");
+    return;
   }
 }

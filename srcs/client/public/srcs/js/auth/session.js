@@ -1,8 +1,105 @@
 // Session and Profile Management
 
+window.csrfToken = null;
+
+// Clear user session cookie
+function setUserSessionCookie(userData) {
+  document.cookie = `user_session=${encodeURIComponent(
+    JSON.stringify({
+      user_id: userData.id || userData.user_id,
+      username: userData.username,
+      email: userData.email,
+      notification_enabled: userData.notification_enabled ?? true,
+      logged_in: true,
+    }),
+  )}; path=/; max-age=3600; SameSite=Lax`;
+}
+
+// Refresh user session cookie
+async function refreshServerSession() {
+  const response = await fetch("/api/user/status");
+  const data = await response.json();
+
+  if (data.csrf_token) {
+    window.csrfToken = data.csrf_token;
+  }
+
+  if (data.logged_in && data.user) {
+    setUserSessionCookie(data.user);
+  } else {
+    document.cookie = "user_session=; path=/; max-age=0; SameSite=Lax";
+  }
+
+  return data;
+}
+
+async function getJsonHeaders() {
+  if (!window.csrfToken) {
+    await refreshServerSession();
+  }
+
+  return {
+    "Content-Type": "application/json",
+    "X-CSRF-Token": window.csrfToken || "",
+  };
+}
+
+// Handle Unauthorized 
+async function handleUnauthorizedResponse(defaultMessage) {
+  try {
+    const data = await refreshServerSession();
+    if (!data.logged_in) {
+      applyLoggedOutState();
+      updateHomeDashboard();
+    }
+  } catch (error) {
+    console.error("Auth resync error:", error);
+    applyLoggedOutState();
+    updateHomeDashboard();
+  }
+
+  showErrorAlert(
+    defaultMessage || "Your session has expired. Please log in again.",
+  );
+}
+
+// Apply lougout State to UI
+function applyLoggedOutState() {
+  document.cookie = "user_session=; path=/; max-age=0; SameSite=Lax";
+
+  window.currentUser = null;
+  window.csrfToken = null;
+
+  const userProfile = document.getElementById("user-profile");
+  if (userProfile) {
+    userProfile.style.display = "none";
+  }
+
+  const myPostsNav = document.getElementById("my-posts-nav");
+  if (myPostsNav) {
+    myPostsNav.classList.add("is-disabled");
+    myPostsNav.style.opacity = "0.5";
+    myPostsNav.style.cursor = "not-allowed";
+    myPostsNav.onclick = (e) => {
+      e.preventDefault();
+      showErrorAlert("Please login to access your photos");
+    };
+  }
+
+  const camera = document.getElementById("camera-nav");
+  if (camera) {
+    camera.classList.add("is-disabled");
+    camera.style.opacity = "0.5";
+    camera.style.cursor = "not-allowed";
+    camera.onclick = (e) => {
+      e.preventDefault();
+      showErrorAlert("Please login to access camera");
+    };
+  }
+}
+
 // Update UI after successful login
 function updateUIAfterLogin(userData) {
-  // Show user profile
   const userProfile = document.getElementById("user-profile");
   if (userProfile) {
     userProfile.style.display = "flex";
@@ -11,7 +108,7 @@ function updateUIAfterLogin(userData) {
   // Active camera menu
   const camera = document.getElementById("camera-nav");
   if (camera) {
-    camera.classList.remove("disabled");
+    camera.classList.remove("is-disabled");
     camera.style.opacity = "1";
     camera.style.cursor = "pointer";
     camera.onclick = () => navigateTo("camera-section", true);
@@ -20,7 +117,7 @@ function updateUIAfterLogin(userData) {
   // Active My Photos menu
   const myPostsNav = document.getElementById("my-posts-nav");
   if (myPostsNav) {
-    myPostsNav.classList.remove("disabled");
+    myPostsNav.classList.remove("is-disabled");
     myPostsNav.style.opacity = "1";
     myPostsNav.style.cursor = "pointer";
     myPostsNav.onclick = () => navigateTo("my-posts", true);
@@ -28,6 +125,7 @@ function updateUIAfterLogin(userData) {
 
   // Store username globally for other scripts
   window.currentUser = userData;
+  setUserSessionCookie(userData);
 
   refreshAllUserAvatars(userData.username);
 }
@@ -55,45 +153,24 @@ function getUserSession() {
 
 // Logout function
 async function logout() {
-  // Clear session cookie and user
-  document.cookie = "user_session=; path=/; max-age=0";
-  window.currentUser = null;
+  try {
+    const response = await fetch("/api/auth/logout", {
+      method: "POST",
+      headers: await getJsonHeaders(),
+    });
 
-  // // Reset header avatar to default
-  // const avatarImg = document.getElementById("user-avatar-img");
-  // if (avatarImg) {
-  //   avatarImg.src = "assets/profile/default-avatar.png";
-  // }
-
-  // Update UI
-  const userProfile = document.getElementById("user-profile");
-  if (userProfile) {
-    userProfile.style.display = "none";
+    const data = await response.json();
+    if (!response.ok) {
+      showErrorAlert(data.error || "Logout failed");
+      return;
+    }
+  } catch (error) {
+    console.error("Logout error:", error);
+    showErrorAlert("Logout failed. Please try again.");
+    return;
   }
 
-  // Desactivate my photos menu
-  const myPostsNav = document.getElementById("my-posts-nav");
-  if (myPostsNav) {
-    myPostsNav.classList.add("disabled");
-    myPostsNav.style.opacity = "0.5";
-    myPostsNav.style.cursor = "not-allowed";
-    myPostsNav.onclick = (e) => {
-      e.preventDefault();
-      showErrorAlert("Please login to access your photos");
-    };
-  }
-
-  const camera = document.getElementById("camera-nav");
-  if (camera) {
-    camera.classList.add("disabled");
-    camera.style.opacity = "0.5";
-    camera.style.cursor = "not-allowed";
-    camera.onclick = (e) => {
-      e.preventDefault();
-      showErrorAlert("Please login to access camera");
-    };
-  }
-  
+  applyLoggedOutState();
   navigateTo("home", true);
   updateHomeDashboard();
 }
@@ -132,32 +209,49 @@ function updateHomeDashboard() {
 function setupProfileDropdown() {
   const profileBox = document.querySelector(".user-profile");
   const profileAvatar = document.querySelector(".user-avatar");
-  if (!profileBox || !profileAvatar) return;
+  if (!profileBox || !profileAvatar) {
+    return;
+  }
 
   profileBox.addEventListener("mouseenter", () =>
-    profileBox.classList.add("show"),
+    profileBox.classList.add("is-open"),
   );
   profileBox.addEventListener("mouseleave", () =>
-    profileBox.classList.remove("show"),
+    profileBox.classList.remove("is-open"),
   );
   profileAvatar.addEventListener("click", (e) => {
     e.stopPropagation();
-    profileBox.classList.toggle("show");
+    profileBox.classList.toggle("is-open");
   });
 
   document.addEventListener("click", (e) => {
     if (!profileBox.contains(e.target)) {
-      profileBox.classList.remove("show");
+      profileBox.classList.remove("is-open");
     }
   });
 }
 
 // Check if user is already logged in on page load
 document.addEventListener("DOMContentLoaded", () => {
-  const session = getUserSession();
-  if (session && session.logged_in) {
-    updateUIAfterLogin(session);
-  }
-  updateHomeDashboard();
-  setupProfileDropdown();
+  refreshServerSession()
+    .then((data) => {
+      if (data.logged_in && data.user) {
+        updateUIAfterLogin(data.user);
+      } else {
+        applyLoggedOutState();
+      }
+    })
+    .catch((error) => {
+      console.error("Session sync error:", error);
+      const session = getUserSession();
+      if (session && session.logged_in) {
+        updateUIAfterLogin(session);
+      } else {
+        applyLoggedOutState();
+      }
+    })
+    .finally(() => {
+      updateHomeDashboard();
+      setupProfileDropdown();
+    });
 });

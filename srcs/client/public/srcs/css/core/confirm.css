@@ -15,7 +15,7 @@
     transition: all var(--transition-normal);
 }
 
-.confirm-popup-overlay.active {
+.confirm-popup-overlay.is-active {
     opacity: 1;
     visibility: visible;
 }
@@ -31,7 +31,7 @@
     transition: transform var(--transition-normal);
 }
 
-.confirm-popup-overlay.active .confirm-popup {
+.confirm-popup-overlay.is-active .confirm-popup {
     transform: scale(1);
 }
 

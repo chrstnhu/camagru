@@ -14,8 +14,8 @@ class User {
         $verification_token = bin2hex(random_bytes(32));
 
         $query = "INSERT INTO " . $this->table_name . " 
-                  (username, email, password, verification_token, email_verified, created_at) 
-                  VALUES (?, ?, ?, ?, 0, NOW())";
+                  (username, email, password, verification_token, email_verified, notification_enabled, created_at) 
+                  VALUES (?, ?, ?, ?, 0, 1, NOW())";
         
         $stmt = $this->conn->prepare($query);
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
@@ -50,7 +50,7 @@ class User {
 
     // Verify login credentials
     public function login($email, $password) {
-        $query = "SELECT id, username, email, password, email_verified 
+        $query = "SELECT id, username, email, password, email_verified, notification_enabled 
                   FROM " . $this->table_name . " 
                   WHERE email = ?";
         
@@ -89,7 +89,7 @@ class User {
 
     // Get a user by ID
     public function getById($id) {
-        $query = "SELECT id, username, email, email_verified, created_at 
+        $query = "SELECT id, username, email, email_verified, notification_enabled, created_at 
                   FROM " . $this->table_name . " 
                   WHERE id = ?";
         $stmt = $this->conn->prepare($query);
@@ -134,6 +134,11 @@ class User {
             $updates[] = "password = ?";
             $params[] = password_hash($data['password'], PASSWORD_DEFAULT);
         }
+
+        if (array_key_exists('notification_enabled', $data)) {
+            $updates[] = "notification_enabled = ?";
+            $params[] = $data['notification_enabled'] ? 1 : 0;
+        }
         
         if(empty($updates)) {
             return false;
@@ -151,7 +156,7 @@ class User {
     
     // Get user by email
     public function getByEmail($email) {
-        $query = "SELECT id, username, email, email_verified FROM " . $this->table_name . " 
+        $query = "SELECT id, username, email, email_verified, notification_enabled FROM " . $this->table_name . " 
                   WHERE email = ?";
         $stmt = $this->conn->prepare($query);
         $stmt->execute([$email]);

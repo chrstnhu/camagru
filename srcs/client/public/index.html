@@ -28,8 +28,10 @@
     <script src="srcs/js/core/alerts.js"></script>
     <script src="srcs/js/core/auth.js"></script>
     <script src="srcs/js/core/pagination.js"></script>
-    <script src="srcs/js/core/profilePassword.js"></script>
-    <script src="srcs/js/core/profile.js"></script>
+    <script src="srcs/js/core/profile/profileData.js"></script>
+    <script src="srcs/js/core/profile/profileFeedMode.js"></script>
+    <script src="srcs/js/core/profile/profileData.js"></script>
+    <script src="srcs/js/core/profile/profileForm.js"></script>
     <!-- Authentication modules -->
     <script src="srcs/js/auth/emailVerification.js"></script>
     <script src="srcs/js/auth/passwordReset.js"></script>
@@ -39,17 +41,22 @@
     <!-- Register: registerCheck, setupRegisterPasswordToggles -->
     <script src="srcs/js/auth/register.js"></script>
     <!-- Posts management -->
-    <script src="srcs/js/posts/postCommon.js"></script>
     <script src="srcs/js/posts/post.js"></script>
+    <script src="srcs/js/posts/postAvatar.js"></script>
+    <script src="srcs/js/posts/postComments.js"></script>
+    <script src="srcs/js/posts/postLikes.js"></script>
+    <script src="srcs/js/posts/postUtils.js"></script>
     <script src="srcs/js/posts/myPosts.js"></script>
-    <!-- Camera modules (load in order: state → effects/save → main) -->
+
+    <!-- Camera modules (load in order: state → effects → drafts/save/upload → main) -->
     <script src="srcs/js/camera/cameraState.js"></script>
     <script src="srcs/js/camera/effectPhoto.js"></script>
-    <script src="srcs/js/camera/savePhoto.js"></script>
+    <script src="srcs/js/camera/captureDrafts.js"></script>
+    <script src="srcs/js/camera/cameraSaveService.js"></script>
+    <script src="srcs/js/camera/uploadPhoto.js"></script>
     <script src="srcs/js/camera/capturePhoto.js"></script>
 
     <script src="srcs/js/core/home.js"></script>
-
 
     <title>Camagru - 42 Project</title>
 </head>
@@ -59,6 +66,7 @@
     <header>
         <div class="header-container" style="display: flex; justify-content: space-between; align-items: center">
             <img src="assets/camagru-logo.png" alt="Camagru Logo" class="logo" onclick="navigateTo('home', true);"></img>
+            
             <nav class="nav-menu">
                 <ul style="display: flex; padding:0; margin:0; align-items: center;">
                     <li class="nav-content" onclick="navigateTo('home', true);">
@@ -69,27 +77,32 @@
                         <i class="fa-solid fa-globe" ></i>
                         <span class="nav-label">Gallery</span>
                     </li>
-                    <li class="nav-content disabled" id="camera-nav" style="opacity: 0.5; cursor: not-allowed;">
+                    <li class="nav-content is-disabled" id="camera-nav" style="opacity: 0.5; cursor: not-allowed;">
                         <i class="fa-solid fa-camera"></i>
                         <span class="nav-label">Camera</span>
                     </li>
-                    <li class="nav-content disabled" id="my-posts-nav" style="opacity: 0.5; cursor: not-allowed;">
+                    <li class="nav-content is-disabled" id="my-posts-nav" style="opacity: 0.5; cursor: not-allowed;">
                         <i class="fa-solid fa-image"></i>
                         <span class="nav-label">My photos</span>
                     </li>
                 </ul>
             </nav>
-            <div class="user-auth"> 
-                <div class="user-profile" id="user-profile" style="display: none;">
-                    <div id="my-notification-nav" style="cursor: pointer;">
-                        <i class="fa-solid fa-bell" style="margin: 0.5rem;"></i>
-                    </div>
-                    <div class="user-avatar">
-                        <img id="user-avatar-img" src="assets/profile/default-avatar.png" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
-                    </div>
-                    <div class="user-profile--dropdown"> 
-                        <a href="#" onclick="event.preventDefault(); navigateTo('profile', true);">My account</a>
-                        <a href="#" onclick="logout()">Logout</a>   
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button id="toggle-theme" class="theme-toggle-btn" aria-label="Toggle dark mode">
+                    <span class="theme-icon">
+                        <i class="fa-solid fa-sun"></i>
+                        <i class="fa-solid fa-moon"></i>
+                    </span>
+                </button>
+                <div class="user-auth"> 
+                    <div class="user-profile" id="user-profile" style="display: none;">
+                        <div class="user-avatar">
+                            <img id="user-avatar-img" src="assets/profile/default-avatar.png" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+                        </div>
+                        <div class="user-profile-dropdown"> 
+                            <a href="#" onclick="event.preventDefault(); navigateTo('profile', true);">My account</a>
+                            <a href="#" onclick="logout()">Logout</a>   
+                        </div>
                     </div>
                 </div>
             </div>
@@ -131,7 +144,7 @@
                             <p>Sign in to continue to your account</p>
                         </div>
                         <div class="separator">
-                            <button class="login-component-button active" onclick="showLogin()">Login</button>
+                            <button class="login-component-button is-active" onclick="showLogin()">Login</button>
                             <button class="register-component-button" onclick="showRegister()">Register</button>
                         </div>
                         <div class="login-component-form">
@@ -152,7 +165,7 @@
                         </div>
                         <div class="separator">
                             <button class="login-component-button" onclick="showLogin()">Login</button>
-                            <button class="register-component-button active" onclick="showRegister()">Register</button>
+                            <button class="register-component-button is-active" onclick="showRegister()">Register</button>
                         </div>
                         <div class="login-component-form">
                             <!-- Avatar upload (optional) -->
@@ -208,7 +221,7 @@
                 <div style="display: flex; flex:1; flex-direction: column; align-items: center; gap: 20px">
                     <!-- Toggle buttons Camera / Upload -->
                     <div class="separator">
-                        <button class="camera-toggle-btn active" onclick="switchToCamera()">
+                        <button class="camera-toggle-btn is-active" onclick="switchToCamera()">
                             <i class="fa-solid fa-camera"></i> Take a photo
                         </button>
                         <button class="upload-toggle-btn" onclick="switchToUpload()">
@@ -219,11 +232,13 @@
                     <!-- Camera mode -->
                     <div id="camera-mode" class="camera-preview">
                         <h3>Take a photo</h3>
-                        <video id="video" autoplay playsinline muted>Video stream not available.</video>
-                        <img id="camera-effect"></img>
-                        <button id="start-btn">
-                            <i class="fa-solid fa-camera"></i>
-                        </button>
+                        <div class="video-wrapper">
+                            <video id="video" autoplay playsinline muted>Video stream not available.</video>
+                            <img id="camera-effect"></img>
+                            <button id="start-btn">
+                                <i class="fa-solid fa-camera"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Upload mode -->
@@ -240,8 +255,8 @@
                                 <img id="upload-effect-preview" />
                             </div>
                         </div>
-                        <button id="upload-save-btn" class="upload-save-btn" disabled>
-                            <i class="fa-solid fa-floppy-disk"></i> Save
+                        <button id="add-to-draft" class="add-to-draft" disabled>
+                            <i class="fa-solid fa-images"></i> Add to drafts
                         </button>
                     </div>
 
@@ -256,8 +271,18 @@
 
                 <!-- Display captured photo -->
                 <div class="photo-result">
-                    <h3>Captured photo: </h3>
-                    <img id="photo" class="camera-result" alt="The capture will appear here." />
+                    <h3>Selected draft</h3>
+                    <p class="draft-gallery-help">Photos taken and uploaded photos with effects appear here before posting.</p>
+                    <img id="photo" class="camera-result" alt="The capture will appear here." style="display: none;" />
+                    <div id="capture-draft-gallery" class="capture-draft-gallery" style="display: none;"></div>
+                    <div id="capture-confirm-actions" class="capture-confirm-actions" style="display: none;">
+                        <button id="retake-btn" class="btn-retake-photo">
+                            <i class="fa-solid fa-trash"></i> Discard selected
+                        </button>
+                        <button id="confirm-save-btn" class="btn-save-photo">
+                            <i class="fa-solid fa-floppy-disk"></i> Save selected
+                        </button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -265,19 +290,17 @@
 
         <section id="my-posts" style="display: none;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="margin: 0;">My photos</h2>
-                <button class="submit-btn" onclick="showUploadPhotoModal()" style="margin: 0; padding: 10px 20px;">
-                    <i class="fa-solid fa-upload" style="margin-right: 8px;"></i>
-                    Upload Photo
-                </button>
             </div>
-            <div class="my-photos-gallery" id="my-photos-gallery"></div>
+            <div class="post-component" id="my-photos-gallery"></div>
+            <nav class="pagination" id="myposts-pagination" style="display: none;">
+                <ul></ul>
+            </nav>
         </section>
 
 
         <section id="profile" style="display: none;">
             <div class="profile-container" style="max-width: 600px; margin: 0 auto; padding: 20px;">
-                <form id="profile-form" style="display: flex; flex-direction: column; gap: var(--gap-md);;">
+                <form id="profile-form" style="display: flex; flex-direction: column; gap: var(--gap-md); margin-bottom:50px ;">
                     <!-- Profile avatar -->
                     <div class="avatar-upload-section">
                         <div class="avatar-preview-wrapper avatar-preview-large" onclick="document.getElementById('profile-avatar-input').click()">
@@ -296,6 +319,32 @@
                     <div class="input-with-icon">
                         <i class="fa-solid fa-envelope input-icon"></i>
                         <input type="email" id="profile-email" class="input-info" placeholder="Email" />
+                    </div>
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" id="profile-notification-enabled" />
+                        <span>Receive email notifications for new comments</span>
+                    </label>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <span style="font-weight: 500;">Gallery mode</span>
+                        <div style="display: flex; gap: 8px; width: 100%;">
+                            <button type="button" id="profile-gallery-mode-pagination" class="btn-submit" style="flex: 1; padding: 10px; background: #e5e7eb; color: #1f2937; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                                Pagination
+                            </button>
+                            <button type="button" id="profile-gallery-mode-infinite" class="btn-submit" style="flex: 1; padding: 10px; background: #5784BA; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                                Infinite scroll
+                            </button>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <span style="font-weight: 500;">My posts mode</span>
+                        <div style="display: flex; gap: 8px; width: 100%;">
+                            <button type="button" id="profile-myposts-mode-pagination" class="btn-submit" style="flex: 1; padding: 10px; background: #e5e7eb; color: #1f2937; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                                Pagination
+                            </button>
+                            <button type="button" id="profile-myposts-mode-infinite" class="btn-submit" style="flex: 1; padding: 10px; background: #5784BA; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                                Infinite scroll
+                            </button>
+                        </div>
                     </div>
                     <button type="submit" class="btn-submit" style="padding: 12px; background: #5784BA; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
                         Update Profile
@@ -333,6 +382,67 @@
             <p>&copy; 2025 Camagru - 42 Project. All rights reserved.</p>
         </div>
     </footer>
+
+    <!-- Authentication Modal Templates -->
+    <!-- Forgot Password Modal Template -->
+    <template id="forgot-password-template">
+        <div id="forgot-password-overlay" class="popup-overlay is-active"></div>
+        <div id="forgot-password-popup" class="auth-container is-open">
+            <span class="icon-close" data-close-forgot-password>
+                <i class="fa-solid fa-xmark"></i>
+            </span>
+            <div class="header-login-container">
+                <h2>Reset Password</h2>
+                <p class="password-reset-description">Enter your email to receive a password reset link</p>
+            </div>
+            <form id="forgot-password-form" class="password-reset-form">
+                <div class="login-inputs">
+                    <label>Email Address</label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-envelope input-icon"></i>
+                        <input type="email" id="forgot-email" class="input-info" placeholder="Enter your email" required />
+                    </div>
+                </div>
+                <button class="submit-btn" type="submit">Send Reset Link</button>
+                <div class="login-register password-reset-back">
+                    <p>
+                        <a href="#" data-back-to-login>Back to Login</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </template>
+
+    <!-- Reset Password Modal Template -->
+    <template id="reset-password-template">
+        <div id="reset-password-overlay" class="popup-overlay is-active"></div>
+        <div id="reset-password-popup" class="auth-container is-open">
+            <span class="icon-close" data-close-reset-password>
+                <i class="fa-solid fa-xmark"></i>
+            </span>
+            <div class="header-login-container">
+                <h2>Set New Password</h2>
+                <p class="password-reset-description">Enter your new password</p>
+            </div>
+            <form id="reset-password-form" class="password-reset-form">
+                <div class="login-inputs">
+                    <label>New Password</label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" id="new-password" class="input-info" placeholder="Enter new password" required minlength="8" />
+                        <i class="fa-solid fa-eye eye-icon" data-password-target="new-password"></i>
+                    </div>
+                    <label>Confirm Password</label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" id="confirm-password" class="input-info" placeholder="Confirm new password" required minlength="8" />
+                        <i class="fa-solid fa-eye eye-icon" data-password-target="confirm-password"></i>
+                    </div>
+                </div>
+                <button class="submit-btn" type="submit">Reset Password</button>
+            </form>
+        </div>
+    </template>
 
     <!-- Scripts -->
 

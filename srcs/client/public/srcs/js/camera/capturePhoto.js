@@ -4,48 +4,36 @@
 // Current mode: 'camera' or 'upload'
 window.currentCameraMode = "camera";
 
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("📷 CapturePhoto.js loaded");
-
-  // Get DOM elements
-  video = document.getElementById("video");
-  canvas = document.getElementById("canvas");
-  photo = document.getElementById("photo");
-  startBtn = document.getElementById("start-btn");
-  cameraEffect = document.getElementById("camera-effect");
-  cameraSection = document.getElementById("camera");
-  photoGallery = document.getElementById("photo-gallery");
-
-  // Create gallery if it doesn't exist
-  if (!photoGallery) {
-    const resultSection = photo.parentElement;
-    photoGallery = document.createElement("div");
-    photoGallery.id = "photo-gallery";
-    photoGallery.className = "photo-gallery";
+function hideInitialCaptureState() {
+  if (photo) {
     photo.style.display = "none";
-    resultSection.appendChild(photoGallery);
   }
 
-  // Set up event listeners
+  if (cameraEffect) {
+    cameraEffect.style.display = "none";
+  }
+}
+
+function setupCameraViewInitialization() {
   document.addEventListener("cameraViewActivated", () => {
     if (currentCameraMode === "camera") {
       initializeWebcam();
     }
+
     handleEffectSelection();
   });
 
-  // Initialize webcam if camera section is visible
   if (cameraSection && cameraSection.style.display === "block") {
     initializeWebcam();
   }
+}
 
-  // Handle image upload
+function setupUploadHandlers() {
   const uploadInput = document.getElementById("upload-image");
   if (uploadInput) {
     uploadInput.addEventListener("change", handleImageUpload);
   }
 
-  // Handle drag & drop on upload zone
   const dropZone = document.getElementById("upload-drop-zone");
   if (dropZone) {
     dropZone.addEventListener("dragover", (e) => {
@@ -65,16 +53,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Handle upload save button
-  const uploadSaveBtn = document.getElementById("upload-save-btn");
-  if (uploadSaveBtn) {
-    uploadSaveBtn.addEventListener("click", saveUploadedPhoto);
+  const addToDraft = document.getElementById("add-to-draft");
+  if (addToDraft) {
+    addToDraft.addEventListener("click", saveUploadedPhoto);
   }
+}
 
-  // Set up capture button
+function setupCaptureButton() {
   if (startBtn) {
     startBtn.disabled = true;
-    startBtn.classList.add("disabled");
+    startBtn.classList.add("is-disabled");
 
     startBtn.addEventListener("click", (ev) => {
       ev.preventDefault();
@@ -87,22 +75,46 @@ document.addEventListener("DOMContentLoaded", () => {
 
       takePicture();
 
-      startBtn.classList.add("clicked");
+      startBtn.classList.add("is-clicked");
       setTimeout(() => {
-        startBtn.classList.remove("clicked");
+        startBtn.classList.remove("is-clicked");
       }, 200);
     });
   }
+}
 
-  // Initially hide the effect
-  if (cameraEffect) {
-    cameraEffect.style.display = "none";
+function setupCaptureDraftActions() {
+  const confirmSaveBtn = document.getElementById("confirm-save-btn");
+  if (confirmSaveBtn) {
+    confirmSaveBtn.addEventListener("click", async () => {
+      await saveSelectedDraft();
+    });
   }
 
-  // Initialize with blank photo
-  if (canvas && photoGallery) {
-    clearPhotoGallery();
+  // Handle retake button
+  const retakeBtn = document.getElementById("retake-btn");
+  if (retakeBtn) {
+    retakeBtn.addEventListener("click", () => {
+      removeSelectedDraft();
+    });
   }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("📷 CapturePhoto.js loaded");
+
+  video = document.getElementById("video");
+  canvas = document.getElementById("canvas");
+  photo = document.getElementById("photo");
+  startBtn = document.getElementById("start-btn");
+  cameraEffect = document.getElementById("camera-effect");
+  cameraSection = document.getElementById("camera");
+
+  hideInitialCaptureState();
+  setupCameraViewInitialization();
+  setupUploadHandlers();
+  setupCaptureButton();
+  setupCaptureDraftActions();
   handleEffectSelection();
 });
 
@@ -112,10 +124,10 @@ function switchToCamera() {
 
   document
     .querySelectorAll(".camera-toggle-btn")
-    .forEach((b) => b.classList.add("active"));
+    .forEach((b) => b.classList.add("is-active"));
   document
     .querySelectorAll(".upload-toggle-btn")
-    .forEach((b) => b.classList.remove("active"));
+    .forEach((b) => b.classList.remove("is-active"));
 
   document.getElementById("camera-mode").style.display = "flex";
   document.getElementById("upload-mode").style.display = "none";
@@ -129,10 +141,10 @@ function switchToUpload() {
 
   document
     .querySelectorAll(".upload-toggle-btn")
-    .forEach((b) => b.classList.add("active"));
+    .forEach((b) => b.classList.add("is-active"));
   document
     .querySelectorAll(".camera-toggle-btn")
-    .forEach((b) => b.classList.remove("active"));
+    .forEach((b) => b.classList.remove("is-active"));
 
   document.getElementById("upload-mode").style.display = "flex";
   document.getElementById("camera-mode").style.display = "none";
@@ -195,28 +207,35 @@ function takePicture() {
     canvas.width = width;
     canvas.height = height;
 
-    // Draw video image onto canvas
+    // Draw video frame onto canvas
     context.drawImage(video, 0, 0, width, height);
 
-    // Load effect from selected effect
     const image = new Image();
     image.src = cameraEffect.src;
 
     image.onload = function () {
-      // Read effect dimensions from style or use defaults
-      const effectWidth = parseInt(cameraEffect.style.width) || 100;
-      const effectHeight = parseInt(cameraEffect.style.height) || 80;
+      const effectWidth = width;
+      const effectHeight = height;
 
-      // Calculate position to center the effect (same as CSS transform)
       const posX = (width - effectWidth) / 2;
       const posY = (height - effectHeight) / 2;
 
-      // Draw the image with the same dimensions as cameraEffect and centered
-      context.drawImage(image, posX, posY, effectWidth, effectHeight);
+      // Raw data for server composition
+      const rawDataUrl = canvas.toDataURL("image/png");
 
-      const dataUrl = canvas.toDataURL("image/png");
-      addPhotoToGallery(dataUrl);
-      console.log("📷 Photo with effect captured at center position");
+      // Draw effect on canvas for client-side preview
+      context.drawImage(image, posX, posY, effectWidth, effectHeight);
+      const previewDataUrl = canvas.toDataURL("image/png");
+
+      addCaptureDraft({
+        rawDataUrl,
+        previewDataUrl,
+        effectDataUrl: selectedEffect.dataUrl,
+        effectWidth,
+        effectHeight,
+      });
+
+      console.log("📷 Photo captured — choose a draft to save");
     };
   } else {
     console.log("❌ Cannot take picture - video not ready");
@@ -235,3 +254,4 @@ function stopWebcam() {
 
 // Clean up when navigating away
 window.addEventListener("beforeunload", stopWebcam);
+

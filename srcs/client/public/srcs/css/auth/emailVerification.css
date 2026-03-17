@@ -12,14 +12,15 @@
 }
 
 .verification-container {
-  background: white;
+  background: var(--card-bg);
+  color: var(--text-color);
   padding: 40px 30px;
   border-radius: 15px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-md);
   text-align: center;
   max-width: 500px;
   width: 90%;
-  animation: slideIn 0.5s ease-out;
+  animation: slide-in 0.5s ease-out;
 }
 
 .verification-icon {
@@ -28,22 +29,22 @@
 }
 
 .verification-icon.success {
-  color: #0abf30;
+  color: var(--color-success);
 }
 
 .verification-icon.error {
-  color: #f00;
+  color: var(--color-error);
 }
 
 .verification-title {
-  color: #333;
+  color: var(--text-header);
   margin-bottom: 15px;
   font-size: 28px;
   font-weight: 600;
 }
 
 .verification-message {
-  color: #666;
+  color: var(--text-color);
   line-height: 1.6;
   margin-bottom: 30px;
   font-size: var(--font-md);
@@ -52,8 +53,8 @@
 .verification-btn {
   display: inline-block;
   padding: 15px 40px;
-  color: white;
-  background-color: #3b82f6;
+  color: var(--text-color);
+  background-color: var(--color-primary);
   border: none;
   border-radius: 8px;
   font-weight: 500;
@@ -63,7 +64,7 @@
 }
 
 .verification-btn:hover {
-  background-color: #2563eb;
+  background-color: var(--color-primary-dark);
 }
 
 .verification-countdown {
@@ -72,7 +73,7 @@
   font-size: var(--font-sm);
 }
 
-@keyframes slideIn {
+@keyframes slide-in {
   from {
     opacity: 0;
     transform: translateY(-30px);
