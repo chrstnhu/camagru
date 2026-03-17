@@ -102,6 +102,14 @@
   }
 }
 
+@import url('https://fonts.googleapis.com/css?family=Montserrat:400,700&display=swap');
+
+.montserrat-sans-serif {
+  font-family: "Montserrat", Georgia, 'Times New Roman', Times, serif, sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
 
 body {
   /*a href=httpsfr.freepik.comvecteurs-librefond-bleu-aquarelle_23761122.html*/
@@ -114,6 +122,7 @@ body {
   padding: 0;
   box-sizing: border-box;
   color: var(--text-color);
+  font-family: "montserrat-sans-serif";
 }
 
 
@@ -380,4 +389,46 @@ footer {
 
 .user-profile .user-profile-dropdown a:hover {
   background: var(--card-bg);
+}
+
+
+.forgot-reset-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.forgot-reset-overlay>#forgot-password-popup,
+.forgot-reset-overlay>#reset-password-popup {
+  background: var(--card-bg) !important;
+  color: var(--text-color) !important;
+  border-radius: 15px;
+  box-shadow: var(--shadow-md);
+  padding: 40px 30px;
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+  position: relative;
+  z-index: 10001;
+  animation: slide-in 0.5s ease-out;
+}
+
+.forgot-reset-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

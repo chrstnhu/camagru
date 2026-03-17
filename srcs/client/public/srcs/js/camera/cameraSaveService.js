@@ -1,3 +1,4 @@
+// Saves the currently selected photo draft to the database
 async function saveSelectedDraft() {
   const selectedDraft = getSelectedDraft();
   if (!selectedDraft) {
@@ -19,6 +20,7 @@ async function saveSelectedDraft() {
   return true;
 }
 
+// Sets the latest camera image in the photo element and updates its aspect ratio
 function setLatestCameraImage(dataUrl) {
   if (!photo) {
     return;
@@ -34,6 +36,7 @@ function setLatestCameraImage(dataUrl) {
   photo.style.display = "block";
 }
 
+// Returns the rendered size of an element, or fallback values if not available
 function getRenderedSize(element, fallbackWidth, fallbackHeight) {
   if (!element) {
     return {
@@ -49,6 +52,7 @@ function getRenderedSize(element, fallbackWidth, fallbackHeight) {
   };
 }
 
+// Calculates the effect overlay dimensions for uploaded images
 function getUploadEffectDimensions() {
   const previewImg = document.getElementById("upload-preview");
   const uploadEffectPreview = document.getElementById("upload-effect-preview");
@@ -73,6 +77,7 @@ function getUploadEffectDimensions() {
   };
 }
 
+// Saves an image (with effect) to the backend database
 async function saveImageToDatabase(dataUrl, options = {}) {
   try {
     const requestBody = options.effectDataUrl
@@ -111,21 +116,21 @@ async function saveImageToDatabase(dataUrl, options = {}) {
       if (
         gallerySection &&
         gallerySection.style.display !== "none" &&
-        typeof initializepostsData === "function"
+        typeof initpostsData === "function"
       ) {
-        await initializepostsData();
+        await initpostsData();
       }
 
       if (
         myPostsSection &&
         myPostsSection.style.display !== "none" &&
-        typeof initializeMyPosts === "function"
+        typeof initMyPosts === "function"
       ) {
-        await initializeMyPosts({ force: true });
+        await initMyPosts({ force: true });
       }
 
       if (myPostsSection) {
-        delete myPostsSection.dataset.initialized;
+        delete myPostsSection.dataset.initd;
       }
     } else {
       console.error("❌ Failed to save image:", data.error);

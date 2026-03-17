@@ -1,4 +1,4 @@
-// Comments Section
+// Updates the toggle button and icon state for comments
 function updateCommentsToggleState(commentsToggleBtn, isExpanded) {
   if (!commentsToggleBtn) {
     return;
@@ -24,7 +24,78 @@ function updateCommentsToggleState(commentsToggleBtn, isExpanded) {
   }
 }
 
-function initializeCommentsSection(postId, index) {
+// Helper to bind toggle event for comments section
+function bindCommentsToggleEvent(
+  commentsToggleBtn,
+  commentsBody,
+  commentsSection,
+  commentsContainer,
+  postId,
+  index,
+) {
+  if (commentsToggleBtn.dataset.bound === "true") return;
+  commentsToggleBtn.dataset.bound = "true";
+  commentsToggleBtn.addEventListener("click", async () => {
+    const isHidden = commentsBody.classList.contains("comments-body-hidden");
+    if (isHidden) {
+      showCommentsSection(commentsBody, commentsToggleBtn);
+      if (commentsSection.dataset.loaded !== "true") {
+        await loadComments(postId, commentsContainer, index);
+        commentsSection.dataset.loaded = "true";
+      }
+    } else {
+      hideCommentsSection(commentsBody, commentsToggleBtn);
+    }
+  });
+}
+
+// Helper to show comments section
+function showCommentsSection(commentsBody, commentsToggleBtn) {
+  commentsBody.classList.remove("comments-body-hidden");
+  updateCommentsToggleState(commentsToggleBtn, true);
+}
+
+// Helper to hide comments section
+function hideCommentsSection(commentsBody, commentsToggleBtn) {
+  commentsBody.classList.add("comments-body-hidden");
+  updateCommentsToggleState(commentsToggleBtn, false);
+}
+
+// Helper to bind add comment button event
+function bindAddCommentBtn(
+  addCommentBtn,
+  commentInput,
+  commentsContainer,
+  postId,
+  index,
+) {
+  if (addCommentBtn.dataset.bound === "true") return;
+  addCommentBtn.dataset.bound = "true";
+  addCommentBtn.addEventListener("click", function () {
+    addComment(postId, commentInput, commentsContainer, index);
+  });
+}
+
+// Helper to bind comment input keypress event
+function bindCommentInput(
+  commentInput,
+  addCommentBtn,
+  commentsContainer,
+  postId,
+  index,
+) {
+  if (commentInput.dataset.bound === "true") return;
+  commentInput.dataset.bound = "true";
+  commentInput.addEventListener("keypress", function (e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      addComment(postId, commentInput, commentsContainer, index);
+    }
+  });
+}
+
+// Initializes the comments section for a post, sets up event listeners (refactored)
+function initCommentsSection(postId, index) {
   const commentsSection = document.getElementById(`comments-section-${index}`);
   const commentsBody = document.getElementById(`comments-body-${index}`);
   const commentsToggleBtn = document.getElementById(
@@ -46,47 +117,35 @@ function initializeCommentsSection(postId, index) {
     return;
   }
 
-  if (commentsToggleBtn.dataset.bound !== "true") {
-    commentsToggleBtn.dataset.bound = "true";
-    commentsToggleBtn.addEventListener("click", async () => {
-      const isHidden = commentsBody.classList.contains("comments-body-hidden");
-
-      if (isHidden) {
-        commentsBody.classList.remove("comments-body-hidden");
-        updateCommentsToggleState(commentsToggleBtn, true);
-
-        if (commentsSection.dataset.loaded !== "true") {
-          await loadComments(postId, commentsContainer, index);
-          commentsSection.dataset.loaded = "true";
-        }
-      } else {
-        commentsBody.classList.add("comments-body-hidden");
-        updateCommentsToggleState(commentsToggleBtn, false);
-      }
-    });
-  }
+  bindCommentsToggleEvent(
+    commentsToggleBtn,
+    commentsBody,
+    commentsSection,
+    commentsContainer,
+    postId,
+    index,
+  );
 
   if (addCommentBtn && commentInput) {
-    if (addCommentBtn.dataset.bound !== "true") {
-      addCommentBtn.dataset.bound = "true";
-      addCommentBtn.addEventListener("click", function () {
-        addComment(postId, commentInput, commentsContainer, index);
-      });
-    }
-
-    if (commentInput.dataset.bound !== "true") {
-      commentInput.dataset.bound = "true";
-      commentInput.addEventListener("keypress", function (e) {
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          addComment(postId, commentInput, commentsContainer, index);
-        }
-      });
-    }
+    bindAddCommentBtn(
+      addCommentBtn,
+      commentInput,
+      commentsContainer,
+      postId,
+      index,
+    );
+    bindCommentInput(
+      commentInput,
+      addCommentBtn,
+      commentsContainer,
+      postId,
+      index,
+    );
   }
 }
 
-function initializeCommentsCount(postIndex, count) {
+// Initializes the comments count display for a post
+function initCommentsCount(postIndex, count) {
   const safeCount = Number(count) || 0;
   const commentsSection = document.getElementById(
     `comments-section-${postIndex}`,
@@ -104,6 +163,7 @@ function initializeCommentsCount(postIndex, count) {
   }
 }
 
+// Loads comments for a post from the API and renders them
 async function loadComments(postId, container, postIndex) {
   try {
     const response = await fetch(`/api/posts/${postId}/comments`);
@@ -145,7 +205,7 @@ async function loadComments(postId, container, postIndex) {
   }
 }
 
-// Update comments count display
+// Updates the comments count display for a post
 function updateCommentsCount(count, postIndex) {
   const commentsContainer = document.getElementById(
     `comments-container-${postIndex}`,
@@ -167,7 +227,7 @@ function updateCommentsCount(count, postIndex) {
   }
 }
 
-// Add a new comment
+// Adds a new comment to a post via the API and updates the UI
 async function addComment(postId, input, container, postIndex) {
   const text = input.value.trim();
   if (!text) {
@@ -226,7 +286,7 @@ async function addComment(postId, input, container, postIndex) {
   }
 }
 
-// Create comment HTML element
+// Creates a DOM element for a comment, including delete button if owner
 function createCommentElement(comment, commentIndex, postId, postIndex) {
   const div = document.createElement("div");
   div.className = `comment-item_${postId}`;
@@ -263,7 +323,7 @@ function createCommentElement(comment, commentIndex, postId, postIndex) {
   return div;
 }
 
-// Delete comment
+// Deletes a comment via the API and updates the UI
 async function deleteMyComment(postId, commentId, postIndex) {
   const session = getUserSession();
   if (!session || !session.user_id || !session.logged_in) {

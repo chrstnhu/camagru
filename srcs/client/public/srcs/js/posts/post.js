@@ -1,4 +1,3 @@
-// Initialize posts data from API
 let currentLoadedPage = 1;
 let isLoading = false;
 let hasMorePosts = true;
@@ -8,6 +7,7 @@ const GALLERY_FEED_MODE_STORAGE_KEY = "galleryFeedDisplayMode";
 const INITIAL_RENDER_BATCH_SIZE = 8;
 const IDLE_RENDER_BATCH_SIZE = 4;
 
+// Runs a callback when the browser is idle, or after a short timeout fallback
 function runWhenIdle(callback) {
   if (typeof window.requestIdleCallback === "function") {
     window.requestIdleCallback(callback, { timeout: 100 });
@@ -19,6 +19,7 @@ function runWhenIdle(callback) {
   }, 0);
 }
 
+// Renders posts in batches to avoid blocking the UI, using idle time
 function renderPostsInBatches(postsData, startIndex = 0) {
   return new Promise((resolve) => {
     const total = postsData.length;
@@ -72,6 +73,7 @@ function renderPostsInBatches(postsData, startIndex = 0) {
   });
 }
 
+// Returns the current display (infinite or pagination)
 function getFeedDisplayMode() {
   const session = getUserSession();
   if (!session || !session.logged_in) {
@@ -82,11 +84,13 @@ function getFeedDisplayMode() {
   return savedMode === "infinite" ? "infinite" : "pagination";
 }
 
+// Checks if the gallery is in infinite scroll mode
 function isInfiniteScrollMode() {
   return getFeedDisplayMode() === "infinite";
 }
 
-async function initializepostsData() {
+// Initializes the gallery posts data, sets up pagination or infinite scroll
+async function initPostsData() {
   window._galleryNeedsRefresh = false;
   window.objJson = [];
   currentLoadedPage = 1;
@@ -116,16 +120,18 @@ async function initializepostsData() {
     }
 
     setTimeout(() => {
-      initializePagination(PAGINATION_PAGE_SIZE, 1);
+      initPagination(PAGINATION_PAGE_SIZE, 1);
     }, 100);
   }
 }
 
+// Renders a batch of posts, starting at the current objJson length
 async function renderPosts(postsData) {
   const startIndex = window.objJson.length;
   await renderPostsInBatches(postsData, startIndex);
 }
 
+// Loads more posts for infinite scroll mode, appending them to the gallery
 async function loadMorePosts() {
   if (isLoading || !hasMorePosts) {
     return;
@@ -166,6 +172,7 @@ async function loadMorePosts() {
   }
 }
 
+// Loads all posts for pagination mode, fetching all pages and rendering them
 async function loadAllPostsForPagination() {
   if (isLoading) {
     return;
@@ -226,7 +233,7 @@ async function loadAllPostsForPagination() {
   }
 }
 
-// BONUS - Post with infinite scroll
+// BONUS - Sets up the infinite scroll
 function setupInfiniteScroll() {
   if (window._postsInfiniteScrollBound) {
     return;
@@ -252,7 +259,7 @@ function setupInfiniteScroll() {
   });
 }
 
-// Fallback function with example data
+// Loads example fallback data for the gallery if API is unavailable
 function loadFallbackData() {
   console.log("Loading fallback data...");
 
@@ -276,4 +283,4 @@ function loadFallbackData() {
   });
 }
 
-window.initializepostsData = initializepostsData;
+window.initPostsData = initPostsData;

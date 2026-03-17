@@ -1,3 +1,4 @@
+// Renders the gallery of photo capture drafts in the UI
 function renderCaptureDraftGallery() {
   const draftGallery = document.getElementById("capture-draft-gallery");
   const confirmActions = document.getElementById("capture-confirm-actions");
@@ -45,6 +46,7 @@ function renderCaptureDraftGallery() {
   });
 }
 
+// Updates the photo preview to show the currently selected draft
 function updateSelectedDraftPreview() {
   if (!photo) {
     return;
@@ -61,6 +63,7 @@ function updateSelectedDraftPreview() {
   photo.style.display = "block";
 }
 
+// Returns the currently selected draft object, or null if none
 function getSelectedDraft() {
   if (
     !window._captureDrafts ||
@@ -73,6 +76,7 @@ function getSelectedDraft() {
   return window._captureDrafts[window._selectedCaptureDraftIndex] || null;
 }
 
+// Adds a new draft to the drafts array and updates the gallery
 function addCaptureDraft(draft) {
   if (!window._captureDrafts) {
     window._captureDrafts = [];
@@ -94,6 +98,7 @@ function addCaptureDraft(draft) {
   renderCaptureDraftGallery();
 }
 
+// Removes the currently selected draft from the drafts array and updates the gallery
 function removeSelectedDraft() {
   if (
     !window._captureDrafts ||

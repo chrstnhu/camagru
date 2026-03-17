@@ -1,8 +1,6 @@
-// Session and Profile Management
-
 window.csrfToken = null;
 
-// Clear user session cookie
+// Sets the user session cookie with user data
 function setUserSessionCookie(userData) {
   document.cookie = `user_session=${encodeURIComponent(
     JSON.stringify({
@@ -15,7 +13,7 @@ function setUserSessionCookie(userData) {
   )}; path=/; max-age=3600; SameSite=Lax`;
 }
 
-// Refresh user session cookie
+// Refreshes the user session cookie and CSRF token from the server
 async function refreshServerSession() {
   const response = await fetch("/api/user/status");
   const data = await response.json();
@@ -33,6 +31,7 @@ async function refreshServerSession() {
   return data;
 }
 
+// Returns JSON headers with CSRF token, refreshing session if needed
 async function getJsonHeaders() {
   if (!window.csrfToken) {
     await refreshServerSession();
@@ -44,7 +43,7 @@ async function getJsonHeaders() {
   };
 }
 
-// Handle Unauthorized 
+// Handles unauthorized responses by resyncing session and updating UI
 async function handleUnauthorizedResponse(defaultMessage) {
   try {
     const data = await refreshServerSession();
@@ -63,7 +62,7 @@ async function handleUnauthorizedResponse(defaultMessage) {
   );
 }
 
-// Apply lougout State to UI
+// Applies the logged-out state to the UI and clears session data
 function applyLoggedOutState() {
   document.cookie = "user_session=; path=/; max-age=0; SameSite=Lax";
 
@@ -98,7 +97,7 @@ function applyLoggedOutState() {
   }
 }
 
-// Update UI after successful login
+// Updates the UI after a successful login and stores user data
 function updateUIAfterLogin(userData) {
   const userProfile = document.getElementById("user-profile");
   if (userProfile) {
@@ -130,7 +129,7 @@ function updateUIAfterLogin(userData) {
   refreshAllUserAvatars(userData.username);
 }
 
-// Get user session from cookie
+// Retrieves the user session from the session cookie
 function getUserSession() {
   const cookies = document.cookie.split("; ");
   const sessionCookie = cookies.find((cookie) =>
@@ -141,7 +140,6 @@ function getUserSession() {
     try {
       const sessionData = sessionCookie.split("=")[1];
       const parsedData = JSON.parse(decodeURIComponent(sessionData));
-      // console.log("Parsed session data:", parsedData);
       return parsedData;
     } catch (error) {
       console.error("❌ Error parsing session cookie:", error);
@@ -151,7 +149,7 @@ function getUserSession() {
   return null;
 }
 
-// Logout function
+// Logs out the user, clears session, and updates UI
 async function logout() {
   try {
     const response = await fetch("/api/auth/logout", {
@@ -175,7 +173,7 @@ async function logout() {
   updateHomeDashboard();
 }
 
-// Function to update home page dashboard based on login status
+// Updates the home page dashboard based on login status
 function updateHomeDashboard() {
   const session = getUserSession();
   const welcomeDashboard = document.getElementById("welcome-dashboard");
@@ -205,7 +203,7 @@ function updateHomeDashboard() {
   }
 }
 
-// Setup profile dropdown hover/click behavior
+// Sets up the profile dropdown menu hover and click behavior
 function setupProfileDropdown() {
   const profileBox = document.querySelector(".user-profile");
   const profileAvatar = document.querySelector(".user-avatar");
@@ -231,7 +229,7 @@ function setupProfileDropdown() {
   });
 }
 
-// Check if user is already logged in on page load
+// Checks if user is already logged in and initializes UI on DOM load
 document.addEventListener("DOMContentLoaded", () => {
   refreshServerSession()
     .then((data) => {

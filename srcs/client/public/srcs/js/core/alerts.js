@@ -1,9 +1,9 @@
-// Show success alert
+// Shows a success alert 
 function showSuccessAlert(message) {
   showAlert("success", message);
 }
 
-// Show error alert
+// Shows an error alert 
 function showErrorAlert(message) {
   showAlert("error", message);
 }
@@ -11,7 +11,7 @@ function showErrorAlert(message) {
 // Counter for unique alert IDs
 let alertIdCounter = 0;
 
-// Show alert (creates a new stacked notification)
+// Shows an alert of success or error with the message
 function showAlert(type, message) {
   const container = document.getElementById("alert-container");
   if (!container) {
@@ -33,7 +33,8 @@ function showAlert(type, message) {
   const icon = document.createElement("i");
   icon.className =
     type === "success"
-      ? "fa-solid fa-circle-check" : "fa-solid fa-circle-xmark";
+      ? "fa-solid fa-circle-check"
+      : "fa-solid fa-circle-xmark";
 
   const messageSpan = document.createElement("span");
   messageSpan.textContent = message;
@@ -54,7 +55,7 @@ function showAlert(type, message) {
   }, 5000);
 }
 
-// Remove specific alert with animation
+// Removes a specific alert with a fade-out animation
 function removeAlert(alertId) {
   const alertBox = document.getElementById(alertId);
   if (!alertBox) {
@@ -70,7 +71,7 @@ function removeAlert(alertId) {
   }, 300);
 }
 
-// Legacy function for compatibility (removes all alerts)
+// Removes all alerts immediately (legacy compatibility)
 function hideAllAlertsImmediately() {
   const container = document.getElementById("alert-container");
   if (container) {

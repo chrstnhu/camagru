@@ -1,4 +1,4 @@
-// Handle effect selection
+// Handles the rendering and selection of photo effects in the UI
 function handleEffectSelection() {
   const effectsContainer = document.getElementById("effects-container");
   if (!effectsContainer) {
@@ -14,17 +14,16 @@ function handleEffectSelection() {
     { name: "decorSun", img: "assets/photosEffects/decorSun.png" },
     { name: "decorXmas", img: "assets/photosEffects/decorXmas.png" },
     { name: "happyBirthday", img: "assets/photosEffects/happyBirthday.png" },
-    { name: "decorLego", img: "assets/photosEffects/decorLego.png" },    
+    { name: "decorLego", img: "assets/photosEffects/decorLego.png" },
     { name: "filterCamera", img: "assets/photosEffects/filterCamera.png" },
     { name: "filterVignette", img: "assets/photosEffects/filterVignette.png" },
-
   ];
 
   effectsContainer.innerHTML = "";
   effects.forEach((effect) => createEffectElement(effect, effectsContainer));
 }
 
-// Ensure effect data URL
+// Ensures the effect has a data URL (base64) for use in overlays
 async function ensureEffectDataUrl(effect) {
   if (effect.dataUrl) {
     return effect.dataUrl;
@@ -43,7 +42,7 @@ async function ensureEffectDataUrl(effect) {
   return effect.dataUrl;
 }
 
-// Create effect element
+// Creates a DOM element for a photo effect and adds it to the container
 function createEffectElement(effect, container) {
   const effectDiv = document.createElement("div");
   effectDiv.classList.add("effect");
@@ -62,6 +61,7 @@ function createEffectElement(effect, container) {
   container.appendChild(effectDiv);
 }
 
+// Clears the currently selected effect and disables related UI
 function clearCurrentEffect(uploadEffectPreview, addToDraft) {
   selectedEffect = null;
   cameraEffect.src = "";
@@ -77,6 +77,7 @@ function clearCurrentEffect(uploadEffectPreview, addToDraft) {
   }
 }
 
+// Applies the selected effect to the preview and enables related UI
 function applySelectedEffect(effect, uploadEffectPreview, addToDraft) {
   selectedEffect = effect;
   cameraEffect.src = effect.img;
@@ -93,7 +94,7 @@ function applySelectedEffect(effect, uploadEffectPreview, addToDraft) {
   }
 }
 
-// Toggle effect selection
+// Toggles the selection of a photo effect, updating the UI and preview
 async function toggleEffectSelection(effectDiv, effect) {
   const alreadySelected = effectDiv.classList.contains("is-selected");
 

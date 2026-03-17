@@ -1,49 +1,44 @@
-
-// Set avatar src with default
+// Sets the avatar image source, erroring to default
 function setAvatarSrc(img, src) {
   img.src = src;
 
-  // If avatar fails to load, use default avatar
   img.onerror = () => {
     img.src = "assets/profile/default-avatar.png";
   };
 }
 
+// Builds the avatar URL for a given username
 function buildAvatarUrl(username, version) {
   if (!username) {
     return "assets/profile/default-avatar.png";
   }
-
   if (!window._avatarCacheVersion) {
     window._avatarCacheVersion = Date.now();
   }
-
   const cacheVersion = version || window._avatarCacheVersion;
   return `/api/avatar/${encodeURIComponent(username)}?ts=${cacheVersion}`;
 }
 
-// Refresh avatar of logged-in user
+// Refreshes all avatar images in the UI for the given username
 function refreshAllUserAvatars(username, previousUsername = null) {
-  if (!username) {
-    return;
-  }
-
   const avatarUrl = buildAvatarUrl(username, Date.now());
   const matchingUsernames = new Set(
     [username, previousUsername].filter(Boolean),
   );
 
+  // Update header avatar
   const headerAvatar = document.getElementById("user-avatar-img");
   if (headerAvatar) {
     setAvatarSrc(headerAvatar, avatarUrl);
   }
 
+  // Update profile avatar
   const profileAvatar = document.getElementById("profile-avatar-preview");
   if (profileAvatar) {
     setAvatarSrc(profileAvatar, avatarUrl);
   }
 
-  // Post avatars that belong to this user
+  // Update post avatars that belong to this user
   document.querySelectorAll("[id^='post-avatar-']").forEach((img) => {
     const postHeader = img.closest(".post-header");
     const aliasElement = postHeader?.querySelector(".post-alias");
@@ -54,7 +49,7 @@ function refreshAllUserAvatars(username, previousUsername = null) {
     }
   });
 
-  // Add comment avatars that belong to this user
+  // Update comment avatars that belong to this user
   document.querySelectorAll(".add-comment-avatar").forEach((img) => {
     setAvatarSrc(img, avatarUrl);
   });
@@ -72,12 +67,13 @@ function refreshAllUserAvatars(username, previousUsername = null) {
   });
 }
 
+// Refreshes all username displays in the UI after a username change
 function refreshAllUsername(oldUsername, newUsername) {
   if (!oldUsername || !newUsername) {
     return;
   }
 
-  // Dashboard username
+  // Update dashboard username
   const dashboardUsername = document.getElementById("dashboard-username");
   if (
     dashboardUsername &&
@@ -86,7 +82,7 @@ function refreshAllUsername(oldUsername, newUsername) {
     dashboardUsername.textContent = newUsername;
   }
 
-  // Post aliases that belong to this user
+  // Update post aliases that belong to this user
   document.querySelectorAll(`[id^='post-alias-']`).forEach((el) => {
     const rawAlias = el.dataset.rawAlias || el.textContent.trim();
     if (rawAlias === oldUsername) {
@@ -103,7 +99,7 @@ function refreshAllUsername(oldUsername, newUsername) {
     }
   });
 
-  // Comment authors that belong to this user
+  // Update comment authors that belong to this user
   document.querySelectorAll(".comment-author").forEach((el) => {
     if (el.textContent.trim() === oldUsername) {
       el.textContent = newUsername;

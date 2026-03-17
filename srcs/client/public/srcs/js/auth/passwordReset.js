@@ -1,3 +1,4 @@
+// Mounts a template from the DOM by its ID and appends it to the body
 function mountTemplate(templateId) {
   const template = document.getElementById(templateId);
   if (!template) {
@@ -9,6 +10,7 @@ function mountTemplate(templateId) {
   return true;
 }
 
+// Opens the login popup or shows the login form after reset flow
 function openLoginFromResetFlow() {
   if (typeof window.activateLoginPopup === "function") {
     window.activateLoginPopup();
@@ -20,7 +22,7 @@ function openLoginFromResetFlow() {
   }
 }
 
-// Close forgot popup
+// Closes the forgot password popup and overlay
 function closeForgotPasswordPopup() {
   const popup = document.getElementById("forgot-password-popup");
   const overlay = document.getElementById("forgot-password-overlay");
@@ -32,7 +34,7 @@ function closeForgotPasswordPopup() {
   }
 }
 
-// Handle forgot password
+// Handles the forgot password form submission and sends the reset email
 async function handleForgotPassword(event) {
   event.preventDefault();
 
@@ -59,7 +61,7 @@ async function handleForgotPassword(event) {
   }
 }
 
-// Forgot Password Popup
+// Shows the forgot password popup and sets up its event listeners
 function showForgotPasswordPopup() {
   if (!mountTemplate("forgot-password-template")) {
     return;
@@ -90,6 +92,8 @@ function showForgotPasswordPopup() {
     form.addEventListener("submit", handleForgotPassword);
   }
 }
+
+// Closes the reset password popup and overlay, and clears the URL
 function closeResetPasswordPopup() {
   const popup = document.getElementById("reset-password-popup");
   const overlay = document.getElementById("reset-password-overlay");
@@ -99,11 +103,10 @@ function closeResetPasswordPopup() {
   if (overlay) {
     overlay.remove();
   }
-  // Clear URL
   window.history.replaceState({}, document.title, window.location.pathname);
 }
 
-// Handle reset password form submission
+// Handles the reset password form submission and updates the password
 async function handleResetPassword(event, token) {
   event.preventDefault();
 
@@ -142,7 +145,7 @@ async function handleResetPassword(event, token) {
   }
 }
 
-// Toggle password visibility
+// Toggles the visibility of a password input field
 function togglePasswordVisibility(inputId, icon) {
   const input = document.getElementById(inputId);
   if (input.type === "password") {
@@ -156,7 +159,7 @@ function togglePasswordVisibility(inputId, icon) {
   }
 }
 
-// Reset password form (when user clicks link in email)
+// Shows the reset password form and sets up its event listeners
 function showResetPasswordForm(token) {
   if (!mountTemplate("reset-password-template")) {
     return;
@@ -187,7 +190,7 @@ function showResetPasswordForm(token) {
   }
 }
 
-// Check for password reset on page load
+// Checks for password reset or error in the URL on DOM load and shows the appropriate UI
 document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
 

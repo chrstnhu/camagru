@@ -1,8 +1,5 @@
-// Camera State - Shared variables for all camera modules
-// This file must be loaded first before other camera files
-
 // Webcam state
-window.webcamInitialized = false;
+window.webcamInit = false;
 window.stream = null;
 window.selectedEffect = null;
 
@@ -25,7 +22,7 @@ window.cameraActivated = false;
 // Photo ID counter
 window.photoID = 0;
 
-// Helper function to get logged in user ID from session
+// Returns the logged-in user ID from the session, or null if not logged in
 function getLoggedInUserId() {
   const session = getUserSession();
   if (session && session.logged_in) {

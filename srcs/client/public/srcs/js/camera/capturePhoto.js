@@ -1,9 +1,9 @@
 // https://developer.mozilla.org/en/docs/Web/API/Media_Capture_and_Streams_API/Taking_still_photos
-// All camera state variables are defined in cameraState.js
 
 // Current mode: 'camera' or 'upload'
 window.currentCameraMode = "camera";
 
+// Hides the initial state of the photo and effect preview
 function hideInitialCaptureState() {
   if (photo) {
     photo.style.display = "none";
@@ -14,20 +14,22 @@ function hideInitialCaptureState() {
   }
 }
 
+// Sets up camera view initialization and event listeners for camera activation
 function setupCameraViewInitialization() {
   document.addEventListener("cameraViewActivated", () => {
     if (currentCameraMode === "camera") {
-      initializeWebcam();
+      initWebcam();
     }
 
     handleEffectSelection();
   });
 
   if (cameraSection && cameraSection.style.display === "block") {
-    initializeWebcam();
+    initWebcam();
   }
 }
 
+// Sets up upload input, drag-and-drop, and add-to-draft handlers
 function setupUploadHandlers() {
   const uploadInput = document.getElementById("upload-image");
   if (uploadInput) {
@@ -59,7 +61,8 @@ function setupUploadHandlers() {
   }
 }
 
-function setupCaptureButton() {
+// Sets up the capture button, enabling photo capture with effect
+function setupCaptureBtn() {
   if (startBtn) {
     startBtn.disabled = true;
     startBtn.classList.add("is-disabled");
@@ -83,6 +86,7 @@ function setupCaptureButton() {
   }
 }
 
+// Sets up actions for saving and retaking photo drafts
 function setupCaptureDraftActions() {
   const confirmSaveBtn = document.getElementById("confirm-save-btn");
   if (confirmSaveBtn) {
@@ -100,6 +104,7 @@ function setupCaptureDraftActions() {
   }
 }
 
+// Initializes camera, upload, and capture UI on DOM load
 document.addEventListener("DOMContentLoaded", () => {
   console.log("📷 CapturePhoto.js loaded");
 
@@ -113,12 +118,12 @@ document.addEventListener("DOMContentLoaded", () => {
   hideInitialCaptureState();
   setupCameraViewInitialization();
   setupUploadHandlers();
-  setupCaptureButton();
+  setupCaptureBtn();
   setupCaptureDraftActions();
   handleEffectSelection();
 });
 
-// Switch to Camera mode
+// Switches to camera mode and initializes webcam
 function switchToCamera() {
   currentCameraMode = "camera";
 
@@ -132,10 +137,10 @@ function switchToCamera() {
   document.getElementById("camera-mode").style.display = "flex";
   document.getElementById("upload-mode").style.display = "none";
 
-  initializeWebcam();
+  initWebcam();
 }
 
-// Switch to Upload mode
+// Switches to upload mode and stops the webcam
 function switchToUpload() {
   currentCameraMode = "upload";
 
@@ -152,9 +157,9 @@ function switchToUpload() {
   stopWebcam();
 }
 
-// Initialize webcam
-function initializeWebcam() {
-  if (webcamInitialized) {
+// Initializes the webcam and sets up video/canvas elements
+function initWebcam() {
+  if (webcamInit) {
     console.log("📷 Webcam already initialized");
     return;
   }
@@ -176,7 +181,7 @@ function initializeWebcam() {
       return video.play();
     })
     .then(() => {
-      webcamInitialized = true;
+      webcamInit = true;
       console.log("📷 Webcam access granted");
     })
     .catch((err) => {
@@ -199,7 +204,7 @@ function initializeWebcam() {
   });
 }
 
-// Take a picture
+// Captures a photo from the webcam, applies the selected effect, and adds a draft
 function takePicture() {
   const context = canvas.getContext("2d");
 
@@ -242,16 +247,15 @@ function takePicture() {
   }
 }
 
-// Clean up resources when leaving the page
+// Stops the webcam and releases media resources
 function stopWebcam() {
   if (stream) {
     const tracks = stream.getTracks();
     tracks.forEach((track) => track.stop());
-    webcamInitialized = false;
+    webcamInit = false;
     console.log("Stop webcam");
   }
 }
 
 // Clean up when navigating away
 window.addEventListener("beforeunload", stopWebcam);
-

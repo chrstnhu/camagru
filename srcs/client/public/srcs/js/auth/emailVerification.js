@@ -1,3 +1,4 @@
+// Hides the main content and removes verification page
 function prepareVerificationPage() {
   const mainContent = document.querySelector(".main-content");
   if (mainContent) {
@@ -10,6 +11,7 @@ function prepareVerificationPage() {
   }
 }
 
+// Renders the success message when email verification is successful
 function renderSuccessContent(container) {
   container.innerHTML = `
     <div class="verification-icon success">
@@ -30,6 +32,7 @@ function renderSuccessContent(container) {
   `;
 }
 
+// Renders the error message when email verification fails with reason
 function renderErrorContent(container, reason) {
   let errorMessage = "Email verification failed.";
 
@@ -56,6 +59,7 @@ function renderErrorContent(container, reason) {
   `;
 }
 
+// Renders a generic error message for unknown verification status
 function renderUnknownContent(container) {
   container.innerHTML = `
     <div class="verification-icon error">
@@ -73,6 +77,7 @@ function renderUnknownContent(container) {
   `;
 }
 
+// Closes the verification page and restores the main content
 function closeVerificationPage() {
   const verificationPage = document.getElementById("verification-page");
   if (verificationPage) {
@@ -85,7 +90,8 @@ function closeVerificationPage() {
   }
 }
 
-function bindCloseButton(container) {
+// Binds the close action to the button
+function bindCloseBtn(container) {
   const btn = container.querySelector(".verification-btn");
   if (!btn) {
     return;
@@ -96,6 +102,7 @@ function bindCloseButton(container) {
   });
 }
 
+// Binds the success actions (countdown auto-redirect and button click)
 function bindSuccessActions(container) {
   const btn = container.querySelector(".verification-btn");
   if (btn) {
@@ -122,7 +129,7 @@ function bindSuccessActions(container) {
   }, 1000);
 }
 
-// Email verification page for SPA
+// Displays the email verification page, with status (success, error, unknown)
 function showEmailVerificationPage(status, reason = null) {
   console.log("📧 Showing email verification page...", status, reason);
 
@@ -140,10 +147,10 @@ function showEmailVerificationPage(status, reason = null) {
     bindSuccessActions(container);
   } else if (status === "error") {
     renderErrorContent(container, reason);
-    bindCloseButton(container);
+    bindCloseBtn(container);
   } else {
     renderUnknownContent(container);
-    bindCloseButton(container);
+    bindCloseBtn(container);
   }
 
   verificationPage.appendChild(container);

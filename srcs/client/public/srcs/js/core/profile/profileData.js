@@ -2,50 +2,58 @@ window.PROFILE_GALLERY_FEED_MODE_STORAGE_KEY = "galleryFeedDisplayMode";
 window.PROFILE_MY_POSTS_FEED_MODE_STORAGE_KEY = "myPostsFeedDisplayMode";
 window._profileAvatarData = null;
 
+// Updates the profile form fields with the given user data
+function updateProfileFields(user) {
+  document.getElementById("profile-username").value = user.username || "";
+  document.getElementById("profile-email").value = user.email || "";
+  document.getElementById("profile-password").value = "";
+  document.getElementById("profile-confirm-password").value = "";
+  const notificationCheckbox = document.getElementById("profile-notif-enabled");
+  if (notificationCheckbox) {
+    notificationCheckbox.checked = !!user.notification_enabled;
+  }
+}
+
+// Updates the feed mode buttons for gallery and my posts based on current settings
+function updateFeedModeBtn() {
+  setFeedModeBtn(
+    "gallery-mode-infinite",
+    "gallery-mode-pagination",
+    localStorage.getItem(window.PROFILE_GALLERY_FEED_MODE_STORAGE_KEY) ||
+      "pagination",
+  );
+  setFeedModeBtn(
+    "myposts-mode-infinite",
+    "myposts-mode-pagination",
+    localStorage.getItem(window.PROFILE_MY_POSTS_FEED_MODE_STORAGE_KEY) ||
+      "pagination",
+  );
+}
+
+// Updates the avatar preview image when the username changes
+function updateAvatarPreview(username) {
+  const avatarPreview = document.getElementById("profile-avatar-preview");
+  if (avatarPreview && username) {
+    const avatarUrl =
+      typeof buildAvatarUrl === "function"
+        ? buildAvatarUrl(username, Date.now())
+        : `/api/avatar/${encodeURIComponent(username)}?ts=${Date.now()}`;
+    avatarPreview.src = avatarUrl;
+    avatarPreview.onerror = () => {
+      avatarPreview.src = "assets/profile/default-avatar.png";
+    };
+  }
+}
+
+// Loads the user profile from the server and updates the UI
 function loadUserProfile() {
   fetch("/api/user/status")
     .then((response) => response.json())
     .then((data) => {
       if (data.logged_in && data.user) {
-        document.getElementById("profile-username").value =
-          data.user.username || "";
-        document.getElementById("profile-email").value = data.user.email || "";
-        document.getElementById("profile-password").value = "";
-        document.getElementById("profile-confirm-password").value = "";
-
-        const notificationCheckbox = document.getElementById(
-          "profile-notification-enabled",
-        );
-        if (notificationCheckbox) {
-          notificationCheckbox.checked = Boolean(
-            data.user.notification_enabled,
-          );
-        }
-
-        setFeedModeButtons(
-          "profile-gallery-mode-infinite",
-          "profile-gallery-mode-pagination",
-          localStorage.getItem(window.PROFILE_GALLERY_FEED_MODE_STORAGE_KEY) ||
-            "pagination",
-        );
-        setFeedModeButtons(
-          "profile-myposts-mode-infinite",
-          "profile-myposts-mode-pagination",
-          localStorage.getItem(window.PROFILE_MY_POSTS_FEED_MODE_STORAGE_KEY) ||
-            "pagination",
-        );
-
-        const avatarPreview = document.getElementById("profile-avatar-preview");
-        if (avatarPreview && data.user.username) {
-          const avatarUrl =
-            typeof buildAvatarUrl === "function"
-              ? buildAvatarUrl(data.user.username, Date.now())
-              : `/api/avatar/${encodeURIComponent(data.user.username)}?ts=${Date.now()}`;
-          avatarPreview.src = avatarUrl;
-          avatarPreview.onerror = () => {
-            avatarPreview.src = "assets/profile/default-avatar.png";
-          };
-        }
+        updateProfileFields(data.user);
+        updateFeedModeBtn();
+        updateAvatarPreview(data.user.username);
       }
     })
     .catch((error) => {
@@ -53,6 +61,7 @@ function loadUserProfile() {
     });
 }
 
+// Handles email verification success message on DOM load
 document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
   const verified = urlParams.get("verified");

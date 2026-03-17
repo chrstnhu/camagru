@@ -1,3 +1,4 @@
+// Renders the gallery of photo capture drafts in the UI
 function renderCaptureDraftGallery() {
   const draftGallery = document.getElementById("capture-draft-gallery");
   const confirmActions = document.getElementById("capture-confirm-actions");
@@ -45,6 +46,7 @@ function renderCaptureDraftGallery() {
   });
 }
 
+// Updates the photo preview to show the currently selected draft
 function updateSelectedDraftPreview() {
   if (!photo) {
     return;
@@ -61,6 +63,7 @@ function updateSelectedDraftPreview() {
   photo.style.display = "block";
 }
 
+// Returns the currently selected draft object, or null if none
 function getSelectedDraft() {
   if (
     !window._captureDrafts ||
@@ -73,6 +76,7 @@ function getSelectedDraft() {
   return window._captureDrafts[window._selectedCaptureDraftIndex] || null;
 }
 
+// Adds a new draft to the drafts array and updates the gallery
 function addCaptureDraft(draft) {
   if (!window._captureDrafts) {
     window._captureDrafts = [];
@@ -94,6 +98,7 @@ function addCaptureDraft(draft) {
   renderCaptureDraftGallery();
 }
 
+// Removes the currently selected draft from the drafts array and updates the gallery
 function removeSelectedDraft() {
   if (
     !window._captureDrafts ||
@@ -119,6 +124,7 @@ function removeSelectedDraft() {
   return true;
 }
 
+// Saves the currently selected photo draft to the database
 async function saveSelectedDraft() {
   const selectedDraft = getSelectedDraft();
   if (!selectedDraft) {
@@ -140,6 +146,7 @@ async function saveSelectedDraft() {
   return true;
 }
 
+// Sets the latest camera image in the photo element and updates its aspect ratio
 function setLatestCameraImage(dataUrl) {
   if (!photo) {
     return;
@@ -155,6 +162,7 @@ function setLatestCameraImage(dataUrl) {
   photo.style.display = "block";
 }
 
+// Returns the rendered size of an element, or fallback values if not available
 function getRenderedSize(element, fallbackWidth, fallbackHeight) {
   if (!element) {
     return {
@@ -170,6 +178,7 @@ function getRenderedSize(element, fallbackWidth, fallbackHeight) {
   };
 }
 
+// Calculates the effect overlay dimensions for uploaded images
 function getUploadEffectDimensions() {
   const previewImg = document.getElementById("upload-preview");
   const uploadEffectPreview = document.getElementById("upload-effect-preview");
@@ -194,7 +203,7 @@ function getUploadEffectDimensions() {
   };
 }
 
-// Save image to database
+// Saves an image with effect to the backend database
 async function saveImageToDatabase(dataUrl, options = {}) {
   try {
     const requestBody = options.effectDataUrl
@@ -233,21 +242,21 @@ async function saveImageToDatabase(dataUrl, options = {}) {
       if (
         gallerySection &&
         gallerySection.style.display !== "none" &&
-        typeof initializepostsData === "function"
+        typeof initPostsData === "function"
       ) {
-        await initializepostsData();
+        await initPostsData();
       }
 
       if (
         myPostsSection &&
         myPostsSection.style.display !== "none" &&
-        typeof initializeMyPosts === "function"
+        typeof initMyPosts === "function"
       ) {
-        await initializeMyPosts({ force: true });
+        await initMyPosts({ force: true });
       }
 
       if (myPostsSection) {
-        delete myPostsSection.dataset.initialized;
+        delete myPostsSection.dataset.init;
       }
     } else {
       console.error("❌ Failed to save image:", data.error);
@@ -262,7 +271,7 @@ async function saveImageToDatabase(dataUrl, options = {}) {
 // Store uploaded image data for later saving
 window._uploadedImageData = null;
 
-// Handle image upload from file input
+// Handles image upload from file input and prepares preview
 function handleImageUpload(event) {
   const file = event.target.files[0];
   if (!file) {
@@ -325,7 +334,7 @@ function handleImageUpload(event) {
   }
 }
 
-// Save uploaded photo with effect to gallery
+// Saves the uploaded photo with effect to the gallery
 function saveUploadedPhoto() {
   if (!window._uploadedImageData) {
     return showErrorAlert("Please upload an image first");
@@ -383,7 +392,7 @@ function saveUploadedPhoto() {
   baseImage.src = imgData.src;
 }
 
-// Reset upload preview to initial state
+// Resets the upload preview to its initial state
 function resetUploadPreview() {
   window._uploadedImageData = null;
   const placeholder = document.getElementById("upload-placeholder");

@@ -1,11 +1,5 @@
-
-// Like button functionality
-async function initializeLikeBtn(
-  postId,
-  index,
-  initialIsLiked,
-  initialLikeCount,
-) {
+// Initializes the like button for a post, sets up event listeners and updates UI
+async function initLikeBtn(postId, index, initialIsLiked, initialLikeCount) {
   const likeBtn = document.getElementById(`like-btn-${index}`);
   const likeCount = document.getElementById(`like-count-${index}`);
 
@@ -34,8 +28,7 @@ async function initializeLikeBtn(
   }
 }
 
-
-// Load like status from API
+// Loads the like status for a post from the API and updates the UI
 async function loadLikeStatus(postId, likeBtn, likeCount, isLoggedIn) {
   try {
     const response = await fetch(`/api/posts/${postId}/likes`);
@@ -53,7 +46,7 @@ async function loadLikeStatus(postId, likeBtn, likeCount, isLoggedIn) {
   }
 }
 
-// Toggle like status
+// Toggles the like status for a post and updates the UI
 async function toggleLike(postId, likeBtn, likeCount) {
   const session = getUserSession();
   if (!session || !session.user_id || !session.logged_in) {
@@ -85,7 +78,7 @@ async function toggleLike(postId, likeBtn, likeCount) {
   }
 }
 
-// Update like button appearance
+// Updates the appearance of the like button based on like status
 function updateLikeBtn(btn, isLiked) {
   const heart = btn.querySelector("i");
   if (isLiked) {

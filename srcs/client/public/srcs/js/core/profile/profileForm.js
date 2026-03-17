@@ -1,50 +1,49 @@
-function bindProfileFeedModeControls() {
-  const galleryInfiniteBtn = document.getElementById(
-    "profile-gallery-mode-infinite");
-  const galleryPaginationBtn = document.getElementById(
-    "profile-gallery-mode-pagination");
-  const myPostsInfiniteBtn = document.getElementById(
-    "profile-myposts-mode-infinite");
-  const myPostsPaginationBtn = document.getElementById(
-    "profile-myposts-mode-pagination");
-
-  setFeedModeButtons("profile-gallery-mode-infinite",
-    "profile-gallery-mode-pagination",
+// Binds event listeners for gallery and sets initial state
+function bindGalleryFeedMode() {
+  const infiniteBtn = document.getElementById("gallery-mode-infinite");
+  const paginationBtn = document.getElementById("gallery-mode-pagination");
+  setFeedModeBtn(
+    "gallery-mode-infinite",
+    "gallery-mode-pagination",
     localStorage.getItem(window.PROFILE_GALLERY_FEED_MODE_STORAGE_KEY) ||
       "pagination",
   );
-  setFeedModeButtons("profile-myposts-mode-infinite",
-    "profile-myposts-mode-pagination",
-    localStorage.getItem(window.PROFILE_MY_POSTS_FEED_MODE_STORAGE_KEY) ||
-      "pagination",
-  );
-
-  if (galleryInfiniteBtn) {
-    galleryInfiniteBtn.addEventListener("click", async () => {
+  if (infiniteBtn) {
+    infiniteBtn.addEventListener("click", async () => {
       await applySectionFeedMode("gallery", "infinite");
     });
   }
-
-  if (galleryPaginationBtn) {
-    galleryPaginationBtn.addEventListener("click", async () => {
+  if (paginationBtn) {
+    paginationBtn.addEventListener("click", async () => {
       await applySectionFeedMode("gallery", "pagination");
     });
   }
+}
 
-  if (myPostsInfiniteBtn) {
-    myPostsInfiniteBtn.addEventListener("click", async () => {
+// Binds event listeners for my posts and sets initial state
+function bindMyPostsFeedMode() {
+  const infiniteBtn = document.getElementById("myposts-mode-infinite");
+  const paginationBtn = document.getElementById("myposts-mode-pagination");
+  setFeedModeBtn(
+    "myposts-mode-infinite",
+    "myposts-mode-pagination",
+    localStorage.getItem(window.PROFILE_MY_POSTS_FEED_MODE_STORAGE_KEY) ||
+      "pagination",
+  );
+  if (infiniteBtn) {
+    infiniteBtn.addEventListener("click", async () => {
       await applySectionFeedMode("my-posts", "infinite");
     });
   }
-
-  if (myPostsPaginationBtn) {
-    myPostsPaginationBtn.addEventListener("click", async () => {
+  if (paginationBtn) {
+    paginationBtn.addEventListener("click", async () => {
       await applySectionFeedMode("my-posts", "pagination");
     });
   }
 }
 
-function bindProfileAvatarPreview() {
+// Binds event listener to avatar input to preview selected image and store data
+function bindAvatarPreview() {
   const profileAvatarInput = document.getElementById("profile-avatar-input");
   if (!profileAvatarInput) {
     return;
@@ -67,7 +66,8 @@ function bindProfileAvatarPreview() {
   });
 }
 
-async function uploadProfileAvatarIfNeeded() {
+// Uploads the profile avatar to the server if a new one is selected
+async function uploadAvatarIfNeeded() {
   if (!window._profileAvatarData) {
     return true;
   }
@@ -96,25 +96,69 @@ async function uploadProfileAvatarIfNeeded() {
   }
 }
 
-async function submitProfileUpdateForm() {
-  const username = document.getElementById("profile-username").value.trim();
-  const email = document.getElementById("profile-email").value.trim();
+// Retrieves the current values from the profile form fields
+function getProfileFormData() {
+  return {
+    username: document.getElementById("profile-username").value.trim(),
+    email: document.getElementById("profile-email").value.trim(),
+    notification_enabled: document.getElementById("profile-notif-enabled")
+      ?.checked,
+  };
+}
 
+// Validates username and email
+function validateProfileForm({ username, email }) {
   if (!username || !email) {
     showErrorAlert("Username and email are required!");
+    return false;
+  }
+  return true;
+}
+
+// Syncs the user session after a profile update to get the latest user data
+async function syncUserSession(data, updateData) {
+  let syncedUser = data.user;
+
+  try {
+    const sessionData = await refreshServerSession();
+    if (sessionData.logged_in && sessionData.user) {
+      syncedUser = sessionData.user;
+    }
+  } catch (syncError) {
+    console.error("Error refreshing session after profile update:", syncError);
+  }
+
+  return syncedUser || data.user || updateData;
+}
+
+// Updates the UI after a successful profile update
+function updateProfileUI(effectiveUser, newUsername, oldUsername) {
+  if (effectiveUser) {
+    window.currentUser = effectiveUser;
+    setUserSessionCookie(effectiveUser);
+  }
+
+  refreshAllUserAvatars(effectiveUser?.username || newUsername, oldUsername);
+
+  if (oldUsername && oldUsername !== newUsername) {
+    refreshAllUsername(oldUsername, newUsername);
+  }
+
+  showSuccessAlert("Profile updated successfully!");
+  document.getElementById("profile-password").value = "";
+  document.getElementById("profile-confirm-password").value = "";
+  loadUserProfile();
+}
+
+// Handles the submission of the profile update form, including avatar upload
+async function submitProfileForm() {
+  const updateData = getProfileFormData();
+  if (!validateProfileForm(updateData)) {
     return;
   }
 
   const session = getUserSession();
   const oldUsername = session?.username || "";
-
-  const updateData = {
-    username: username,
-    email: email,
-    notification_enabled: document.getElementById(
-      "profile-notification-enabled",
-    )?.checked,
-  };
 
   try {
     const response = await fetch("/api/user/profile", {
@@ -124,52 +168,20 @@ async function submitProfileUpdateForm() {
     });
 
     const data = await response.json();
-
     if (!response.ok) {
       showErrorAlert(data.error || "Failed to update profile");
       return;
     }
 
     const newUsername = data.user?.username || updateData.username;
-
     let avatarUploaded = true;
     if (window._profileAvatarData) {
-      avatarUploaded = await uploadProfileAvatarIfNeeded();
+      avatarUploaded = await uploadAvatarIfNeeded();
     }
 
-    let syncedUser = data.user;
-    try {
-      const sessionData = await refreshServerSession();
-      if (sessionData.logged_in && sessionData.user) {
-        syncedUser = sessionData.user;
-      }
-    } catch (syncError) {
-      console.error(
-        "Error refreshing session after profile update:",
-        syncError,
-      );
-    }
+    const effectiveUser = await syncUserSession(data, updateData);
+    updateProfileUI(effectiveUser, newUsername, oldUsername);
 
-    const effectiveUser = syncedUser || data.user || updateData;
-
-    if (effectiveUser) {
-      window.currentUser = effectiveUser;
-      setUserSessionCookie(effectiveUser);
-    }
-
-    refreshAllUserAvatars(effectiveUser?.username || newUsername, oldUsername);
-
-    if (oldUsername && oldUsername !== newUsername) {
-      refreshAllUsername(oldUsername, newUsername);
-    }
-
-    showSuccessAlert("Profile updated successfully!");
-
-    document.getElementById("profile-password").value = "";
-    document.getElementById("profile-confirm-password").value = "";
-
-    loadUserProfile();
-    // On ne remet à null que si l'upload a été fait
     if (avatarUploaded) {
       window._profileAvatarData = null;
     }
@@ -179,7 +191,8 @@ async function submitProfileUpdateForm() {
   }
 }
 
-function bindProfileFormSubmit() {
+// Binds the profile form submit event to handle updates
+function bindFormSubmit() {
   const profileForm = document.getElementById("profile-form");
   if (!profileForm) {
     return;
@@ -187,19 +200,21 @@ function bindProfileFormSubmit() {
 
   profileForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    await submitProfileUpdateForm();
+    await submitProfileForm();
   });
 }
 
+// Initializes all profile form bindings and avatar upload button on DOM load
 document.addEventListener("DOMContentLoaded", () => {
-  bindProfileFeedModeControls();
-  bindProfileAvatarPreview();
-  bindProfileFormSubmit();
-  // Ajout gestionnaire bouton avatar
+  bindGalleryFeedMode();
+  bindMyPostsFeedMode();
+  bindAvatarPreview();
+  bindFormSubmit();
+
   const avatarBtn = document.getElementById("profile-avatar-upload-btn");
   if (avatarBtn) {
     avatarBtn.addEventListener("click", async () => {
-      const ok = await uploadProfileAvatarIfNeeded();
+      const ok = await uploadAvatarIfNeeded();
       if (ok) {
         showSuccessAlert("Avatar mis à jour !");
         loadUserProfile();

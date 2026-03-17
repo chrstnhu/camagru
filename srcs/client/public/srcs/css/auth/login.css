@@ -180,8 +180,8 @@
   margin: 1rem 0;
 }
 
-.login-component-button,
-.register-component-button {
+.login-component-btn,
+.register-component-btn {
   flex: 1;
   padding: 0.75rem 1.5rem;
   border: 2px solid var(--color-primary);
@@ -194,14 +194,14 @@
   transition: all var(--transition-normal);
 }
 
-.login-component-button:hover,
-.register-component-button:hover {
+.login-component-btn:hover,
+.register-component-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px var(--color-primary-dark, rgba(52, 152, 219, 0.3));
 }
 
-.login-component-button.is-active,
-.register-component-button.is-active {
+.login-component-btn.is-active,
+.register-component-btn.is-active {
   background: var(--color-primary);
   color: var(--border-color);
 }

@@ -1,9 +1,9 @@
-// Switch between login and register forms
+// Switches between login and register forms
 function toggleAuthForm(showLoginForm) {
   const loginSection = document.getElementById("login-section");
   const registerSection = document.getElementById("register-section");
-  const loginBtns = document.querySelectorAll(".login-component-button");
-  const registerBtns = document.querySelectorAll(".register-component-button");
+  const loginBtns = document.querySelectorAll(".login-component-btn");
+  const registerBtns = document.querySelectorAll(".register-component-btn");
 
   if (loginSection) {
     loginSection.style.display = showLoginForm ? "block" : "none";
@@ -18,17 +18,17 @@ function toggleAuthForm(showLoginForm) {
   );
 }
 
-// Show login form by default
+// Shows the login form by default
 function showLogin() {
   toggleAuthForm(true);
 }
 
-// Show registration form
+// Shows the registration form
 function showRegister() {
   toggleAuthForm(false);
 }
 
-// Update UI after successful login
+// Handles API errors from the login request and displays appropriate messages
 async function handleApiError(response) {
   let errorMessage;
   try {
@@ -60,6 +60,7 @@ async function handleApiError(response) {
   return showErrorAlert(errorMessage);
 }
 
+// Sends the login request to the backend API
 async function sendLoginRequest(email, password) {
   return fetch("/api/auth/login", {
     method: "POST",
@@ -71,7 +72,7 @@ async function sendLoginRequest(email, password) {
   });
 }
 
-// Set user session cookie after successful login
+// Sets the user session cookie and updates UI after successful login
 async function finalizeLogin(userData, email) {
   const syncedSession = await refreshServerSession();
   const finalUser =
@@ -93,6 +94,7 @@ async function finalizeLogin(userData, email) {
   navigateTo("gallery", true);
 }
 
+// Handles network errors during login and displays error messages
 function handleLoginNetworkError(error) {
   console.error("Network error:", error);
 
@@ -105,7 +107,7 @@ function handleLoginNetworkError(error) {
   return showErrorAlert("Connection error. Please try again.");
 }
 
-// Handle login from page form
+// Handles the login form submission, validates input, and processes login
 async function loginCheck(event) {
   if (event) {
     event.preventDefault();
@@ -113,7 +115,7 @@ async function loginCheck(event) {
 
   const email = document.getElementById("login-email")?.value;
   const password = document.getElementById("login-password")?.value;
-  
+
   if (!email || !password) {
     return showErrorAlert("Please enter both email and password");
   }
@@ -137,7 +139,7 @@ async function loginCheck(event) {
   }
 }
 
-// Setup password visibility toggle for login form
+// Sets up the password visibility toggle for the login form
 function setupLoginPasswordToggle() {
   const loginPasswordInput = document.getElementById("login-password");
   const loginEyeIcon = document.getElementById("login-password-eye");
@@ -157,7 +159,7 @@ function setupLoginPasswordToggle() {
   }
 }
 
-// Update UI after successful login
+// Initializes login form behaviors and checks for email verification status
 document.addEventListener("DOMContentLoaded", () => {
   setupLoginPasswordToggle();
 

@@ -5,21 +5,25 @@ let myPostsCurrentPage = 1;
 let myPostsIsLoading = false;
 let myPostsHasMore = true;
 
+// Returns the current feed display mode for 'my posts' (infinite or pagination)
 function getMyPostsFeedDisplayMode() {
   const savedMode = localStorage.getItem(MY_POSTS_FEED_MODE_STORAGE_KEY);
   return savedMode === "infinite" ? "infinite" : "pagination";
 }
 
+// Checks if is infinite scroll
 function isMyPostsInfiniteMode() {
   return getMyPostsFeedDisplayMode() === "infinite";
 }
 
+// Filters posts to only include those belonging to the current user
 function filterPostsForCurrentUser(posts, userId) {
   return (posts || []).filter(
     (post) => Number(post.user_id) === Number(userId),
   );
 }
 
+// Transforms post data into the format required for rendering
 function transformPostForMyPosts(postData) {
   return {
     id: postData.id,
@@ -36,6 +40,7 @@ function transformPostForMyPosts(postData) {
   };
 }
 
+// Fetches all posts for the current user, handling pagination from the API
 async function fetchAllMyPosts(userId) {
   const firstResponse = await fetch(
     `/api/posts?author_id=${userId}&limit=10&page=1`,
@@ -74,6 +79,7 @@ async function fetchAllMyPosts(userId) {
   return filterPostsForCurrentUser(allPosts, userId);
 }
 
+// Renders the given posts in the 'my posts' gallery
 function renderMyPosts(posts, startIndex = 0) {
   posts.forEach((postData, offset) => {
     const transformedPost = transformPostForMyPosts(postData);
@@ -83,13 +89,14 @@ function renderMyPosts(posts, startIndex = 0) {
       {
         targetId: "my-photos-gallery",
         storeInObjJson: false,
-        showDeleteButton: true,
+        showDeleteBtn: true,
         compact: false,
       },
     );
   });
 }
 
+// Loads more posts for infinite scroll mode, appending them to the gallery
 async function loadMoreMyPosts(userId) {
   if (myPostsIsLoading || !myPostsHasMore) {
     return;
@@ -130,6 +137,7 @@ async function loadMoreMyPosts(userId) {
   }
 }
 
+// Sets up infinite scroll event listener for 'my posts' section
 function setupMyPostsInfiniteScroll() {
   if (window._myPostsInfiniteScrollBound) {
     return;
@@ -160,7 +168,8 @@ function setupMyPostsInfiniteScroll() {
   });
 }
 
-function initializeMyPostsPagination(postPerPage = 6, currentPage = 1) {
+// Initializes pagination controls and logic for 'my posts' section
+function initMyPostsPagination(postPerPage = 6, currentPage = 1) {
   const paginationNav = document.getElementById("myposts-pagination");
   const ul = paginationNav?.querySelector("ul");
   const posts = document.querySelectorAll("#my-photos-gallery .post");
@@ -190,9 +199,7 @@ function initializeMyPostsPagination(postPerPage = 6, currentPage = 1) {
     }
 
     li += `<li class="page ${page >= totalPages ? "is-hidden" : ""}" data-page="${page + 1}"><span class="icon"> &gt; </span></li>`;
-
     ul.innerHTML = li;
-
     ul.querySelectorAll("li.page[data-page]").forEach((item) => {
       item.addEventListener("click", () => {
         const nextPage = Number(item.dataset.page);
@@ -213,7 +220,8 @@ function initializeMyPostsPagination(postPerPage = 6, currentPage = 1) {
   buildPagination(currentPage);
 }
 
-async function initializeMyPosts(options = {}) {
+// Initializes the 'my posts' section, fetching and rendering posts as needed
+async function initMyPosts(options = {}) {
   try {
     const session = getUserSession();
     const forceRefresh = options.force === true;
@@ -289,7 +297,7 @@ async function initializeMyPosts(options = {}) {
 
     if (paginationNav) {
       paginationNav.style.display = "block";
-      initializeMyPostsPagination(MY_POSTS_PAGINATION_PAGE_SIZE, 1);
+      initMyPostsPagination(MY_POSTS_PAGINATION_PAGE_SIZE, 1);
     }
 
     window._myPostsNeedsRefresh = false;
@@ -301,23 +309,9 @@ async function initializeMyPosts(options = {}) {
   }
 }
 
-function showUploadPhotoModal() {
-  const session = getUserSession();
-  if (!session || !session.logged_in) {
-    return showErrorAlert("Please login to upload photos");
-  }
-
-  const overlay = document.createElement("div");
-  overlay.className = "popup-overlay is-active";
-  overlay.id = "upload-photo-overlay";
-
-  const modal = document.createElement("div");
-  modal.className = "auth-container is-open";
-  modal.id = "upload-photo-modal";
-  modal.style.cssText =
-    "position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000; max-width: 500px; width: 90%;";
-
-  modal.innerHTML = `
+// Returns the HTML string for the upload photo modal
+function modalHTML() {
+  return `
     <span class="icon-close" onclick="closeUploadPhotoModal()">
       <i class="fa-solid fa-xmark"></i>
     </span>
@@ -353,6 +347,35 @@ function showUploadPhotoModal() {
       </button>
     </form>
   `;
+}
+
+// Closes the upload photo modal and overlay
+function closeUploadPhotoModal() {
+  const modal = document.getElementById("upload-photo-modal");
+  const overlay = document.getElementById("upload-photo-overlay");
+  if (modal) {
+    modal.remove();
+  }
+  if (overlay) {
+    overlay.remove();
+  }
+}
+
+// Shows the upload photo modal and sets up event listeners
+function showUploadPhotoModal() {
+  const session = getUserSession();
+  if (!session || !session.logged_in) {
+    return showErrorAlert("Please login to upload photos");
+  }
+
+  const overlay = document.createElement("div");
+  overlay.className = "popup-overlay is-active";
+  overlay.id = "upload-photo-overlay";
+
+  const modal = document.createElement("div");
+  modal.className = "auth-container is-open";
+  modal.id = "upload-photo-modal";
+  modal.innerHTML = modalHTML();
 
   document.body.appendChild(overlay);
   document.body.appendChild(modal);
@@ -375,13 +398,7 @@ function showUploadPhotoModal() {
   overlay.onclick = closeUploadPhotoModal;
 }
 
-function closeUploadPhotoModal() {
-  const modal = document.getElementById("upload-photo-modal");
-  const overlay = document.getElementById("upload-photo-overlay");
-  if (modal) modal.remove();
-  if (overlay) overlay.remove();
-}
-
+// Handles the upload of a new photo, including validation and API call
 async function handlePhotoUpload(event) {
   event.preventDefault();
 
@@ -424,7 +441,7 @@ async function handlePhotoUpload(event) {
         invalidatePostViews();
 
         setTimeout(() => {
-          initializeMyPosts({ force: true });
+          initMyPosts({ force: true });
         }, 500);
       } else {
         console.error("❌ Failed to upload photo:", data.error);
