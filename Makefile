@@ -21,9 +21,20 @@ help:
 	@echo "  database      - Rebuild database only"
 	@echo "  shell-server  - Shell into server container"
 	@echo "  shell-db      - Shell into database"
+	@echo "  load-test-data - Load test data into database (if test_data.sql exists)"
 
 # Build and start (default target)
 all: build up
+	all: build up load-test-data
+
+# Load test data into the database if test_data.sql exists
+load-test-data:
+	@if [ -f srcs/server/config/test_data.sql ]; then \
+		echo "Loading test data into database..."; \
+		$(COMPOSE) exec -T database mysql -u root -p"$$MYSQL_ROOT_PASSWORD" camagru < srcs/server/config/test_data.sql; \
+	else \
+		echo "No test_data.sql found, skipping test data load."; \
+	fi
 
 # Build Docker images
 build:
