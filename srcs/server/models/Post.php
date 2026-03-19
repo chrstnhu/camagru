@@ -10,6 +10,7 @@ class Post {
 
     // Retrieve all posts with pagination and like status
     public function getAllPosts($limit = 10, $offset = 0, $userId = null, $authorId = null) {
+        // Use named parameters for security and clarity
         $query = "SELECT 
                     p.id,
                     p.image_path,
@@ -26,28 +27,27 @@ class Post {
                         FROM comments c
                         WHERE c.post_id = p.id
                     ) as comments_count";
-        
+
         // Check if the user is provided to include is_liked
         if ($userId) {
             $query .= ", CASE WHEN ul.user_id IS NOT NULL THEN 1 ELSE 0 END as is_liked";
         }
-        
+
         $query .= " FROM " . $this->table_name . " p
                   LEFT JOIN users u ON p.user_id = u.id
                   LEFT JOIN images i ON i.post_id = p.id
                   LEFT JOIN likes l ON p.id = l.post_id";
-        
         // Add a join to check if the logged-in user has liked
         if ($userId) {
-            $query .= " LEFT JOIN likes ul ON p.id = ul.post_id AND ul.user_id = ?";
+            $query .= " LEFT JOIN likes ul ON p.id = ul.post_id AND ul.user_id = :user_id";
         }
-        
+
         $conditions = [];
         $params = [];
 
         if ($authorId !== null) {
-            $conditions[] = "p.user_id = ?";
-            $params[] = $authorId;
+            $conditions[] = "p.user_id = :author_id";
+            $params[':author_id'] = $authorId;
         }
 
         if (!empty($conditions)) {
@@ -55,29 +55,25 @@ class Post {
         }
 
         $query .= " GROUP BY p.id, u.id";
-        
+
         if ($userId) {
             $query .= ", ul.user_id";
         }
-        
+
         $query .= " ORDER BY p.created_at DESC
-                  LIMIT ? OFFSET ?";
-        
+                  LIMIT :limit OFFSET :offset";
+
         $stmt = $this->conn->prepare($query);
-        
+
         if ($userId) {
-            array_unshift($params, $userId);
+            $params[':user_id'] = $userId;
         }
 
-        $params[] = $limit;
-        $params[] = $offset;
+        $params[':limit'] = $limit;
+        $params[':offset'] = $offset;
 
-        if (!empty($params)) {
-            $stmt->execute($params);
-        } else {
-            $stmt->execute();
-        }
-        
+        $stmt->execute($params);
+
         return $stmt->fetchAll();
     }
 
@@ -95,21 +91,27 @@ class Post {
                                         u.notification_enabled
                   FROM " . $this->table_name . " p
                   LEFT JOIN users u ON p.user_id = u.id
-                  WHERE p.id = ?";
+                        WHERE p.id = :id";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->execute([$id]);
+          $stmt->execute([':id' => $id]);
         return $stmt->fetch();
     }
 
     // Create a new post
     public function create($userId, $imagePath, $caption = '', $imageData = null) {
+        // Use named parameters for security and clarity
         $query = "INSERT INTO " . $this->table_name . " 
                   (user_id, image_path, image_data, caption, created_at) 
-                  VALUES (?, ?, ?, ?, NOW())";
-        
+                  VALUES (:user_id, :image_path, :image_data, :caption, NOW())";
+
         $stmt = $this->conn->prepare($query);
-        if($stmt->execute([$userId, $imagePath, $imageData, $caption])) {
+        if($stmt->execute([
+            ':user_id' => $userId,
+            ':image_path' => $imagePath,
+            ':image_data' => $imageData,
+            ':caption' => $caption
+        ])) {
             return $this->conn->lastInsertId();
         }
         return false;
@@ -117,12 +119,13 @@ class Post {
 
     // Count total posts
     public function getTotalCount($authorId = null) {
+        // Use named parameter for security and clarity
         $query = "SELECT COUNT(*) as total FROM " . $this->table_name;
         $params = [];
 
         if ($authorId !== null) {
-            $query .= " WHERE user_id = ?";
-            $params[] = $authorId;
+            $query .= " WHERE user_id = :author_id";
+            $params[':author_id'] = $authorId;
         }
 
         $stmt = $this->conn->prepare($query);
