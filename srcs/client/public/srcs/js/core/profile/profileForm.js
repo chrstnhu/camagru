@@ -90,7 +90,6 @@ async function uploadAvatarIfNeeded() {
     window._profileAvatarData = null;
     return true;
   } catch (err) {
-    console.error("Error uploading avatar:", err);
     showErrorAlert("Failed to update avatar");
     return false;
   }
@@ -186,7 +185,6 @@ async function submitProfileForm() {
       window._profileAvatarData = null;
     }
   } catch (error) {
-    console.error("Error updating profile:", error);
     showErrorAlert("Network error. Please try again.");
   }
 }
@@ -210,15 +208,5 @@ document.addEventListener("DOMContentLoaded", () => {
   bindMyPostsFeedMode();
   bindAvatarPreview();
   bindFormSubmit();
-
-  const avatarBtn = document.getElementById("profile-avatar-upload-btn");
-  if (avatarBtn) {
-    avatarBtn.addEventListener("click", async () => {
-      const ok = await uploadAvatarIfNeeded();
-      if (ok) {
-        showSuccessAlert("Avatar mis à jour !");
-        loadUserProfile();
-      }
-    });
-  }
 });
+  

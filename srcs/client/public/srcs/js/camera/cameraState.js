@@ -30,5 +30,3 @@ function getLoggedInUserId() {
   }
   return null;
 }
-
-console.log("📷 Camera state initialized");

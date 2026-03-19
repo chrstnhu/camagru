@@ -29,19 +29,15 @@ function implementPagination(posts, postPerPage, currentPage) {
 const handlePagination = (postPerPage, currentPage) => {
   ul = document.querySelector("nav.pagination ul");
   if (!ul) {
-    return console.warn("Pagination element not found");
+    return; 
   }
 
   // Retrieve the posts on each call to ensure they exist
   posts = document.querySelectorAll(".post");
 
   if (posts.length === 0) {
-    return console.warn("No posts found for pagination");
+    return; 
   }
-
-  console.log(
-    `Pagination active, page: ${currentPage}, posts: ${posts.length}`,
-  );
 
   updateCurrentPage(postPerPage, currentPage);
 

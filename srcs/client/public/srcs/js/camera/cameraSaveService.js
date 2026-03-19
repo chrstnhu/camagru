@@ -65,6 +65,7 @@ function getUploadEffectDimensions() {
     };
   }
 
+  // Get the rendered size of the preview and effect elements
   const previewSize = getRenderedSize(previewImg, 320, 240);
   const overlaySize = getRenderedSize(uploadEffectPreview, 100, 80);
 
@@ -77,67 +78,74 @@ function getUploadEffectDimensions() {
   };
 }
 
+// Helper: Build the request body for saving an image
+function buildImageRequestBody(dataUrl, options = {}) {
+  if (options.effectDataUrl) {
+    return {
+      base_image_data: dataUrl,
+      effect_image_data: options.effectDataUrl,
+      effect_width: options.effectWidth,
+      effect_height: options.effectHeight,
+      caption: options.caption || "",
+    };
+  } else {
+    return {
+      image_data: dataUrl,
+      caption: options.caption || "",
+    };
+  }
+}
+
+// Handle a successful image save response
+async function handleImageSaveSuccess(data) {
+  if (typeof invalidatePostViews === "function") {
+    invalidatePostViews();
+  }
+
+  const myPostsSection = document.getElementById("my-posts");
+
+  if (data.image_data) {
+    setLatestCameraImage(data.image_data);
+  }
+
+  const gallerySection = document.getElementById("gallery");
+  if (
+    gallerySection &&
+    gallerySection.style.display !== "none" &&
+    typeof initpostsData === "function"
+  ) {
+    await initpostsData();
+  }
+
+  if (
+    myPostsSection &&
+    myPostsSection.style.display !== "none" &&
+    typeof initMyPosts === "function"
+  ) {
+    await initMyPosts({ force: true });
+  }
+
+  if (myPostsSection) {
+    delete myPostsSection.dataset.initd;
+  }
+}
+
 // Saves an image (with effect) to the backend database
 async function saveImageToDatabase(dataUrl, options = {}) {
   try {
-    const requestBody = options.effectDataUrl
-      ? {
-          base_image_data: dataUrl,
-          effect_image_data: options.effectDataUrl,
-          effect_width: options.effectWidth,
-          effect_height: options.effectHeight,
-          caption: options.caption || "",
-        }
-      : {
-          image_data: dataUrl,
-          caption: options.caption || "",
-        };
-
+    const requestBody = buildImageRequestBody(dataUrl, options);
     const response = await fetch("/api/images", {
       method: "POST",
       headers: await getJsonHeaders(),
       body: JSON.stringify(requestBody),
     });
-
     const data = await response.json();
     if (data.success) {
-      console.log("✅ Image saved to database:", data.image_id);
-      if (typeof invalidatePostViews === "function") {
-        invalidatePostViews();
-      }
-
-      const myPostsSection = document.getElementById("my-posts");
-
-      if (data.image_data) {
-        setLatestCameraImage(data.image_data);
-      }
-
-      const gallerySection = document.getElementById("gallery");
-      if (
-        gallerySection &&
-        gallerySection.style.display !== "none" &&
-        typeof initpostsData === "function"
-      ) {
-        await initpostsData();
-      }
-
-      if (
-        myPostsSection &&
-        myPostsSection.style.display !== "none" &&
-        typeof initMyPosts === "function"
-      ) {
-        await initMyPosts({ force: true });
-      }
-
-      if (myPostsSection) {
-        delete myPostsSection.dataset.initd;
-      }
+      await handleImageSaveSuccess(data);
     } else {
-      console.error("❌ Failed to save image:", data.error);
       showErrorAlert("Failed to save photo: " + data.error);
     }
   } catch (error) {
-    console.error("❌ Error saving image:", error);
     showErrorAlert("Error saving photo");
   }
 }

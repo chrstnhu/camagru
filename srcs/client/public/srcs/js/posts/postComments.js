@@ -113,7 +113,7 @@ function initCommentsSection(postId, index) {
     !commentsToggleBtn ||
     !commentsContainer
   ) {
-    console.error("Comments section elements not found for post ID:", postId);
+    // console.error("Comments section elements not found for post ID:", postId);
     return;
   }
 
@@ -281,7 +281,7 @@ async function addComment(postId, input, container, postIndex) {
       }
     }
   } catch (error) {
-    console.log("Error adding comment:", error);
+    // console.log("Error adding comment:", error);
     showErrorAlert("Failed to add comment. Please try again.");
   }
 }
@@ -366,7 +366,7 @@ async function deleteMyComment(postId, commentId, postIndex) {
       }
     }
   } catch (error) {
-    console.log("Error deleting comment:", error);
+    // console.log("Error deleting comment:", error);
     showErrorAlert("Failed to delete comment. Please try again.");
   }
 }

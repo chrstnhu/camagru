@@ -6,21 +6,10 @@ let myPostsIsLoading = false;
 let myPostsHasMore = true;
 
 // Returns the current feed display mode for 'my posts' (infinite or pagination)
-function getMyPostsFeedDisplayMode() {
+function getMyPostsFeedDisplayMode(asBool = false) {
   const savedMode = localStorage.getItem(MY_POSTS_FEED_MODE_STORAGE_KEY);
-  return savedMode === "infinite" ? "infinite" : "pagination";
-}
-
-// Checks if is infinite scroll
-function isMyPostsInfiniteMode() {
-  return getMyPostsFeedDisplayMode() === "infinite";
-}
-
-// Filters posts to only include those belonging to the current user
-function filterPostsForCurrentUser(posts, userId) {
-  return (posts || []).filter(
-    (post) => Number(post.user_id) === Number(userId),
-  );
+  const mode = savedMode === "infinite" ? "infinite" : "pagination";
+  return asBool ? mode === "infinite" : mode;
 }
 
 // Transforms post data into the format required for rendering
@@ -38,6 +27,13 @@ function transformPostForMyPosts(postData) {
     comments_count: postData.comments_count || 0,
     is_liked: postData.is_liked || false,
   };
+}
+
+// Filters posts to only include those belonging to the current user
+function filterPostsForCurrentUser(posts, userId) {
+  return (posts || []).filter(
+    (post) => Number(post.user_id) === Number(userId),
+  );
 }
 
 // Fetches all posts for the current user, handling pagination from the API
@@ -129,7 +125,6 @@ async function loadMoreMyPosts(userId) {
       myPostsHasMore = false;
     }
   } catch (error) {
-    console.error("Error loading my posts:", error);
     showErrorAlert("Failed to load your photos");
     myPostsHasMore = false;
   } finally {
@@ -168,118 +163,126 @@ function setupMyPostsInfiniteScroll() {
   });
 }
 
-// Initializes pagination controls and logic for 'my posts' section
+// Updates the visibility of posts based on the current pagination page
+function updateMyPostsPage(posts, postPerPage, page) {
+  const prevRange = (page - 1) * postPerPage;
+  const currRange = page * postPerPage;
+  posts.forEach((post, index) => {
+    const isVisible = index >= prevRange && index < currRange;
+    post.classList.toggle("is-hidden", !isVisible);
+  });
+}
+
+// Builds the request body for saving an image, including effect data if applicable
+function buildMyPostsPagination(ul, posts, postPerPage, page, onPageChange) {
+  const totalPages = Math.ceil(posts.length / postPerPage);
+  let li = "";
+  li += `<li class="page ${page <= 1 ? "is-hidden" : ""}" data-page="${page - 1}"><span class="icon"> &lt; </span></li>`;
+  for (let pageNo = 1; pageNo <= totalPages; pageNo++) {
+    li += `<li class="page ${page === pageNo ? "is-active" : ""}" data-page="${pageNo}">${pageNo}</li>`;
+  }
+  li += `<li class="page ${page >= totalPages ? "is-hidden" : ""}" data-page="${page + 1}"><span class="icon"> &gt; </span></li>`;
+  ul.innerHTML = li;
+  ul.querySelectorAll("li.page[data-page]").forEach((item) => {
+    item.addEventListener("click", () => {
+      const nextPage = Number(item.dataset.page);
+      if (!Number.isFinite(nextPage) || nextPage < 1 || nextPage > totalPages) {
+        return;
+      }
+      onPageChange(nextPage);
+    });
+  });
+}
+
+// Initializes the pagination for 'my posts' section
 function initMyPostsPagination(postPerPage = 6, currentPage = 1) {
   const paginationNav = document.getElementById("myposts-pagination");
   const ul = paginationNav?.querySelector("ul");
   const posts = document.querySelectorAll("#my-photos-gallery .post");
-
   if (!paginationNav || !ul || posts.length === 0) {
     return;
   }
-
-  const updatePage = (page) => {
-    const prevRange = (page - 1) * postPerPage;
-    const currRange = page * postPerPage;
-
-    posts.forEach((post, index) => {
-      const isVisible = index >= prevRange && index < currRange;
-      post.classList.toggle("is-hidden", !isVisible);
-    });
-  };
-
-  const totalPages = Math.ceil(posts.length / postPerPage);
-  const buildPagination = (page) => {
-    let li = "";
-
-    li += `<li class="page ${page <= 1 ? "is-hidden" : ""}" data-page="${page - 1}"><span class="icon"> &lt; </span></li>`;
-
-    for (let pageNo = 1; pageNo <= totalPages; pageNo++) {
-      li += `<li class="page ${page === pageNo ? "is-active" : ""}" data-page="${pageNo}">${pageNo}</li>`;
-    }
-
-    li += `<li class="page ${page >= totalPages ? "is-hidden" : ""}" data-page="${page + 1}"><span class="icon"> &gt; </span></li>`;
-    ul.innerHTML = li;
-    ul.querySelectorAll("li.page[data-page]").forEach((item) => {
-      item.addEventListener("click", () => {
-        const nextPage = Number(item.dataset.page);
-        if (
-          !Number.isFinite(nextPage) ||
-          nextPage < 1 ||
-          nextPage > totalPages
-        ) {
-          return;
-        }
-        updatePage(nextPage);
-        buildPagination(nextPage);
-      });
-    });
-  };
-
-  updatePage(currentPage);
-  buildPagination(currentPage);
+  function handlePageChange(page) {
+    updateMyPostsPage(posts, postPerPage, page);
+    buildMyPostsPagination(ul, posts, postPerPage, page, handlePageChange);
+  }
+  updateMyPostsPage(posts, postPerPage, currentPage);
+  buildMyPostsPagination(ul, posts, postPerPage, currentPage, handlePageChange);
 }
 
-// Initializes the 'my posts' section, fetching and rendering posts as needed
+// Determines if the 'my posts' view can be reused without reloading data
+function shouldReuseMyPostsView(forceRefresh, userId, gallery) {
+  return (
+    !forceRefresh &&
+    window._myPostsNeedsRefresh !== true &&
+    window._myPostsUserId === userId &&
+    gallery.childElementCount > 0
+  );
+}
+
+// Resets the 'my posts' gallery and pagination state for a fresh load
+function resetMyPostsGallery(gallery, paginationNav) {
+  gallery.innerHTML = "";
+  myPostsCurrentPage = 1;
+  myPostsHasMore = true;
+  if (paginationNav) {
+    const ul = paginationNav.querySelector("ul");
+    if (ul) {
+      ul.innerHTML = "";
+    }
+  }
+}
+
+// Handles the logic for switching to infinite scroll mode
+async function handleInfiniteMode(gallery, paginationNav, userId) {
+  if (paginationNav) {
+    paginationNav.style.display = "none";
+  }
+  setupMyPostsInfiniteScroll();
+  await loadMoreMyPosts(userId);
+  if (gallery.childElementCount === 0) {
+    gallery.innerHTML =
+      '<p style="text-align: center; padding: 2rem; color: #666;">No posts yet. Go to Camera to publish your first photo!</p>';
+  }
+  window._myPostsNeedsRefresh = false;
+  window._myPostsUserId = userId;
+}
+
+// Handles the logic for switching to pagination mode
+function handlePaginationMode(gallery, paginationNav, posts) {
+  renderMyPosts(posts, 0);
+  if (paginationNav) {
+    paginationNav.style.display = "block";
+    initMyPostsPagination(MY_POSTS_PAGINATION_PAGE_SIZE, 1);
+  }
+  window._myPostsNeedsRefresh = false;
+  window._myPostsUserId = getUserSession().user_id;
+}
+
+// Generates the HTML for pagination controls based on the current page and total posts
 async function initMyPosts(options = {}) {
   try {
     const session = getUserSession();
     const forceRefresh = options.force === true;
 
     if (!session || !session.user_id || !session.logged_in) {
-      console.error("User not logged in or user data not available");
       return showErrorAlert("Please login to see your photos");
     }
 
     const userId = session.user_id;
-    const username = session.username;
     const gallery = document.getElementById("my-photos-gallery");
     const paginationNav = document.getElementById("myposts-pagination");
     const mode = getMyPostsFeedDisplayMode();
 
     if (!gallery) {
-      console.error("My posts container not found");
       return showErrorAlert("My posts view not available");
     }
-
-    const shouldReuseRenderedView =
-      !forceRefresh &&
-      window._myPostsNeedsRefresh !== true &&
-      window._myPostsUserId === userId &&
-      gallery.childElementCount > 0;
-
-    if (shouldReuseRenderedView) {
+    if (shouldReuseMyPostsView(forceRefresh, userId, gallery)) {
       return;
     }
-
-    console.log("Fetching posts for user:", username, "ID:", userId);
-    gallery.innerHTML = "";
-
-    myPostsCurrentPage = 1;
-    myPostsHasMore = true;
-
-    if (paginationNav) {
-      const ul = paginationNav.querySelector("ul");
-      if (ul) {
-        ul.innerHTML = "";
-      }
-    }
-
+    resetMyPostsGallery(gallery, paginationNav);
     if (mode === "infinite") {
-      if (paginationNav) {
-        paginationNav.style.display = "none";
-      }
-
-      setupMyPostsInfiniteScroll();
-      await loadMoreMyPosts(userId);
-
-      if (gallery.childElementCount === 0) {
-        gallery.innerHTML =
-          '<p style="text-align: center; padding: 2rem; color: #666;">No posts yet. Go to Camera to publish your first photo!</p>';
-      }
-
-      window._myPostsNeedsRefresh = false;
-      window._myPostsUserId = userId;
+      await handleInfiniteMode(gallery, paginationNav, userId);
       return;
     }
 
@@ -293,18 +296,8 @@ async function initMyPosts(options = {}) {
       return;
     }
 
-    renderMyPosts(posts, 0);
-
-    if (paginationNav) {
-      paginationNav.style.display = "block";
-      initMyPostsPagination(MY_POSTS_PAGINATION_PAGE_SIZE, 1);
-    }
-
-    window._myPostsNeedsRefresh = false;
-    window._myPostsUserId = userId;
-    console.log("My posts initialized:", posts.length, "posts displayed");
+    handlePaginationMode(gallery, paginationNav, posts);
   } catch (error) {
-    console.error("Error loading posts:", error);
     showErrorAlert("Failed to load your photos");
   }
 }
@@ -349,18 +342,6 @@ function modalHTML() {
   `;
 }
 
-// Closes the upload photo modal and overlay
-function closeUploadPhotoModal() {
-  const modal = document.getElementById("upload-photo-modal");
-  const overlay = document.getElementById("upload-photo-overlay");
-  if (modal) {
-    modal.remove();
-  }
-  if (overlay) {
-    overlay.remove();
-  }
-}
-
 // Shows the upload photo modal and sets up event listeners
 function showUploadPhotoModal() {
   const session = getUserSession();
@@ -370,11 +351,9 @@ function showUploadPhotoModal() {
 
   const overlay = document.createElement("div");
   overlay.className = "popup-overlay is-active";
-  overlay.id = "upload-photo-overlay";
 
   const modal = document.createElement("div");
   modal.className = "auth-container is-open";
-  modal.id = "upload-photo-modal";
   modal.innerHTML = modalHTML();
 
   document.body.appendChild(overlay);
@@ -435,7 +414,6 @@ async function handlePhotoUpload(event) {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        console.log("✅ Photo uploaded successfully:", data.image_id);
         closeUploadPhotoModal();
         showSuccessAlert("Photo uploaded successfully!");
         invalidatePostViews();

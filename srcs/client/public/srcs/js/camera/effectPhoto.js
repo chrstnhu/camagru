@@ -73,7 +73,7 @@ function clearCurrentEffect(uploadEffectPreview, addToDraft) {
     uploadEffectPreview.style.display = "none";
   }
   if (addToDraft) {
-    addToDraft.disabled = true;
+    addToDraft.disabled = !window._uploadedImageData;
   }
 }
 

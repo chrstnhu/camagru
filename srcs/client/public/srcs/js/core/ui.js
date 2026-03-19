@@ -46,7 +46,6 @@ function needAuthentificationRoute(viewId) {
   if (protectedRoutes.includes(viewId)) {
     const session = getUserSession();
     if (!session || !session.logged_in) {
-      console.warn("🔒 Access denied: not logged in for route", viewId);
       history.replaceState({ viewId: "home" }, "", "#home");
       navigateTo("home", false);
       showErrorAlert("Please login to access this page");
@@ -58,8 +57,6 @@ function needAuthentificationRoute(viewId) {
 
 // Navigates to the specified view, manages history, and updates the UI
 function navigateTo(viewId, push) {
-  console.log("🚀 Navigating to:", viewId, "push =", push);
-
   const views = [
     "login-fail",
     "home",

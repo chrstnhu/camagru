@@ -53,19 +53,21 @@ function updateUploadPreview(resizedDataUrl, newWidth, newHeight) {
   if (previewImg) {
     previewImg.src = resizedDataUrl;
   }
+
+  // Active upload photo
+  const addToDraftBtn = document.getElementById("add-to-draft");
+  if (addToDraftBtn) {
+    addToDraftBtn.disabled = false;
+  }
 }
 
 // Updates the effect preview overlay based on the selected effect
 function updateEffectPreview() {
   const uploadEffectPreview = document.getElementById("upload-effect-preview");
-  const uploadSaveBtn = document.getElementById("upload-save-btn");
 
   if (uploadEffectPreview && selectedEffect) {
     uploadEffectPreview.src = selectedEffect.img;
     uploadEffectPreview.style.display = "block";
-  }
-  if (uploadSaveBtn) {
-    uploadSaveBtn.disabled = !selectedEffect;
   }
 }
 
@@ -121,18 +123,30 @@ function drawImageCentered(ctx, img, width, height) {
 function saveUploadedPhoto() {
   if (!window._uploadedImageData)
     return showErrorAlert("Please upload an image first");
-  if (!selectedEffect) {
-    return showErrorAlert("Please select an effect first");
-  }
 
   const { src, width, height } = window._uploadedImageData;
   const ctx = createCanvasContext(width, height);
   const baseImg = new Image();
-  const effectImg = new Image();
 
   baseImg.onload = () => {
     ctx.drawImage(baseImg, 0, 0, width, height);
     const baseDataUrl = ctx.canvas.toDataURL("image/png");
+
+    // No effect: save only the base image
+    if (!selectedEffect) {
+      addCaptureDraft({
+        rawDataUrl: baseDataUrl,
+        previewDataUrl: baseDataUrl,
+        effectDataUrl: null,
+        effectWidth: width,
+        effectHeight: height,
+      });
+      resetUploadPreview();
+      return;
+    }
+
+    // With effect: overlay effect image
+    const effectImg = new Image();
     effectImg.onload = () => {
       const { w, h } = drawImageCentered(ctx, effectImg, width, height);
       addCaptureDraft({
@@ -159,7 +173,7 @@ function resetUploadPreview() {
   const placeholder = document.getElementById("upload-placeholder");
   const previewWrapper = document.getElementById("upload-preview-wrapper");
   const uploadEffectPreview = document.getElementById("upload-effect-preview");
-  const uploadSaveBtn = document.getElementById("upload-save-btn");
+  const addToDraftBtn = document.getElementById("add-to-draft");
 
   if (placeholder) {
     placeholder.style.display = "flex";
@@ -170,7 +184,7 @@ function resetUploadPreview() {
   if (uploadEffectPreview) {
     uploadEffectPreview.style.display = "none";
   }
-  if (uploadSaveBtn) {
-    uploadSaveBtn.disabled = true;
+  if (addToDraftBtn) {
+    addToDraftBtn.disabled = true;
   }
 }

@@ -20,55 +20,50 @@ function runWhenIdle(callback) {
 }
 
 // Renders posts in batches to avoid blocking the UI, using idle time
+
+function transformPostForGallery(postData) {
+  return {
+    id: postData.id,
+    image_id: postData.image_id,
+    user_id: postData.user_id,
+    alias: postData.alias,
+    avatar:
+      postData.image_data || postData.image_path || "assets/profile/photo1.jpg",
+    caption: postData.caption || "",
+    created_at: postData.created_at,
+    likes_count: postData.likes_count || 0,
+    comments_count: postData.comments_count || 0,
+    is_liked: postData.is_liked || false,
+  };
+}
+
 function renderPostsInBatches(postsData, startIndex = 0) {
   return new Promise((resolve) => {
     const total = postsData.length;
-
     if (total === 0) {
       resolve();
       return;
     }
-
     let cursor = 0;
-
     const renderChunk = (size) => {
       const end = Math.min(cursor + size, total);
       for (; cursor < end; cursor++) {
         const postData = postsData[cursor];
-        const transformedPost = {
-          id: postData.id,
-          image_id: postData.image_id,
-          user_id: postData.user_id,
-          alias: postData.alias,
-          avatar:
-            postData.image_data ||
-            postData.image_path ||
-            "assets/profile/photo1.jpg",
-          caption: postData.caption || "",
-          created_at: postData.created_at,
-          likes_count: postData.likes_count || 0,
-          comments_count: postData.comments_count || 0,
-          is_liked: postData.is_liked || false,
-        };
-
+        const transformedPost = transformPostForGallery(postData);
         generatepostHTML(transformedPost, startIndex + cursor);
       }
     };
-
     renderChunk(INITIAL_RENDER_BATCH_SIZE);
-
     const renderRemaining = () => {
       if (cursor >= total) {
         resolve();
         return;
       }
-
       runWhenIdle(() => {
         renderChunk(IDLE_RENDER_BATCH_SIZE);
         renderRemaining();
       });
     };
-
     renderRemaining();
   });
 }
@@ -146,11 +141,11 @@ async function loadMorePosts() {
     const data = await response.json();
 
     if (response.ok && data.posts) {
-      console.log(
-        `Loaded page ${currentLoadedPage}:`,
-        data.posts.length,
-        "posts",
-      );
+      // console.log(
+      //   `Loaded page ${currentLoadedPage}:`,
+      //   data.posts.length,
+      //   "posts",
+      // );
 
       if (data.posts.length === 0) {
         hasMorePosts = false;
@@ -256,30 +251,6 @@ function setupInfiniteScroll() {
     if (size >= height) {
       loadMorePosts();
     }
-  });
-}
-
-// Loads example fallback data for the gallery if API is unavailable
-function loadFallbackData() {
-  console.log("Loading fallback data...");
-
-  const exampleUserData = [
-    {
-      id: 1,
-      alias: "TestUser",
-      avatar: "assets/profile/photo1.jpg",
-      caption: "Test post",
-    },
-    {
-      id: 2,
-      alias: "AnotherUser",
-      avatar: "assets/profile/photo2.jpg",
-      caption: "Another test",
-    },
-  ];
-
-  exampleUserData.forEach((userData, index) => {
-    generatepostHTML(userData, index);
   });
 }
 

@@ -36,6 +36,7 @@ async function handleApiError(response) {
     errorMessage =
       errorData.error || "Login failed. Please check your credentials.";
 
+    // Handle specific cases based on status code and error message
     if (response.status === 403) {
       if (/csrf/i.test(errorMessage)) {
         window.csrfToken = null;
@@ -56,7 +57,7 @@ async function handleApiError(response) {
     );
     errorMessage = `Server error (${response.status}): ${response.statusText}`;
   }
-  console.error("Login failed:", errorMessage);
+  // console.error("Login failed:", errorMessage);
   return showErrorAlert(errorMessage);
 }
 
@@ -78,10 +79,7 @@ async function finalizeLogin(userData, email) {
   const finalUser =
     syncedSession.logged_in && syncedSession.user
       ? syncedSession.user
-      : {
-          ...userData,
-          email: userData.email || email,
-        };
+      : { ...userData, email: userData.email || email };
 
   setUserSessionCookie(finalUser);
   updateUIAfterLogin(finalUser);
@@ -130,8 +128,8 @@ async function loginCheck(event) {
     const data = await response.json();
     const userData = data.user || data;
 
-    console.log("Login successful:", data);
-    console.log("User data:", userData);
+    // console.log("Login successful:", data);
+    // console.log("User data:", userData);
 
     await finalizeLogin(userData, email);
   } catch (error) {

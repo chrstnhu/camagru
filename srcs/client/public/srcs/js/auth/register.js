@@ -36,7 +36,7 @@ function checkPasswordMatch(password, confirmPassword) {
 
   if (!hasUpperCase || !hasLowerCase || !hasNumber) {
     showErrorAlert(
-      "Password must contain at least one uppercase letter, one lowercase letter, and one number!",
+      "Password must contain at least 1 uppercase , 1 lowercase and 1 number!",
     );
     return false;
   }
@@ -215,14 +215,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       const reader = new FileReader();
       reader.onload = (ev) => {
-        console.log(
-          "📸 Avatar file loaded, data length:",
-          ev.target.result.length,
-        );
         document.getElementById("register-avatar-preview").src =
           ev.target.result;
         window._registerAvatarData = ev.target.result;
-        console.log("📸 registerAvatarData set:", !!window._registerAvatarData);
       };
       reader.readAsDataURL(file);
     });

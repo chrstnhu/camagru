@@ -112,6 +112,7 @@ function bindSuccessActions(container) {
     });
   }
 
+  // Start countdown to auto-redirect to login page
   let countdown = 5;
   const countdownInterval = setInterval(() => {
     countdown--;
@@ -131,8 +132,6 @@ function bindSuccessActions(container) {
 
 // Displays the email verification page, with status (success, error, unknown)
 function showEmailVerificationPage(status, reason = null) {
-  console.log("📧 Showing email verification page...", status, reason);
-
   prepareVerificationPage();
 
   const verificationPage = document.createElement("div");

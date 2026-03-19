@@ -56,12 +56,9 @@ function showConfirmPopup(title, message) {
     if (existingOverlay) {
       existingOverlay.remove();
     }
-    // Create and append overlay
     const overlay = createConfirmOverlay(title, message);
     document.body.appendChild(overlay);
-    // Animate in
     setTimeout(() => overlay.classList.add("is-active"), 10);
-    // Bind events
     bindConfirmPopupEvents(overlay, resolve);
   });
 }
@@ -148,34 +145,29 @@ function showNoPostsMessage(gallery, paginationNav) {
   }
 }
 
-// Helper to update pagination after a post is deleted
-function updatePaginationAfterDelete(paginationNav) {
-  const activePage = Number(
-    paginationNav.querySelector("li.page.is-active")?.dataset?.page || 1,
-  );
-  initMyPostsPagination(6, activePage);
-  paginationNav.style.display = "block";
-}
-
 // Refreshes the my posts view after a local deletion
 // Checking if pagination needs to be updated (refactored)
 function refreshMyPostsAfterLocalDelete() {
   const gallery = document.getElementById("my-photos-gallery");
   const paginationNav = document.getElementById("myposts-pagination");
   const remainingPosts = gallery ? gallery.querySelectorAll(".post").length : 0;
-  
+
   if (remainingPosts === 0 && gallery) {
     showNoPostsMessage(gallery, paginationNav);
     return true;
   }
-  
+
   const mode = localStorage.getItem("myPostsFeedMode") || "pagination";
   if (
     mode === "pagination" &&
     paginationNav &&
     typeof initMyPostsPagination === "function"
   ) {
-    updatePaginationAfterDelete(paginationNav);
+    const activePage = Number(
+      paginationNav.querySelector("li.page.is-active")?.dataset?.page || 1,
+    );
+    initMyPostsPagination(6, activePage);
+    paginationNav.style.display = "block";
   }
 }
 
@@ -220,7 +212,6 @@ async function deleteUserImageById(imageId, options = {}) {
     await refreshDeletedImageViews();
     return true;
   } catch (error) {
-    console.error("Error deleting photo:", error);
     showErrorAlert("Error deleting photo");
     return false;
   }
@@ -257,15 +248,6 @@ function updateAvatarElement(user_post, index) {
   }
 }
 
-// Helper to initialize like/comments/delete for a post
-function initPostInteractions(user_post, index, isCompact) {
-  if (!isCompact) {
-    initLikeBtn(user_post.id, index, user_post.is_liked, user_post.likes_count);
-  }
-  initCommentsSection(user_post.id, index);
-  initDeletePostBtn(user_post, index);
-}
-
 // Update post with user data, initialize like button and comments section (refactored)
 async function updateUserPost(user_post, index) {
   try {
@@ -273,9 +255,20 @@ async function updateUserPost(user_post, index) {
     const isCompact = postElement?.dataset.compact === "true";
     updateAliasElement(user_post, index);
     updateAvatarElement(user_post, index);
-    initPostInteractions(user_post, index, isCompact);
+    
+    // Init post interactions (likes, comments, delete) after updating alias and avatar
+    if (!isCompact) {
+      initLikeBtn(
+        user_post.id,
+        index,
+        user_post.is_liked,
+        user_post.likes_count,
+      );
+    }
+    initCommentsSection(user_post.id, index);
+    initDeletePostBtn(user_post, index);
   } catch (error) {
-    console.log("Error updating user post:", error);
+    console.error("Error updating user post:", error);
   }
 }
 

@@ -194,7 +194,6 @@ function showResetPasswordForm(token) {
 document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
 
-  // Check for password reset
   if (urlParams.get("reset") === "form") {
     const token = urlParams.get("token");
     if (token) {

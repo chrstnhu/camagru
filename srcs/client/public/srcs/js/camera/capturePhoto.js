@@ -20,7 +20,6 @@ function setupCameraViewInitialization() {
     if (currentCameraMode === "camera") {
       initWebcam();
     }
-
     handleEffectSelection();
   });
 
@@ -106,7 +105,7 @@ function setupCaptureDraftActions() {
 
 // Initializes camera, upload, and capture UI on DOM load
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("📷 CapturePhoto.js loaded");
+  // console.log("📷 CapturePhoto.js loaded");
 
   video = document.getElementById("video");
   canvas = document.getElementById("canvas");
@@ -160,15 +159,11 @@ function switchToUpload() {
 // Initializes the webcam and sets up video/canvas elements
 function initWebcam() {
   if (webcamInit) {
-    console.log("📷 Webcam already initialized");
     return;
   }
 
-  console.log("📷 Initializing webcam...");
-
   // Check if elements exist
   if (!video || !canvas || !photo || !startBtn) {
-    console.error("❌ Required DOM elements not found");
     return;
   }
 
@@ -182,7 +177,6 @@ function initWebcam() {
     })
     .then(() => {
       webcamInit = true;
-      console.log("📷 Webcam access granted");
     })
     .catch((err) => {
       console.error(`❌ Webcam access error: ${err}`);
@@ -239,11 +233,9 @@ function takePicture() {
         effectWidth,
         effectHeight,
       });
-
-      console.log("📷 Photo captured — choose a draft to save");
     };
   } else {
-    console.log("❌ Cannot take picture - video not ready");
+    console.error("Cannot take picture - video not ready");
   }
 }
 
@@ -253,7 +245,6 @@ function stopWebcam() {
     const tracks = stream.getTracks();
     tracks.forEach((track) => track.stop());
     webcamInit = false;
-    console.log("Stop webcam");
   }
 }
 

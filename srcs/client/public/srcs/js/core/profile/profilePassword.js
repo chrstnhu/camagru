@@ -26,7 +26,7 @@ function checkPassword(currentPassword, password, confirmPassword) {
 
   if (!hasUpperCase || !hasLowerCase || !hasNumber) {
     showErrorAlert(
-      "Password must contain at least one uppercase letter, one lowercase letter, and one number!",
+      "Password must contain at least 1 uppercase, 1 lowercase and 1 number!",
     );
     return false;
   }
@@ -66,7 +66,7 @@ async function submitPasswordForm(e) {
     clearPasswordFields();
     showSuccessAlert("Password updated successfully!");
   } catch (error) {
-    console.error("Error updating password:", error);
+    // console.error("Error updating password:", error);
     showErrorAlert("Network error. Please try again.");
   }
 }
