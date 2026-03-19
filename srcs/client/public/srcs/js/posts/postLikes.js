@@ -40,7 +40,7 @@ async function loadLikeStatus(postId, likeBtn, likeCount, isLoggedIn) {
       likeCount.textContent = data.likes_count;
     }
   } catch (error) {
-    console.error("Error loading like status:", error);
+    // console.error("Error loading like status:", error);
     updateLikeBtn(likeBtn, false);
     likeCount.textContent = "0";
   }
