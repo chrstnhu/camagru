@@ -1,4 +1,3 @@
-// Initialize posts data from API
 let currentLoadedPage = 1;
 let isLoading = false;
 let hasMorePosts = true;
@@ -8,6 +7,7 @@ const GALLERY_FEED_MODE_STORAGE_KEY = "galleryFeedDisplayMode";
 const INITIAL_RENDER_BATCH_SIZE = 8;
 const IDLE_RENDER_BATCH_SIZE = 4;
 
+// Runs a callback when the browser is idle, or after a short timeout fallback
 function runWhenIdle(callback) {
   if (typeof window.requestIdleCallback === "function") {
     window.requestIdleCallback(callback, { timeout: 100 });
@@ -19,59 +19,56 @@ function runWhenIdle(callback) {
   }, 0);
 }
 
+// Renders posts in batches to avoid blocking the UI, using idle time
+
+function transformPostForGallery(postData) {
+  return {
+    id: postData.id,
+    image_id: postData.image_id,
+    user_id: postData.user_id,
+    alias: postData.alias,
+    avatar:
+      postData.image_data || postData.image_path || "assets/profile/photo1.jpg",
+    caption: postData.caption || "",
+    created_at: postData.created_at,
+    likes_count: postData.likes_count || 0,
+    comments_count: postData.comments_count || 0,
+    is_liked: postData.is_liked || false,
+  };
+}
+
 function renderPostsInBatches(postsData, startIndex = 0) {
   return new Promise((resolve) => {
     const total = postsData.length;
-
     if (total === 0) {
       resolve();
       return;
     }
-
     let cursor = 0;
-
     const renderChunk = (size) => {
       const end = Math.min(cursor + size, total);
       for (; cursor < end; cursor++) {
         const postData = postsData[cursor];
-        const transformedPost = {
-          id: postData.id,
-          image_id: postData.image_id,
-          user_id: postData.user_id,
-          alias: postData.alias,
-          avatar:
-            postData.image_data ||
-            postData.image_path ||
-            "assets/profile/photo1.jpg",
-          caption: postData.caption || "",
-          created_at: postData.created_at,
-          likes_count: postData.likes_count || 0,
-          comments_count: postData.comments_count || 0,
-          is_liked: postData.is_liked || false,
-        };
-
+        const transformedPost = transformPostForGallery(postData);
         generatepostHTML(transformedPost, startIndex + cursor);
       }
     };
-
     renderChunk(INITIAL_RENDER_BATCH_SIZE);
-
     const renderRemaining = () => {
       if (cursor >= total) {
         resolve();
         return;
       }
-
       runWhenIdle(() => {
         renderChunk(IDLE_RENDER_BATCH_SIZE);
         renderRemaining();
       });
     };
-
     renderRemaining();
   });
 }
 
+// Returns the current display (infinite or pagination)
 function getFeedDisplayMode() {
   const session = getUserSession();
   if (!session || !session.logged_in) {
@@ -82,11 +79,13 @@ function getFeedDisplayMode() {
   return savedMode === "infinite" ? "infinite" : "pagination";
 }
 
+// Checks if the gallery is in infinite scroll mode
 function isInfiniteScrollMode() {
   return getFeedDisplayMode() === "infinite";
 }
 
-async function initializepostsData() {
+// Initializes the gallery posts data, sets up pagination or infinite scroll
+async function initPostsData() {
   window._galleryNeedsRefresh = false;
   window.objJson = [];
   currentLoadedPage = 1;
@@ -116,16 +115,18 @@ async function initializepostsData() {
     }
 
     setTimeout(() => {
-      initializePagination(PAGINATION_PAGE_SIZE, 1);
+      initPagination(PAGINATION_PAGE_SIZE, 1);
     }, 100);
   }
 }
 
+// Renders a batch of posts, starting at the current objJson length
 async function renderPosts(postsData) {
   const startIndex = window.objJson.length;
   await renderPostsInBatches(postsData, startIndex);
 }
 
+// Loads more posts for infinite scroll mode, appending them to the gallery
 async function loadMorePosts() {
   if (isLoading || !hasMorePosts) {
     return;
@@ -140,11 +141,6 @@ async function loadMorePosts() {
     const data = await response.json();
 
     if (response.ok && data.posts) {
-      console.log(
-        `Loaded page ${currentLoadedPage}:`,
-        data.posts.length,
-        "posts",
-      );
 
       if (data.posts.length === 0) {
         hasMorePosts = false;
@@ -166,6 +162,7 @@ async function loadMorePosts() {
   }
 }
 
+// Loads all posts for pagination mode, fetching all pages and rendering them
 async function loadAllPostsForPagination() {
   if (isLoading) {
     return;
@@ -226,7 +223,7 @@ async function loadAllPostsForPagination() {
   }
 }
 
-// BONUS - Post with infinite scroll
+// BONUS - Sets up the infinite scroll
 function setupInfiniteScroll() {
   if (window._postsInfiniteScrollBound) {
     return;
@@ -252,28 +249,4 @@ function setupInfiniteScroll() {
   });
 }
 
-// Fallback function with example data
-function loadFallbackData() {
-  console.log("Loading fallback data...");
-
-  const exampleUserData = [
-    {
-      id: 1,
-      alias: "TestUser",
-      avatar: "assets/profile/photo1.jpg",
-      caption: "Test post",
-    },
-    {
-      id: 2,
-      alias: "AnotherUser",
-      avatar: "assets/profile/photo2.jpg",
-      caption: "Another test",
-    },
-  ];
-
-  exampleUserData.forEach((userData, index) => {
-    generatepostHTML(userData, index);
-  });
-}
-
-window.initializepostsData = initializepostsData;
+window.initPostsData = initPostsData;

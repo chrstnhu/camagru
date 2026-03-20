@@ -1,20 +1,14 @@
-# Utilise l'image officielle Node.js
-FROM node:18-alpine
+FROM nginx:stable
 
-# Définit le répertoire de travail dans le conteneur
-WORKDIR /app
+# Copie la configuration nginx personnalisée si besoin
+# COPY ./nginx.conf /etc/nginx/nginx.conf
 
-# Copie les fichiers package.json et package-lock.json (s'ils existent)
-COPY package*.json ./
+# Copie les fichiers statiques dans le dossier servi par nginx
+COPY ./public/ /usr/share/nginx/html/
 
-# Installe les dépendances
-RUN npm install
+RUN chmod -R 755 /usr/share/nginx/html
+RUN chown -R www-data:www-data /usr/share/nginx/html
 
-# Copie le reste du code de l'application
-COPY . .
+EXPOSE 80
 
-# Expose le port sur lequel l'application s'exécute
-EXPOSE 3000
-
-# Définit la commande par défaut pour démarrer l'application
-CMD ["npm", "start"]
+CMD ["nginx", "-g", "daemon off;"]

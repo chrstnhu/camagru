@@ -1,4 +1,4 @@
-// Check if user is logged in
+// Checks if the user is logged in and refreshes the session
 async function checkUserStatus() {
   try {
     if (typeof refreshServerSession === "function") {
@@ -9,7 +9,7 @@ async function checkUserStatus() {
   }
 }
 
-// Handle login
+// Handles user login by sending credentials to the backend
 async function login(username, password) {
   try {
     const response = await fetch("/api/auth/login", {
@@ -26,7 +26,7 @@ async function login(username, password) {
     const data = await response.json();
 
     if (data.success) {
-      // Show user avatar 
+      // Show user avatar
       if (typeof updateUIAfterLogin === "function") {
         updateUIAfterLogin({ username: username });
       }
@@ -42,7 +42,7 @@ async function login(username, password) {
   }
 }
 
-// Handle logout
+// Handles user logout by calling the backend and showing an alert
 async function logout() {
   try {
     const response = await fetch("/api/auth/logout", {
@@ -59,7 +59,7 @@ async function logout() {
   }
 }
 
-// Handle registration
+// Handles user registration by sending data to the backend
 async function register(username, email, password) {
   try {
     const response = await fetch("/api/auth/register", {
@@ -89,7 +89,7 @@ async function register(username, email, password) {
   }
 }
 
-// Get logged-in user ID from session cookie
+// Retrieves the logged-in user ID from the session cookie
 function getLoggedInUserId() {
   const cookies = document.cookie.split("; ");
   const sessionCookie = cookies.find((cookie) =>
@@ -110,6 +110,7 @@ function getLoggedInUserId() {
   }
 }
 
+// Checks user status on DOM load
 document.addEventListener("DOMContentLoaded", function () {
   checkUserStatus();
 });

@@ -73,7 +73,18 @@ class PostController extends BaseController {
             ]);
 
         } catch (Exception $e) {
-            $this->sendError(500, 'Database error: ' . $e->getMessage());
+            if (strpos($e->getMessage(), 'doesn\'t exist') !== false) {
+                echo json_encode([
+                'posts' => [],
+                'total' => 0,
+                'page' => isset($page) ? (int)$page : 1,
+                'limit' => isset($limit) ? (int)$limit : 10,
+                'total_pages' => 0
+                ]);
+                http_response_code(200);
+            } else {
+                $this->sendError(500, 'Database error: ' . $e->getMessage());
+            }
         }
     }
 

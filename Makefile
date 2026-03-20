@@ -1,5 +1,5 @@
 # Variables
-COMPOSE = docker-compose
+COMPOSE = docker compose
 GREEN := \033[0;32m
 RESET := \033[0m
 
@@ -21,9 +21,10 @@ help:
 	@echo "  database      - Rebuild database only"
 	@echo "  shell-server  - Shell into server container"
 	@echo "  shell-db      - Shell into database"
+	@echo "  load-test-data - Load test data into database (if test_data.sql exists)"
 
-# Build and start (default target)
-all: build up
+# Build and start
+all: build up 
 
 # Build Docker images
 build:

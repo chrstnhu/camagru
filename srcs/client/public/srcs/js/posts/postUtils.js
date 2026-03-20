@@ -3,7 +3,52 @@ var objJson = [];
 let postsPerPage = 2;
 let currentPage = 1;
 
-// Show custom confirmation popup
+// Helper to create the confirm popup overlay element
+function createConfirmOverlay(title, message) {
+  const overlay = document.createElement("div");
+  overlay.id = "confirm-popup-overlay";
+  overlay.className = "confirm-popup-overlay";
+  overlay.innerHTML = `
+    <div class="confirm-popup">
+      <div class="confirm-popup-header">
+        <i class="fa-solid fa-triangle-exclamation" style="color: #e74c3c"></i>
+        <h3>${title}</h3>
+      </div>
+      <div class="confirm-popup-msg">
+        ${message}
+      </div>
+      <div class="confirm-popup-btn">
+        <button class="confirm-popup-btn confirm-popup-btn-cancel" id="confirm-cancel-btn">
+          <i class="fa-solid fa-times"></i> Cancel
+        </button>
+        <button class="confirm-popup-btn confirm-popup-btn-confirm" id="confirm-ok-btn" style="background: #e74c3c">
+          <i class="fa-solid fa-trash"></i> Delete
+        </button>
+      </div>
+    </div>
+  `;
+  return overlay;
+}
+
+// Helper to bind events to the confirm popup overlay
+function bindConfirmPopupEvents(overlay, resolve) {
+  const cancelBtn = overlay.querySelector("#confirm-cancel-btn");
+  const okBtn = overlay.querySelector("#confirm-ok-btn");
+  const cleanup = (result) => {
+    overlay.classList.remove("is-active");
+    setTimeout(() => {
+      overlay.remove();
+      resolve(result);
+    }, 300);
+  };
+  cancelBtn.addEventListener("click", () => cleanup(false));
+  okBtn.addEventListener("click", () => cleanup(true));
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) cleanup(false);
+  });
+}
+
+// Show custom confirmation popup (refactored)
 function showConfirmPopup(title, message) {
   return new Promise((resolve) => {
     // Remove existing popup if any
@@ -11,61 +56,40 @@ function showConfirmPopup(title, message) {
     if (existingOverlay) {
       existingOverlay.remove();
     }
-
-    // Create overlay
-    const overlay = document.createElement("div");
-    overlay.id = "confirm-popup-overlay";
-    overlay.className = "confirm-popup-overlay";
-
-    // Create popup HTML
-    overlay.innerHTML = `
-      <div class="confirm-popup">
-        <div class="confirm-popup-header">
-          <i class="fa-solid fa-triangle-exclamation" style="color: #e74c3c"></i>
-          <h3>${title}</h3>
-        </div>
-        <div class="confirm-popup-message">
-          ${message}
-        </div>
-        <div class="confirm-popup-buttons">
-          <button class="confirm-popup-btn confirm-popup-btn-cancel" id="confirm-cancel-btn">
-            <i class="fa-solid fa-times"></i> Cancel
-          </button>
-          <button class="confirm-popup-btn confirm-popup-btn-confirm" id="confirm-ok-btn" style="background: #e74c3c">
-            <i class="fa-solid fa-trash"></i> Delete
-          </button>
-        </div>
-      </div>
-    `;
-
+    const overlay = createConfirmOverlay(title, message);
     document.body.appendChild(overlay);
-
-    // Animate in
     setTimeout(() => overlay.classList.add("is-active"), 10);
-
-    // Handle buttons
-    const cancelBtn = document.getElementById("confirm-cancel-btn");
-    const okBtn = document.getElementById("confirm-ok-btn");
-
-    const cleanup = (result) => {
-      overlay.classList.remove("is-active");
-      setTimeout(() => {
-        overlay.remove();
-        resolve(result);
-      }, 300);
-    };
-
-    cancelBtn.addEventListener("click", () => cleanup(false));
-    okBtn.addEventListener("click", () => cleanup(true));
-    overlay.addEventListener("click", (e) => {
-      if (e.target === overlay) cleanup(false);
-    });
+    bindConfirmPopupEvents(overlay, resolve);
   });
 }
 
+// Helper to refresh the gallery section if visible
+async function refreshGallerySection() {
+  const gallerySection = document.getElementById("gallery");
+  if (
+    gallerySection &&
+    gallerySection.style.display !== "none" &&
+    typeof window.initPostsData === "function"
+  ) {
+    await window.initPostsData();
+  }
+}
+
+// Helper to refresh the my posts section if visible
+async function refreshMyPostsSection() {
+  const myPostsSection = document.getElementById("my-posts");
+  if (
+    myPostsSection &&
+    myPostsSection.style.display !== "none" &&
+    typeof initMyPosts === "function"
+  ) {
+    await initMyPosts();
+  }
+}
+
+// Refreshes the gallery and my posts views after a photo is deleted (refactored)
 async function refreshDeletedImageViews() {
   invalidatePostViews();
-
   if (typeof loadCameraGallery === "function") {
     try {
       await loadCameraGallery();
@@ -73,32 +97,18 @@ async function refreshDeletedImageViews() {
       console.error("Error refreshing camera gallery:", error);
     }
   }
-
-  const gallerySection = document.getElementById("gallery");
-  if (
-    gallerySection &&
-    gallerySection.style.display !== "none" &&
-    typeof window.initializepostsData === "function"
-  ) {
-    await window.initializepostsData();
-  }
-
-  const myPostsSection = document.getElementById("my-posts");
-  if (
-    myPostsSection &&
-    myPostsSection.style.display !== "none" &&
-    typeof initializeMyPosts === "function"
-  ) {
-    await initializeMyPosts();
-  }
+  await refreshGallerySection();
+  await refreshMyPostsSection();
 }
 
+// Invalidates the gallery and my posts views
 function invalidatePostViews() {
   window._galleryNeedsRefresh = true;
   window._myPostsNeedsRefresh = true;
   window._lastGalleryUser = null;
 }
 
+// Escapes HTML special characters to prevent XSS
 function escapeHTML(value) {
   const text = value == null ? "" : String(value);
   return text
@@ -109,6 +119,7 @@ function escapeHTML(value) {
     .replace(/'/g, "&#39;");
 }
 
+// Removes a post card element from the specified container by matching image ID
 function removePostCardByImageId(containerId, imageId) {
   const selector = `#${containerId} .post[data-image-id="${imageId}"]`;
   const postElement = document.querySelector(selector);
@@ -121,38 +132,46 @@ function removePostCardByImageId(containerId, imageId) {
   return true;
 }
 
+// Helper to show the empty state message when no posts remain
+function showNoPostsMessage(gallery, paginationNav) {
+  gallery.innerHTML =
+    '<p style="text-align: center; padding: 2rem; color: #666;">No posts yet. Go to Camera to publish your first photo!</p>';
+  if (paginationNav) {
+    paginationNav.style.display = "none";
+    const ul = paginationNav.querySelector("ul");
+    if (ul) {
+      ul.innerHTML = "";
+    }
+  }
+}
+
+// Refreshes the my posts view after a local deletion
+// Checking if pagination needs to be updated (refactored)
 function refreshMyPostsAfterLocalDelete() {
   const gallery = document.getElementById("my-photos-gallery");
   const paginationNav = document.getElementById("myposts-pagination");
   const remainingPosts = gallery ? gallery.querySelectorAll(".post").length : 0;
 
   if (remainingPosts === 0 && gallery) {
-    gallery.innerHTML =
-      '<p style="text-align: center; padding: 2rem; color: #666;">No posts yet. Go to Camera to publish your first photo!</p>';
-    if (paginationNav) {
-      paginationNav.style.display = "none";
-      const ul = paginationNav.querySelector("ul");
-      if (ul) {
-        ul.innerHTML = "";
-      }
-    }
+    showNoPostsMessage(gallery, paginationNav);
     return true;
   }
 
-  const mode = localStorage.getItem("myPostsFeedDisplayMode") || "pagination";
+  const mode = localStorage.getItem("myPostsFeedMode") || "pagination";
   if (
     mode === "pagination" &&
     paginationNav &&
-    typeof initializeMyPostsPagination === "function"
+    typeof initMyPostsPagination === "function"
   ) {
     const activePage = Number(
       paginationNav.querySelector("li.page.is-active")?.dataset?.page || 1,
     );
-    initializeMyPostsPagination(6, activePage);
+    initMyPostsPagination(6, activePage);
     paginationNav.style.display = "block";
   }
 }
 
+// Deletes a user image by ID via the API and updates the UI accordingly
 async function deleteUserImageById(imageId, options = {}) {
   try {
     const response = await fetch(`/api/images/${imageId}`, {
@@ -193,61 +212,68 @@ async function deleteUserImageById(imageId, options = {}) {
     await refreshDeletedImageViews();
     return true;
   } catch (error) {
-    console.error("Error deleting photo:", error);
     showErrorAlert("Error deleting photo");
     return false;
   }
 }
 
-// Update post with user data
+// Helper to update the alias element for a post
+function updateAliasElement(user_post, index) {
+  const userAlias = user_post.alias;
+  const aliasElement = document.getElementById(`post-alias-${index}`);
+  if (aliasElement) {
+    const ownerSession = getUserSession();
+    const isMyPost =
+      ownerSession &&
+      ownerSession.logged_in &&
+      Number(ownerSession.user_id) === Number(user_post.user_id);
+    aliasElement.dataset.rawAlias = userAlias;
+    aliasElement.dataset.ownerId = String(user_post.user_id || "");
+    aliasElement.innerHTML = isMyPost
+      ? `${userAlias} <i class="fa-solid fa-child-reaching" style="color: #486EE3;"></i>`
+      : userAlias;
+  }
+}
+
+// Helper to update the avatar element for a post
+function updateAvatarElement(user_post, index) {
+  const userAlias = user_post.alias;
+  const avatarElement = document.getElementById(`post-avatar-${index}`);
+  if (avatarElement) {
+    const avatarPath = buildAvatarUrl(userAlias);
+    avatarElement.src = avatarPath;
+    avatarElement.onerror = () => {
+      avatarElement.src = "assets/profile/default-avatar.png";
+    };
+  }
+}
+
+// Update post with user data, initialize like button and comments section (refactored)
 async function updateUserPost(user_post, index) {
   try {
-    const userAlias = user_post.alias;
-    const aliasElement = document.getElementById(`post-alias-${index}`);
-    const avatarElement = document.getElementById(`post-avatar-${index}`);
     const postElement = document.querySelector(`[data-post-index="${index}"]`);
     const isCompact = postElement?.dataset.compact === "true";
-
-    if (aliasElement) {
-      const ownerSession = getUserSession();
-      const isMyPost =
-        ownerSession &&
-        ownerSession.logged_in &&
-        Number(ownerSession.user_id) === Number(user_post.user_id);
-
-      aliasElement.dataset.rawAlias = userAlias;
-      aliasElement.dataset.ownerId = String(user_post.user_id || "");
-      aliasElement.innerHTML = isMyPost
-        ? `${userAlias} <i class="fa-solid fa-child-reaching" style="color: #486EE3;"></i>`
-        : userAlias;
-    }
-
-    if (avatarElement) {
-      const avatarPath = buildAvatarUrl(userAlias);
-      avatarElement.src = avatarPath;
-      avatarElement.onerror = () => {
-        avatarElement.src = "assets/profile/default-avatar.png";
-      };
-    }
-
+    updateAliasElement(user_post, index);
+    updateAvatarElement(user_post, index);
+    
+    // Init post interactions (likes, comments, delete) after updating alias and avatar
     if (!isCompact) {
-      initializeLikeBtn(
+      initLikeBtn(
         user_post.id,
         index,
         user_post.is_liked,
         user_post.likes_count,
       );
     }
-
-    initializeCommentsSection(user_post.id, index);
-
-    initializeDeletePostBtn(user_post, index);
+    initCommentsSection(user_post.id, index);
+    initDeletePostBtn(user_post, index);
   } catch (error) {
-    console.log("Error updating user post:", error);
+    console.error("Error updating user post:", error);
   }
 }
 
-function initializeDeletePostBtn(user_post, index) {
+// Initializes delete post button, sets up event listener
+function initDeletePostBtn(user_post, index) {
   const session = getUserSession();
   const isOwner =
     session &&
@@ -283,162 +309,3 @@ function initializeDeletePostBtn(user_post, index) {
     });
   });
 }
-
-
-// Generate post HTML
-function generatepostHTML(user_post, index, options = {}) {
-  const targetId = options.targetId || "post-component";
-  const storeInObjJson = options.storeInObjJson !== false;
-  const showDeleteButton = options.showDeleteButton === true;
-  const compact = options.compact === true;
-  const postComponent = document.getElementById(targetId);
-  if (!postComponent) {
-    return;
-  }
-
-  const session = getUserSession();
-  const isOwner =
-    session &&
-    session.logged_in &&
-    Number(session.user_id) === Number(user_post.user_id);
-
-  const ts = Date.now();
-  let commentAvatar = `assets/profile/default-avatar.png`;
-  if (session?.logged_in && session?.username) {
-    commentAvatar = `/api/avatar/${encodeURIComponent(session.username)}?ts=${ts}`;
-  }
-
-  const deleteButtonHTML =
-    showDeleteButton && isOwner && user_post.image_id
-      ? `
-        <button
-          id="post-delete-btn-${index}"
-          class="delete-btn post-delete-btn"
-          aria-label="Delete photo"
-        >
-          <i class="fa-solid fa-trash"></i>
-        </button>
-      `
-      : "";
-
-  const formattedDate = user_post.created_at
-    ? new Date(user_post.created_at).toLocaleDateString()
-    : "";
-  const safeCaption = escapeHTML(user_post.caption || "");
-
-  const compactMetaHTML = compact
-    ? `
-      <div class="post-compact-meta">
-        <div class="post-compact-topline">
-          ${
-            formattedDate
-              ? `<p class="post-compact-date">${formattedDate}</p>`
-              : ""
-          }
-          <div class="post-compact-likes">
-            <i class="fa-solid fa-heart"></i>
-            <span>${user_post.likes_count || 0}</span>
-          </div>
-        </div>
-        ${
-          safeCaption
-            ? `<p class="post-compact-caption">${safeCaption}</p>`
-            : ""
-        }
-      </div>
-    `
-    : "";
-
-  const initialCommentsCount = Number(user_post.comments_count) || 0;
-
-  const commentsSectionHTML = `
-      <div
-        id="comments-section-${index}"
-        class="comments-section comments-section-collapsible ${compact ? "comments-section-compact" : ""}"
-        data-loaded="false"
-        data-count="${initialCommentsCount}"
-      >
-        <div class="add-comment">
-            <div class="add-comment-container">
-            <img src="${commentAvatar}" alt="Avatar" class="add-comment-avatar"
-                onerror="this.onerror=null; this.src='assets/profile/default-avatar.png'">
-                <div class="comment-input-container comment-input-wrapper">
-                    <textarea id="comment-input-${index}" 
-                    placeholder="Add a comment..." 
-                    class="comment-input"
-                    rows="2"></textarea>
-                    <btn id="add-comment-btn-${index}" class="add-comment-btn-inside">
-                    <i class="fa-solid fa-paper-plane"></i>
-                    </btn>
-                </div>
-            </div>
-        </div>
-        <button
-          id="comments-toggle-btn-${index}"
-          class="comments-toggle-btn"
-          type="button"
-          aria-expanded="false"
-        >
-          <span class="comments-toggle-label">Comments</span>
-          <span id="comments-toggle-count-${index}" class="comments-toggle-count">(${initialCommentsCount})</span>
-          <span class="comments-toggle-action">Open</span>
-          <i class="fa-solid fa-chevron-down comments-toggle-icon"></i>
-        </button>
-
-        <div id="comments-body-${index}" class="comments-body comments-body-hidden">
-        <div id="comments-container-${index}" class="comments-list">
-        </div>
-        </div>
-      </div>
-    `;
-
-  const fullMetaHTML = compact
-    ? ""
-    : `
-      <div class="like-section">
-        <btn id="like-btn-${index}" class="like-btn">
-          <i class="fa-regular fa-heart"></i>
-          <span>Like</span>
-        </btn>
-        <span id="like-count-${index}" class="like-count">0</span>
-      </div>
-    `;
-
-  const postHTML = `
-    <div class="post ${compact ? "post-compact" : ""}" data-user-id="${user_post.id}" data-image-id="${user_post.image_id || ""}" data-post-index="${index}" data-compact="${compact ? "true" : "false"}">
-      ${deleteButtonHTML}
-      <div class="post-header">
-        <img id="post-avatar-${index}" 
-            src="${user_post.avatar}" 
-            alt="Photo" 
-            class="post-avatar"
-            onerror="this.onerror=null; this.src='assets/profile/default-avatar.png'">
-        <h2 id="post-alias-${index}" class="post-alias"></h2>
-      </div>
-        <div class="post-photo-wrapper">
-            <img
-            src="${user_post.avatar}" 
-            alt="Photo" 
-            class="post-photo">
-        </div>
-      ${compactMetaHTML}
-      ${fullMetaHTML}
-      ${commentsSectionHTML}
-    </div>
-  `;
-
-  if (storeInObjJson && typeof window.objJson !== "undefined") {
-    window.objJson.push({
-      adName: user_post.alias,
-      postHTML: postHTML,
-      userData: user_post,
-      index: index,
-    });
-  }
-
-  postComponent.insertAdjacentHTML("beforeend", postHTML);
-
-  updateUserPost(user_post, index);
-  initializeCommentsCount(index, initialCommentsCount);
-}
-

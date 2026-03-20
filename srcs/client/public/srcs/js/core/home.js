@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
   homePhoto();
 });
 
-// Appliquer le mode au chargement
+// Sets up the upload input and related actions for applying effects and saving drafts
 document.addEventListener("DOMContentLoaded", () => {
   const theme = localStorage.getItem("theme");
   if (theme === "dark") {
@@ -101,7 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// Update logo based on theme
+// Update logo based on theme (light or dark)
 function updateLogoForTheme() {
   const logo = document.querySelector(".logo");
   if (!logo) return;
@@ -113,7 +113,7 @@ function updateLogoForTheme() {
 }
 
 
-// Button toggle
+// Button toggle for light/dark mode with icon change
 document.addEventListener("DOMContentLoaded", () => {
     const btn = document.getElementById("toggle-theme");
     const sunIcon = btn?.querySelector(".fa-sun");

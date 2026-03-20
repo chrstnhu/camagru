@@ -53,14 +53,14 @@
     color: #2c3e50;
 }
 
-.confirm-popup-message {
+.confirm-popup-msg {
     color: #5a6c7d;
     font-size: 1rem;
     line-height: 1.5;
     margin-bottom: 1.5rem;
 }
 
-.confirm-popup-buttons {
+.confirm-popup-btn {
     display: flex;
     gap: 1rem;
     justify-content: flex-end;
@@ -107,11 +107,11 @@
         font-size: 1.1rem;
     }
 
-    .confirm-popup-message {
+    .confirm-popup-msg {
         font-size: 0.9rem;
     }
 
-    .confirm-popup-buttons {
+    .confirm-popup-btn {
         flex-direction: column-reverse;
     }
 

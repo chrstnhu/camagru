@@ -501,31 +501,32 @@ class UserController extends BaseController {
         }
         
         // Retrieve current password hash from database
-        $query = "SELECT password FROM users WHERE id = ?";
+        // Use named parameters (:id) for clarity and security
+        $query = "SELECT password FROM users WHERE id = :id";
         $stmt = $this->db->prepare($query);
-        $stmt->execute([$userId]);
+        $stmt->execute([':id' => $userId]);
         $user = $stmt->fetch();
-        
+
         if (!$user) {
             $this->sendError(404, 'User not found');
         }
-        
+
         // Check if current password is correct
         if (!password_verify($input['current_password'], $user['password'])) {
             $this->sendError(401, 'Current password is incorrect');
         }
-        
+
         // Validate new password complexity
         if (!$this->isStrongPassword($input['new_password'])) {
             $this->sendError(400, 'New password must be at least 8 characters and contain uppercase, lowercase and a number');
         }
-        
+
         // Update password in database
         $newHash = password_hash($input['new_password'], PASSWORD_DEFAULT);
-        $updateQuery = "UPDATE users SET password = ?, updated_at = NOW() WHERE id = ?";
+        $updateQuery = "UPDATE users SET password = :password, updated_at = NOW() WHERE id = :id";
         $updateStmt = $this->db->prepare($updateQuery);
-        
-        if ($updateStmt->execute([$newHash, $userId])) {
+
+        if ($updateStmt->execute([':password' => $newHash, ':id' => $userId])) {
             $this->sendSuccess('Password updated successfully');
         } else {
             $this->sendError(500, 'Failed to update password');

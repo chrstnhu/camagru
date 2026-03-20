@@ -10,42 +10,48 @@ class Comment {
 
     // Add a comment
     public function addComment($userId, $postId, $commentText) {
+        // Use named parameters for security and clarity
         $query = "INSERT INTO " . $this->table_name . " 
                   (user_id, post_id, comment_text, created_at) 
-                  VALUES (?, ?, ?, NOW())";
-        
+                  VALUES (:user_id, :post_id, :comment_text, NOW())";
+
         $stmt = $this->conn->prepare($query);
-        return $stmt->execute([$userId, $postId, $commentText]);
+        return $stmt->execute([
+            ':user_id' => $userId,
+            ':post_id' => $postId,
+            ':comment_text' => $commentText
+        ]);
     }
 
     // Get all comments for a post
     public function getCommentsByPost($postId) {
+        // Use named parameter for security and clarity
         $query = "SELECT c.*, u.username 
                   FROM " . $this->table_name . " c
                   JOIN users u ON c.user_id = u.id
-                  WHERE c.post_id = ?
+                  WHERE c.post_id = :post_id
                   ORDER BY c.created_at DESC";
-                
+
         $stmt = $this->conn->prepare($query);
-        $stmt->execute([$postId]);
+        $stmt->execute([':post_id' => $postId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // Delete a comment
     public function deleteComment($commentId, $userId) {
-        // Check if the comment belongs to the user
-        $query = "SELECT user_id FROM " . $this->table_name . " WHERE id = ?";
+        // Check if the comment belongs to the user using named parameters for clarity and security
+        $query = "SELECT user_id FROM " . $this->table_name . " WHERE id = :id";
         $stmt = $this->conn->prepare($query);
-        $stmt->execute([$commentId]);
+        $stmt->execute([':id' => $commentId]);
         $comment = $stmt->fetch(PDO::FETCH_ASSOC);
-        
+
         if (!$comment || $comment['user_id'] != $userId) {
             return false;
         }
-        
-        // Delete the comment
-        $query = "DELETE FROM " . $this->table_name . " WHERE id = ? AND user_id = ?";
+
+        // Delete the comment using named parameters
+        $query = "DELETE FROM " . $this->table_name . " WHERE id = :id AND user_id = :user_id";
         $stmt = $this->conn->prepare($query);
-        return $stmt->execute([$commentId, $userId]);
+        return $stmt->execute([':id' => $commentId, ':user_id' => $userId]);
     }
 }

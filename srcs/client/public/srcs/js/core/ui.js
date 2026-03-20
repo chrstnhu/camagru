@@ -1,6 +1,7 @@
+// Updates the main page view based on the given viewId and target element
 function updatePageView(viewId, target) {
   if (viewId === "my-posts") {
-    initializeMyPosts();
+    initMyPosts();
   }
 
   // Gallery section - reload only if user changed
@@ -19,10 +20,10 @@ function updatePageView(viewId, target) {
       if (postComponent) {
         postComponent.innerHTML = "";
       }
-      if (typeof window.initializepostsData === "function") {
-        window.initializepostsData();
+      if (typeof window.initPostsData === "function") {
+        window.initPostsData();
       } else {
-        console.error("initializepostsData is not available on window");
+        console.error("initPostsData is not available on window");
       }
       window._lastGalleryUser = currentUser;
       window._galleryNeedsRefresh = false;
@@ -38,10 +39,24 @@ function updatePageView(viewId, target) {
   }
 }
 
-// Define navigateTo
-function navigateTo(viewId, push) {
-  console.log("🚀 Navigating to:", viewId, "push =", push);
+// Checks if the given route requires authentication and redirects if not logged in
+function needAuthentificationRoute(viewId) {
+  const protectedRoutes = ["my-posts", "profile", "camera-section"];
 
+  if (protectedRoutes.includes(viewId)) {
+    const session = getUserSession();
+    if (!session || !session.logged_in) {
+      history.replaceState({ viewId: "home" }, "", "#home");
+      navigateTo("home", false);
+      showErrorAlert("Please login to access this page");
+      return false;
+    }
+  }
+  return true;
+}
+
+// Navigates to the specified view, manages history, and updates the UI
+function navigateTo(viewId, push) {
   const views = [
     "login-fail",
     "home",
@@ -52,24 +67,11 @@ function navigateTo(viewId, push) {
     "profile",
   ];
 
-  // Routes that require authentication
-  const protectedRoutes = ["my-posts", "profile", "camera-section"];
-
-  // Check if route requires authentication
-  if (protectedRoutes.includes(viewId)) {
-    const session = getUserSession();
-    if (!session || !session.logged_in) {
-      console.warn("🔒 Access denied: not logged in for route", viewId);
-      history.replaceState({ viewId: "home" }, "", "#home");
-      navigateTo("home", false);
-      showErrorAlert("Please login to access this page");
-      return;
-    }
+  if (!needAuthentificationRoute(viewId)) {
+    return;
   }
 
   const target = document.getElementById(viewId);
-
-  console.log("🎯 Target element:", target);
 
   if (target) {
     // Hide all views
@@ -103,7 +105,7 @@ function navigateTo(viewId, push) {
   }
 }
 
-// Handle browser back/forward buttons
+// Handles browser back/forward navigation events
 window.addEventListener("popstate", (event) => {
   if (event.state && event.state.viewId) {
     navigateTo(event.state.viewId, false);
@@ -112,7 +114,7 @@ window.addEventListener("popstate", (event) => {
   }
 });
 
-// Handle hash change (when user types a new hash in the URL bar)
+// Handles hash changes in the URL bar to navigate to the correct view
 window.addEventListener("hashchange", () => {
   const hash = window.location.hash.replace("#", "");
   if (hash) {
@@ -120,7 +122,7 @@ window.addEventListener("hashchange", () => {
   }
 });
 
-// Handle direct URL access with hash on page load
+// Handles direct URL access with hash on initial page load
 document.addEventListener("DOMContentLoaded", () => {
   const hash = window.location.hash.replace("#", "");
   if (hash) {

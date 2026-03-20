@@ -1,4 +1,4 @@
-// Clear register form fields
+// Clears all fields and resets the register form
 function clearRegisterForm() {
   document.getElementById("register-username").value = "";
   document.getElementById("register-email").value = "";
@@ -18,7 +18,7 @@ function clearRegisterForm() {
   window._registerAvatarData = null;
 }
 
-// Handle register from form
+// Checks if the password and confirmation match
 function checkPasswordMatch(password, confirmPassword) {
   if (password !== confirmPassword) {
     showErrorAlert("Passwords do not match!");
@@ -36,14 +36,14 @@ function checkPasswordMatch(password, confirmPassword) {
 
   if (!hasUpperCase || !hasLowerCase || !hasNumber) {
     showErrorAlert(
-      "Password must contain at least one uppercase letter, one lowercase letter, and one number!",
+      "Password must contain at least 1 uppercase , 1 lowercase and 1 number!",
     );
     return false;
   }
   return true;
 }
 
-// Client-side validations
+// Validates the username and email format on the client side
 function validateRegisterIdentity(username, email) {
   const usernameRegex = /^[a-zA-Z0-9_-]{3,20}$/;
   if (!usernameRegex.test(username)) {
@@ -62,6 +62,7 @@ function validateRegisterIdentity(username, email) {
   return true;
 }
 
+// Runs all client-side validations for the registration form
 function checkClientSideValidation(
   username,
   email,
@@ -90,6 +91,7 @@ function checkClientSideValidation(
   return true;
 }
 
+// Sends the registration request to the backend API
 async function sendRegisterRequest(username, email, password) {
   return fetch("/api/auth/register", {
     method: "POST",
@@ -103,6 +105,7 @@ async function sendRegisterRequest(username, email, password) {
   });
 }
 
+// Handles API errors from the registration request and displays appropriate messages
 async function handleRegisterApiError(response) {
   let errorMessage;
 
@@ -121,7 +124,7 @@ async function handleRegisterApiError(response) {
   return showErrorAlert(errorMessage);
 }
 
-// Handle registration form submission
+// Handles the registration form submission, validates input, and processes registration
 async function registerCheck(event) {
   if (event) {
     event.preventDefault();
@@ -162,7 +165,7 @@ async function registerCheck(event) {
   }
 }
 
-// Toggle eye icon for a password input
+// Sets up the eye icon toggle for password visibility
 function setupEyeToggle(inputId, eyeId) {
   const input = document.getElementById(inputId);
   const eye = document.getElementById(eyeId);
@@ -178,7 +181,7 @@ function setupEyeToggle(inputId, eyeId) {
   });
 }
 
-// Setup password visibility toggles for register form
+// Sets up password visibility toggles and real-time password match validation rm
 function setupRegisterPasswordToggles() {
   setupEyeToggle("register-password", "register-password-eye");
   setupEyeToggle("register-confirm-password", "register-confirm-password-eye");
@@ -196,11 +199,10 @@ function setupRegisterPasswordToggles() {
   }
 }
 
-// Initialize register form on DOM load
+// Initializes the register form and avatar preview on DOM load
 document.addEventListener("DOMContentLoaded", () => {
   setupRegisterPasswordToggles();
 
-  // Avatar preview on file select
   const avatarInput = document.getElementById("register-avatar");
   if (avatarInput) {
     avatarInput.addEventListener("change", (e) => {
@@ -213,15 +215,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       const reader = new FileReader();
       reader.onload = (ev) => {
-        console.log("📸 Avatar file loaded, data length:",
-          ev.target.result.length,
-        );
         document.getElementById("register-avatar-preview").src =
           ev.target.result;
         window._registerAvatarData = ev.target.result;
-        console.log("📸 registerAvatarData set:",
-          !!window._registerAvatarData,
-        );
       };
       reader.readAsDataURL(file);
     });

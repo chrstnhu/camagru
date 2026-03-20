@@ -19,40 +19,44 @@ class Like {
 
     // Add a like
     private function addLike($userId, $postId) {
+        // Use named parameters for security and clarity
         $query = "INSERT INTO " . $this->table_name . " 
-                  (user_id, post_id, created_at) 
-                  VALUES (?, ?, NOW())";
-        
+              (user_id, post_id, created_at) 
+              VALUES (:user_id, :post_id, NOW())";
+
         $stmt = $this->conn->prepare($query);
-        return $stmt->execute([$userId, $postId]);
+        return $stmt->execute([':user_id' => $userId, ':post_id' => $postId]);
     }
 
     // Remove a like
     private function removeLike($userId, $postId) {
+        // Use named parameters for security and clarity
         $query = "DELETE FROM " . $this->table_name . " 
-                  WHERE user_id = ? AND post_id = ?";
-        
+              WHERE user_id = :user_id AND post_id = :post_id";
+
         $stmt = $this->conn->prepare($query);
-        return $stmt->execute([$userId, $postId]);
+        return $stmt->execute([':user_id' => $userId, ':post_id' => $postId]);
     }
 
     // Check if the user has liked the post
     public function isLikedByUser($userId, $postId) {
+        // Use named parameters for security and clarity
         $query = "SELECT id FROM " . $this->table_name . " 
-                  WHERE user_id = ? AND post_id = ?";
-        
+                  WHERE user_id = :user_id AND post_id = :post_id";
+
         $stmt = $this->conn->prepare($query);
-        $stmt->execute([$userId, $postId]);
+        $stmt->execute([':user_id' => $userId, ':post_id' => $postId]);
         return $stmt->fetch() !== false;
     }
 
     // Count the total number of likes for a post
     public function getLikeCount($postId) {
+        // Use named parameter for security and clarity
         $query = "SELECT COUNT(*) as total FROM " . $this->table_name . " 
-                  WHERE post_id = ?";
-        
+                  WHERE post_id = :post_id";
+
         $stmt = $this->conn->prepare($query);
-        $stmt->execute([$postId]);
+        $stmt->execute([':post_id' => $postId]);
         $result = $stmt->fetch();
         return $result['total'];
     }
