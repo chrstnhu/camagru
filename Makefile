@@ -1,5 +1,5 @@
 # Variables
-COMPOSE = docker-compose
+COMPOSE = docker compose
 GREEN := \033[0;32m
 RESET := \033[0m
 
@@ -23,18 +23,8 @@ help:
 	@echo "  shell-db      - Shell into database"
 	@echo "  load-test-data - Load test data into database (if test_data.sql exists)"
 
-# Build and start (default target)
-all: build up
-	all: build up load-test-data
-
-# Load test data into the database if test_data.sql exists
-load-test-data:
-	@if [ -f srcs/server/config/test_data.sql ]; then \
-		echo "Loading test data into database..."; \
-		$(COMPOSE) exec -T database mysql -u root -p"$$MYSQL_ROOT_PASSWORD" camagru < srcs/server/config/test_data.sql; \
-	else \
-		echo "No test_data.sql found, skipping test data load."; \
-	fi
+# Build and start
+all: build up 
 
 # Build Docker images
 build:

@@ -87,7 +87,8 @@ function initPagination(postPerPage = 6, currentPage = 1) {
       console.log(`Pagination initialized with ${availableposts.length} posts`);
       handlePagination(postPerPage, currentPage);
     } else {
-      console.warn("No posts found for pagination");
+      // console.warn("No posts found for pagination");
+      showErrorAlert("No posts available for pagination");
     }
   }, 100); // Wait 100ms for posts to be generated
 }

@@ -141,11 +141,6 @@ async function loadMorePosts() {
     const data = await response.json();
 
     if (response.ok && data.posts) {
-      // console.log(
-      //   `Loaded page ${currentLoadedPage}:`,
-      //   data.posts.length,
-      //   "posts",
-      // );
 
       if (data.posts.length === 0) {
         hasMorePosts = false;
