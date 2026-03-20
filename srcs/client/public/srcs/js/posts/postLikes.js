@@ -23,7 +23,7 @@ async function initLikeBtn(postId, index, initialIsLiked, initialLikeCount) {
     });
   } else {
     likeBtn.addEventListener("click", function () {
-      showErrorAlert("Please login to like posts");
+      showInfoAlert("Please login to like posts");
     });
   }
 }
@@ -50,7 +50,7 @@ async function loadLikeStatus(postId, likeBtn, likeCount, isLoggedIn) {
 async function toggleLike(postId, likeBtn, likeCount) {
   const session = getUserSession();
   if (!session || !session.user_id || !session.logged_in) {
-    return showErrorAlert("Please login to like posts");
+    return showInfoAlert("Please login to like posts");
   }
 
   try {
@@ -73,7 +73,7 @@ async function toggleLike(postId, likeBtn, likeCount) {
       }
     }
   } catch (error) {
-    console.error("Error toggling like:", error);
+    // console.error("Error toggling like:", error);
     showErrorAlert("Network error. Please try again.");
   }
 }

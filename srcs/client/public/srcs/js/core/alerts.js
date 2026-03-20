@@ -8,10 +8,13 @@ function createAlertBox(type, message, alertId) {
   const alertDiv = document.createElement("div");
   alertDiv.className = `alert is-${type}`;
   const icon = document.createElement("i");
-  icon.className =
-    type === "success"
-      ? "fa-solid fa-circle-check"
-      : "fa-solid fa-circle-xmark";
+  if (type === "success") {
+    icon.className = "fa-solid fa-circle-check";
+  } else if (type === "error") {
+    icon.className = "fa-solid fa-circle-xmark";
+  } else if (type === "info") {
+    icon.className = "fa-solid fa-circle-info";
+  }
   const messageSpan = document.createElement("span");
   messageSpan.textContent = message;
   alertDiv.appendChild(icon);
@@ -43,6 +46,11 @@ function showSuccessAlert(message) {
 // Shows an error alert
 function showErrorAlert(message) {
   showAlert("error", message);
+}
+
+// Shows an info alert
+function showInfoAlert(message) {
+  showAlert("info", message);
 }
 
 // Removes a specific alert with a fade-out animation

@@ -55,7 +55,7 @@ function bindAvatarPreview() {
       return;
     }
     if (!file.type.startsWith("image/")) {
-      return showErrorAlert("Please select a valid image file");
+      return showInfoAlert("Please select a valid image file");
     }
     const reader = new FileReader();
     reader.onload = (ev) => {
@@ -124,7 +124,8 @@ async function syncUserSession(data, updateData) {
       syncedUser = sessionData.user;
     }
   } catch (syncError) {
-    console.error("Error refreshing session after profile update:", syncError);
+    // console.error("Error refreshing session after profile update:", syncError);
+    showErrorAlert("An error occurred while refreshing session data. Please try again.");
   }
 
   return syncedUser || data.user || updateData;

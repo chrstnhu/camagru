@@ -71,7 +71,7 @@ function setupCaptureBtn() {
 
       // Only allow capture if an effect is selected
       if (!selectedEffect) {
-        alert("Please select an effect before taking a picture!");
+        showInfoAlert("Please select an effect before taking a picture!");
         return;
       }
 
@@ -179,7 +179,8 @@ function initWebcam() {
       webcamInit = true;
     })
     .catch((err) => {
-      console.error(`❌ Webcam access error: ${err}`);
+      // console.error(`❌ Webcam access error: ${err}`);
+      showErrorAlert("Unable to access webcam. Please allow camera permissions and try again.");
     });
 
   // Set up canplay event handler
@@ -235,7 +236,8 @@ function takePicture() {
       });
     };
   } else {
-    console.error("Cannot take picture - video not ready");
+    // console.error("Cannot take picture - video not ready");
+    showErrorAlert("Unable to capture photo. Please try again.");
   }
 }
 

@@ -23,7 +23,8 @@ function updatePageView(viewId, target) {
       if (typeof window.initPostsData === "function") {
         window.initPostsData();
       } else {
-        console.error("initPostsData is not available on window");
+        // console.error("initPostsData is not available on window");
+        showErrorAlert("Unable to load gallery. Please try again.");
       }
       window._lastGalleryUser = currentUser;
       window._galleryNeedsRefresh = false;
@@ -48,7 +49,7 @@ function needAuthentificationRoute(viewId) {
     if (!session || !session.logged_in) {
       history.replaceState({ viewId: "home" }, "", "#home");
       navigateTo("home", false);
-      showErrorAlert("Please login to access this page");
+      showInfoAlert("Please login to access this page");
       return false;
     }
   }
@@ -93,8 +94,8 @@ function navigateTo(viewId, push) {
       document.dispatchEvent(event);
     }
   } else {
-    console.error(`❌ Target element '${viewId}' not found!`);
     history.replaceState({ viewId: "home" }, "", "#home");
+    // console.error(`❌ Target element '${viewId}' not found!`);
     showErrorAlert("Page not found");
     navigateTo("home", false);
   }

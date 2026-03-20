@@ -4,7 +4,7 @@ function validateImageFile(file) {
     return false;
   }
   if (!file.type.startsWith("image/")) {
-    showErrorAlert("Please select a valid image file");
+    showInfoAlert("Please select a valid image file");
     return false;
   }
   return true;
@@ -122,7 +122,7 @@ function drawImageCentered(ctx, img, width, height) {
 // Saves the uploaded photo with the selected effect as a draft
 function saveUploadedPhoto() {
   if (!window._uploadedImageData)
-    return showErrorAlert("Please upload an image first");
+    return showInfoAlert("Please upload an image first");
 
   const { src, width, height } = window._uploadedImageData;
   const ctx = createCanvasContext(width, height);

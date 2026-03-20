@@ -198,7 +198,8 @@ async function loadComments(postId, container, postIndex) {
       updateCommentsCount(0, postIndex);
     }
   } catch (error) {
-    console.error("Error loading comments:", error);
+    // console.error("Error loading comments:", error);
+    showErrorAlert("Failed to load comments. Please try again.");
     container.innerHTML =
       '<p class="comments-empty-state">Unable to load comments right now.</p>';
     updateCommentsCount(0, postIndex);
@@ -237,7 +238,7 @@ async function addComment(postId, input, container, postIndex) {
   // Check if the user is logged in
   const session = getUserSession();
   if (!session || !session.user_id || !session.logged_in) {
-    return showErrorAlert("Please login to add comments");
+    return showInfoAlert("Please login to add comments");
   }
 
   try {
@@ -327,7 +328,7 @@ function createCommentElement(comment, commentIndex, postId, postIndex) {
 async function deleteMyComment(postId, commentId, postIndex) {
   const session = getUserSession();
   if (!session || !session.user_id || !session.logged_in) {
-    return showErrorAlert("Please login to delete comments");
+    return showInfoAlert("Please login to delete comments");
   }
 
   const confirmed = await showConfirmPopup(

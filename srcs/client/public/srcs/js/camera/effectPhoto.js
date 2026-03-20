@@ -116,9 +116,9 @@ async function toggleEffectSelection(effectDiv, effect) {
     await ensureEffectDataUrl(effect);
     applySelectedEffect(effect, uploadEffectPreview, addToDraft);
   } catch (error) {
-    console.error("Failed to load effect image:", error);
     clearCurrentEffect(uploadEffectPreview, addToDraft);
     effectDiv.classList.remove("is-selected");
+    // console.error("Failed to load effect image:", error);
     showErrorAlert("Failed to load selected effect");
     return;
   }

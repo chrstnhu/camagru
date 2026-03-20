@@ -51,8 +51,8 @@
 }
 
 .capture-draft-item {
-    width: 320px;
-    height: 240px;
+    width: 100%;
+    height: auto;
     aspect-ratio: 4 / 3;
     object-fit: contain;
     background: var(--comment-bg);

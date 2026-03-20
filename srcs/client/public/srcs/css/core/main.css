@@ -318,6 +318,18 @@ footer {
   word-wrap: break-word;
 }
 
+.alert.is-info {
+  background: #fff;
+}
+
+.alert.is-info i {
+  color: #2196f3;
+}
+
+.alert.is-info::after {
+  background-color: #2196f3;
+}
+
 .user-profile {
   position: relative;
   padding: 10px;

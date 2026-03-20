@@ -84,7 +84,7 @@ function initPagination(postPerPage = 6, currentPage = 1) {
   setTimeout(() => {
     const availableposts = document.querySelectorAll(".post");
     if (availableposts.length > 0) {
-      console.log(`Pagination initialized with ${availableposts.length} posts`);
+      // console.log(`Pagination initialized with ${availableposts.length} posts`);
       handlePagination(postPerPage, currentPage);
     } else {
       // console.warn("No posts found for pagination");

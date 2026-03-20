@@ -156,7 +156,8 @@ async function loadMorePosts() {
       }
     }
   } catch (error) {
-    console.error("Error loading posts:", error);
+    // console.error("Error loading posts:", error);
+    showErrorAlert("An error occurred while loading posts. Please try again.");
   } finally {
     isLoading = false;
   }
@@ -217,7 +218,8 @@ async function loadAllPostsForPagination() {
     hasMorePosts = false;
     currentLoadedPage = totalPages + 1;
   } catch (error) {
-    console.error("Error loading posts for pagination:", error);
+    // console.error("Error loading posts for pagination:", error);
+    showErrorAlert("An error occurred while loading posts. Please try again.");
   } finally {
     isLoading = false;
   }

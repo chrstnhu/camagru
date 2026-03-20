@@ -55,7 +55,7 @@ function validateRegisterIdentity(username, email) {
 
   const emailRegex = /^\S+@\S+\.\S+$/;
   if (!emailRegex.test(email)) {
-    showErrorAlert("Please enter a valid email address!");
+    showInfoAlert("Please enter a valid email address!");
     return false;
   }
 
@@ -71,7 +71,7 @@ function checkClientSideValidation(
   termsAgreed,
 ) {
   if (!username || !email || !password || !confirmPassword) {
-    showErrorAlert("Please fill in all fields!");
+    showInfoAlert("Please fill in all fields!");
     return false;
   }
 
@@ -114,10 +114,10 @@ async function handleRegisterApiError(response) {
     errorMessage = errorData.error || `Server error: ${response.status}`;
   } catch (e) {
     const errorText = await response.text();
-    console.error(
-      "Server returned non-JSON response:",
-      errorText.substring(0, 200),
-    );
+    // console.error(
+    //   "Server returned non-JSON response:",
+    //   errorText.substring(0, 200),
+    // );
     errorMessage = `Server error (${response.status}): ${response.statusText}`;
   }
 
@@ -160,7 +160,7 @@ async function registerCheck(event) {
     showSuccessAlert("Account created. Check your email to verify it.");
     showLogin();
   } catch (error) {
-    console.error("Registration error:", error);
+    // console.error("Registration error:", error);
     showErrorAlert("Connection error. Please try again.");
   }
 }
@@ -211,7 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       if (!file.type.startsWith("image/")) {
-        return showErrorAlert("Please select a valid image file");
+        return showInfoAlert("Please select a valid image file");
       }
       const reader = new FileReader();
       reader.onload = (ev) => {

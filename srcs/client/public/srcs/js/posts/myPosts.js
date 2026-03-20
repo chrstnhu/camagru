@@ -140,9 +140,9 @@ function setupMyPostsInfiniteScroll() {
 
   window._myPostsInfiniteScrollBound = true;
   window.addEventListener("scroll", () => {
-    if (!isMyPostsInfiniteMode()) {
-      return;
-    }
+    // if (!isMyPostsInfiniteMode()) {
+    //   return;
+    // }
 
     const myPostsSection = document.getElementById("my-posts");
     if (!myPostsSection || myPostsSection.style.display === "none") {
@@ -266,7 +266,7 @@ async function initMyPosts(options = {}) {
     const forceRefresh = options.force === true;
 
     if (!session || !session.user_id || !session.logged_in) {
-      return showErrorAlert("Please login to see your photos");
+      return showInfoAlert("Please login to see your photos");
     }
 
     const userId = session.user_id;
@@ -346,7 +346,7 @@ function modalHTML() {
 function showUploadPhotoModal() {
   const session = getUserSession();
   if (!session || !session.logged_in) {
-    return showErrorAlert("Please login to upload photos");
+    return showInfoAlert("Please login to upload photos");
   }
 
   const overlay = document.createElement("div");
@@ -386,15 +386,15 @@ async function handlePhotoUpload(event) {
   const file = fileInput.files[0];
 
   if (!file) {
-    return showErrorAlert("Please select a photo");
+    return showInfoAlert("Please select a photo");
   }
 
   if (!file.type.startsWith("image/")) {
-    return showErrorAlert("Please select a valid image file");
+    return showInfoAlert("Please select a valid image file");
   }
 
   if (file.size > 10 * 1024 * 1024) {
-    return showErrorAlert("Image size must be less than 10MB");
+    return showInfoAlert("Image size must be less than 10MB");
   }
 
   const reader = new FileReader();
@@ -422,11 +422,11 @@ async function handlePhotoUpload(event) {
           initMyPosts({ force: true });
         }, 500);
       } else {
-        console.error("❌ Failed to upload photo:", data.error);
+        // console.error("❌ Failed to upload photo:", data.error);
         showErrorAlert("Failed to upload photo: " + data.error);
       }
     } catch (error) {
-      console.error("❌ Error uploading photo:", error);
+      // console.error("❌ Error uploading photo:", error);
       showErrorAlert("Error uploading photo. Please try again.");
     }
   };

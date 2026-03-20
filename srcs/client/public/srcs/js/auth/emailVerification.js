@@ -108,7 +108,6 @@ function bindSuccessActions(container) {
   if (btn) {
     btn.addEventListener("click", () => {
       closeVerificationPage();
-      window.activateLoginPopup();
     });
   }
 
@@ -125,7 +124,6 @@ function bindSuccessActions(container) {
     if (countdown <= 0) {
       clearInterval(countdownInterval);
       closeVerificationPage();
-      window.activateLoginPopup();
     }
   }, 1000);
 }

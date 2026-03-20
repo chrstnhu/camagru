@@ -36,28 +36,26 @@ async function handleApiError(response) {
     errorMessage =
       errorData.error || "Login failed. Please check your credentials.";
 
-    // Handle specific cases based on status code and error message
+    // Cas spécifiques
+    if (response.status === 400) {
+      return showInfoAlert("Identifiants incorrects. Please try again.") ;
+    }
     if (response.status === 403) {
       if (/csrf/i.test(errorMessage)) {
         window.csrfToken = null;
-        return showErrorAlert("Session expired. Please try logging in again.");
+        return showInfoAlert("Session expired. Please try logging in again.");
       }
 
       if (/verify your email/i.test(errorMessage)) {
-        return showErrorAlert(
+        return showInfoAlert(
           "Please verify your email address before logging in. Check your inbox!",
         );
       }
     }
   } catch (e) {
     const errorText = await response.text();
-    console.error(
-      "Server returned non-JSON response:",
-      errorText.substring(0, 200),
-    );
     errorMessage = `Server error (${response.status}): ${response.statusText}`;
   }
-  // console.error("Login failed:", errorMessage);
   return showErrorAlert(errorMessage);
 }
 
@@ -94,7 +92,7 @@ async function finalizeLogin(userData, email) {
 
 // Handles network errors during login and displays error messages
 function handleLoginNetworkError(error) {
-  console.error("Network error:", error);
+  // console.error("Network error:", error);
 
   if (error instanceof SyntaxError && error.message.includes("JSON")) {
     return showErrorAlert(
@@ -115,7 +113,7 @@ async function loginCheck(event) {
   const password = document.getElementById("login-password")?.value;
 
   if (!email || !password) {
-    return showErrorAlert("Please enter both email and password");
+    return showInfoAlert("Please enter both email and password");
   }
 
   try {

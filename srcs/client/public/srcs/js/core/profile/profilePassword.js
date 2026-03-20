@@ -1,22 +1,22 @@
 // Checks the validity of the current and new password fields
 function checkPassword(currentPassword, password, confirmPassword) {
   if (!currentPassword) {
-    showErrorAlert("Please enter your current password!");
+    showInfoAlert("Please enter your current password!");
     return false;
   }
 
   if (!password) {
-    showErrorAlert("Please enter a new password!");
+    showInfoAlert("Please enter a new password!");
     return false;
   }
 
   if (password !== confirmPassword) {
-    showErrorAlert("Passwords do not match!");
+    showInfoAlert("Passwords do not match!");
     return false;
   }
 
   if (password.length < 8) {
-    showErrorAlert("Password must be at least 8 characters long!");
+    showInfoAlert("Password must be at least 8 characters long!");
     return false;
   }
 

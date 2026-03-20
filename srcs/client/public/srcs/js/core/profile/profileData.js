@@ -57,7 +57,8 @@ function loadUserProfile() {
       }
     })
     .catch((error) => {
-      console.error("Error loading profile:", error);
+      // console.error("Error loading profile:", error);
+      showErrorAlert("An error occurred while loading profile data. Please try again.");
     });
 }
 

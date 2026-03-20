@@ -2,24 +2,12 @@
 function mountTemplate(templateId) {
   const template = document.getElementById(templateId);
   if (!template) {
-    console.error(`Template not found: ${templateId}`);
+    // console.error(`Template not found: ${templateId}`);
     return false;
   }
 
   document.body.appendChild(template.content.cloneNode(true));
   return true;
-}
-
-// Opens the login popup or shows the login form after reset flow
-function openLoginFromResetFlow() {
-  if (typeof window.activateLoginPopup === "function") {
-    window.activateLoginPopup();
-    return;
-  }
-
-  if (typeof showLogin === "function") {
-    showLogin();
-  }
 }
 
 // Closes the forgot password popup and overlay
@@ -56,7 +44,7 @@ async function handleForgotPassword(event) {
       showErrorAlert(data.error || "Failed to send reset email");
     }
   } catch (error) {
-    console.error("Forgot password error:", error);
+    // console.error("Forgot password error:", error);
     showErrorAlert("Network error. Please try again.");
   }
 }
@@ -84,7 +72,9 @@ function showForgotPasswordPopup() {
     backToLoginLink.addEventListener("click", (event) => {
       event.preventDefault();
       closeForgotPasswordPopup();
-      openLoginFromResetFlow();
+      if (typeof showLogin === "function") {
+        showLogin();
+      }
     });
   }
 
@@ -134,13 +124,15 @@ async function handleResetPassword(event, token) {
       closeResetPasswordPopup();
       showSuccessAlert(data.message);
       setTimeout(() => {
-        openLoginFromResetFlow();
+        if (typeof showLogin === "function") {
+          showLogin();
+        }
       }, 1500);
     } else {
       showErrorAlert(data.error || "Failed to reset password");
     }
   } catch (error) {
-    console.error("Reset password error:", error);
+    // console.error("Reset password error:", error);
     showErrorAlert("Network error. Please try again.");
   }
 }

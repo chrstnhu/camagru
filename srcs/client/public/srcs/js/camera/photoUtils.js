@@ -174,7 +174,7 @@ function handleImageUpload(event) {
     return;
   }
   if (!file.type.startsWith("image/")) {
-    return showErrorAlert("Please select a valid image file");
+    return showInfoAlert("Please select a valid image file");
   }
   const reader = new FileReader();
   reader.onload = function (e) {
@@ -214,10 +214,10 @@ function drawEffectOnCanvas(
 
 function saveUploadedPhoto() {
   if (!window._uploadedImageData) {
-    return showErrorAlert("Please upload an image first");
+    return showInfoAlert("Please upload an image first");
   }
   if (!selectedEffect) {
-    return showErrorAlert("Please select an effect first");
+    return showInfoAlert("Please select an effect first");
   }
   const imgData = window._uploadedImageData;
   const { effectWidth, effectHeight } = getUploadEffectDimensions();

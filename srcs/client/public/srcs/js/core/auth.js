@@ -5,7 +5,8 @@ async function checkUserStatus() {
       await refreshServerSession();
     }
   } catch (error) {
-    console.error("Error checking user status:", error);
+    // console.error("Error checking user status:", error);
+    showErrorAlert("An error occurred while checking user status. Please try again.");
   }
 }
 
@@ -37,7 +38,8 @@ async function login(username, password) {
       return false;
     }
   } catch (error) {
-    console.error("Login error:", error);
+    // console.error("Login error:", error);
+    showErrorAlert("An error occurred during login. Please try again.");
     return false;
   }
 }
@@ -55,7 +57,8 @@ async function logout() {
       showSuccessAlert("Logout successful!");
     }
   } catch (error) {
-    console.error("Logout error:", error);
+    // console.error("Logout error:", error);
+    showErrorAlert("An error occurred during logout. Please try again.");
   }
 }
 
@@ -105,7 +108,8 @@ function getLoggedInUserId() {
     const session = JSON.parse(decodeURIComponent(sessionData));
     return session.user_id || null;
   } catch (error) {
-    console.error("❌ Error parsing session cookie:", error);
+    // console.error("❌ Error parsing session cookie:", error);
+    showErrorAlert("An error occurred while parsing session data. Please try again.");
     return null;
   }
 }

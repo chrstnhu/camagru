@@ -94,7 +94,8 @@ async function refreshDeletedImageViews() {
     try {
       await loadCameraGallery();
     } catch (error) {
-      console.error("Error refreshing camera gallery:", error);
+      // console.error("Error refreshing camera gallery:", error);
+      showErrorAlert("An error occurred while refreshing the gallery. Please try again.");
     }
   }
   await refreshGallerySection();
@@ -268,7 +269,8 @@ async function updateUserPost(user_post, index) {
     initCommentsSection(user_post.id, index);
     initDeletePostBtn(user_post, index);
   } catch (error) {
-    console.error("Error updating user post:", error);
+    // console.error("Error updating user post:", error);
+    showErrorAlert("An error occurred while updating post data. Please try again.");
   }
 }
 

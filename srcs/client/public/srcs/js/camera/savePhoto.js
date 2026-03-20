@@ -2,7 +2,7 @@
 async function saveSelectedDraft() {
   const selectedDraft = getSelectedDraft();
   if (!selectedDraft) {
-    showErrorAlert("Please select a photo to save");
+    showInfoAlert("Please select a photo to save");
     return false;
   }
 
@@ -16,7 +16,7 @@ async function saveSelectedDraft() {
   });
 
   removeSelectedDraft();
-  showSucessAlert("Photo saved successfully!");
+  showSuccessAlert("Photo saved successfully!");
   return true;
 }
 
