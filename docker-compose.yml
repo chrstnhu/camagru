@@ -43,6 +43,7 @@ services:
     volumes:
       - mariadb_data:/var/lib/mysql
       - ./srcs/server/config/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./srcs/server/config/test_data.sql:/docker-entrypoint-initdb.d/test_data.sql
     restart: unless-stopped
     ports:
     - "3306:3306"
