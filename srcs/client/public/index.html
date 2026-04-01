@@ -36,16 +36,22 @@
     <script src="srcs/js/core/pagination.js"></script>
     <script src="srcs/js/core/profile/profileData.js"></script>
     <script src="srcs/js/core/profile/profileFeedMode.js"></script>
-    <script src="srcs/js/core/profile/profileData.js"></script>
     <script src="srcs/js/core/profile/profileForm.js"></script>
+    <script src="srcs/js/core/profile/profilePassword.js"></script>
+
     <!-- Authentication modules JS -->
     <script src="srcs/js/auth/emailVerification.js"></script>
+    <script src="srcs/js/auth/passwordForgot.js"></script>
     <script src="srcs/js/auth/passwordReset.js"></script>
-    <script src="srcs/js/auth/session.js"></script>
+    <script src="srcs/js/auth/sessionCore.js"></script>
+    <script src="srcs/js/auth/sessionUI.js"></script>
+
     <!-- Login: showLogin, showRegister, loginCheck, setupLoginPasswordToggle -->
     <script src="srcs/js/auth/login.js"></script>
+
     <!-- Register: registerCheck, setupRegisterPasswordToggles -->
     <script src="srcs/js/auth/register.js"></script>
+
     <!-- Posts management JS -->
     <script src="srcs/js/posts/post.js"></script>
     <script src="srcs/js/posts/postAvatar.js"></script>
@@ -61,8 +67,8 @@
     <script src="srcs/js/camera/captureDrafts.js"></script>
     <script src="srcs/js/camera/cameraSaveService.js"></script>
     <script src="srcs/js/camera/uploadPhoto.js"></script>
-    <script src="srcs/js/camera/capturePhoto.js"></script>
-
+    <script src="srcs/js/camera/capturePhotoCore.js"></script>
+    <script src="srcs/js/camera/capturePhotoUi.js"></script>
     <script src="srcs/js/core/home.js"></script>
 
     <title>Camagru - 42 Project</title>
@@ -75,9 +81,9 @@
             <!-- Logo and navigation -->
             <img src="assets/camagru-logo.png" alt="Camagru Logo" class="logo" onclick="navigateTo('home', true);"></img>
             
+            <!-- Navigation menu -->
             <nav class="nav-menu">
                 <ul style="display: flex; padding:0; margin:0; align-items: center;">
-                    <!-- Navigation links -->
                     <li class="nav-content" onclick="navigateTo('home', true);">
                         <i class="fa-solid fa-house"></i>
                         <span class="nav-label">Home</span>
@@ -96,6 +102,7 @@
                     </li>
                 </ul>
             </nav>
+            
             <!-- Theme toggle and user profile -->
             <div style="display: flex; align-items: center; gap: 10px;">
                 <button id="toggle-theme" class="theme-toggle-btn" aria-label="Toggle dark mode">

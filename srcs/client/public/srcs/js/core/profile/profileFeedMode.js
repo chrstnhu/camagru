@@ -1,3 +1,21 @@
+// Applies the selected feed mode (infinite or pagination) to a section and refreshes it
+async function applySectionFeedMode(section, mode) {
+  const normalizedMode = mode === "pagination" ? "pagination" : "infinite";
+  const config =
+    FEED_MODE_CONFIG[section === "gallery" ? "gallery" : "myposts"];
+  if (!config) {
+    return;
+  }
+
+  localStorage.setItem(config.storageKey, normalizedMode);
+  setFeedModeBtn(config.infiniteBtn, config.paginationBtn, normalizedMode);
+  window[config.refreshFlag] = true;
+  const sectionElem = document.getElementById(config.sectionId);
+  if (sectionElem && sectionElem.style.display !== "none") {
+    await config.refreshFn();
+  }
+}
+
 // Sets the feed mode button styles based on the current mode
 function setFeedModeBtn(infiniteBtnId, paginationBtnId, mode) {
   const infiniteBtn = document.getElementById(infiniteBtnId);
@@ -34,21 +52,3 @@ const FEED_MODE_CONFIG = {
       typeof initMyPosts === "function" && initMyPosts({ force: true }),
   },
 };
-
-// Applies the selected feed mode (infinite or pagination) to a section and refreshes it
-async function applySectionFeedMode(section, mode) {
-  const normalizedMode = mode === "pagination" ? "pagination" : "infinite";
-  const config =
-    FEED_MODE_CONFIG[section === "gallery" ? "gallery" : "myposts"];
-  if (!config) {
-    return;
-  }
-
-  localStorage.setItem(config.storageKey, normalizedMode);
-  setFeedModeBtn(config.infiniteBtn, config.paginationBtn, normalizedMode);
-  window[config.refreshFlag] = true;
-  const sectionElem = document.getElementById(config.sectionId);
-  if (sectionElem && sectionElem.style.display !== "none") {
-    await config.refreshFn();
-  }
-}

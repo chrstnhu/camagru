@@ -28,6 +28,7 @@ class PostController extends BaseController {
             $limit = $_GET['limit'] ?? 10;
             $page = $_GET['page'] ?? 1;
 
+            // Validate limit and page parameters
             if (!ctype_digit((string) $limit) || (int) $limit < 1 || (int) $limit > 100) {
                 $this->sendError(400, 'Invalid limit');
             }
@@ -58,7 +59,6 @@ class PostController extends BaseController {
             foreach ($posts as &$post) {
                 $post['avatar'] = "assets/profile/photo1.jpg"; // Default avatar
                 
-                // If no user is logged in
                 if (!$userId && !isset($post['is_liked'])) {
                     $post['is_liked'] = false;
                 }

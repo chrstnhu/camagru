@@ -1,4 +1,4 @@
-/* Confirmation Popup Styles */
+/*========== Confirmation Popup Styles ==========*/
 .confirm-popup-overlay {
     position: fixed;
     top: 0;
@@ -50,11 +50,11 @@
 .confirm-popup-header h3 {
     margin: 0;
     font-size: 1.3rem;
-    color: #2c3e50;
+    color: var(--text-color);
 }
 
 .confirm-popup-msg {
-    color: #5a6c7d;
+    color: var(--text-color);
     font-size: 1rem;
     line-height: 1.5;
     margin-bottom: 1.5rem;
@@ -96,7 +96,6 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     .confirm-popup {
         padding: 1.5rem;
@@ -113,9 +112,5 @@
 
     .confirm-popup-btn {
         flex-direction: column-reverse;
-    }
-
-    .confirm-popup-btn {
-        width: 100%;
     }
 }

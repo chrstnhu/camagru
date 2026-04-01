@@ -1,60 +1,3 @@
-// Updates the main page view based on the given viewId and target element
-function updatePageView(viewId, target) {
-  if (viewId === "my-posts") {
-    initMyPosts();
-  }
-
-  // Gallery section - reload only if user changed
-  if (viewId === "gallery") {
-    const session = getUserSession();
-    const currentUser = session?.username || null;
-    const postComponent = document.getElementById("post-component");
-    const shouldReloadGallery =
-      window._galleryNeedsRefresh === true ||
-      window._lastGalleryUser !== currentUser ||
-      !postComponent ||
-      postComponent.childElementCount === 0;
-
-    if (shouldReloadGallery) {
-      const postComponent = document.getElementById("post-component");
-      if (postComponent) {
-        postComponent.innerHTML = "";
-      }
-      if (typeof window.initPostsData === "function") {
-        window.initPostsData();
-      } else {
-        console.error("initPostsData is not available on window");
-      }
-      window._lastGalleryUser = currentUser;
-      window._galleryNeedsRefresh = false;
-    }
-  }
-
-  if (viewId === "home") {
-    updateHomeDashboard();
-  }
-
-  if (viewId === "profile") {
-    loadUserProfile();
-  }
-}
-
-// Checks if the given route requires authentication and redirects if not logged in
-function needAuthentificationRoute(viewId) {
-  const protectedRoutes = ["my-posts", "profile", "camera-section"];
-
-  if (protectedRoutes.includes(viewId)) {
-    const session = getUserSession();
-    if (!session || !session.logged_in) {
-      history.replaceState({ viewId: "home" }, "", "#home");
-      navigateTo("home", false);
-      showErrorAlert("Please login to access this page");
-      return false;
-    }
-  }
-  return true;
-}
-
 // Navigates to the specified view, manages history, and updates the UI
 function navigateTo(viewId, push) {
   const views = [
@@ -93,8 +36,8 @@ function navigateTo(viewId, push) {
       document.dispatchEvent(event);
     }
   } else {
-    console.error(`❌ Target element '${viewId}' not found!`);
     history.replaceState({ viewId: "home" }, "", "#home");
+    // console.error(`❌ Target element '${viewId}' not found!`);
     showErrorAlert("Page not found");
     navigateTo("home", false);
   }
@@ -103,6 +46,64 @@ function navigateTo(viewId, push) {
   if (push) {
     history.pushState({ viewId: viewId }, "", `#${viewId}`);
   }
+}
+
+// Updates the main page view based on the given viewId and target element
+function updatePageView(viewId, target) {
+  if (viewId === "my-posts") {
+    initMyPosts();
+  }
+
+  // Gallery section - reload only if user changed
+  if (viewId === "gallery") {
+    const session = getUserSession();
+    const currentUser = session?.username || null;
+    const postComponent = document.getElementById("post-component");
+    const shouldReloadGallery =
+      window._galleryNeedsRefresh === true ||
+      window._lastGalleryUser !== currentUser ||
+      !postComponent ||
+      postComponent.childElementCount === 0;
+
+    if (shouldReloadGallery) {
+      const postComponent = document.getElementById("post-component");
+      if (postComponent) {
+        postComponent.innerHTML = "";
+      }
+      if (typeof window.initPostsData === "function") {
+        window.initPostsData();
+      } else {
+        // console.error("initPostsData is not available on window");
+        showErrorAlert("Unable to load gallery. Please try again.");
+      }
+      window._lastGalleryUser = currentUser;
+      window._galleryNeedsRefresh = false;
+    }
+  }
+
+  if (viewId === "home") {
+    updateHomeDashboard();
+  }
+
+  if (viewId === "profile") {
+    loadUserProfile();
+  }
+}
+
+// Checks if the given route requires authentication and redirects if not logged in
+function needAuthentificationRoute(viewId) {
+  const protectedRoutes = ["my-posts", "profile", "camera-section"];
+
+  if (protectedRoutes.includes(viewId)) {
+    const session = getUserSession();
+    if (!session || !session.logged_in) {
+      history.replaceState({ viewId: "home" }, "", "#home");
+      navigateTo("home", false);
+      showInfoAlert("Please login to access this page");
+      return false;
+    }
+  }
+  return true;
 }
 
 // Handles browser back/forward navigation events

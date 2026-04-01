@@ -2,7 +2,7 @@
 async function saveSelectedDraft() {
   const selectedDraft = getSelectedDraft();
   if (!selectedDraft) {
-    showErrorAlert("Please select a photo to save");
+    showInfoAlert("Please select a photo to save");
     return false;
   }
 
@@ -16,85 +16,31 @@ async function saveSelectedDraft() {
   });
 
   removeSelectedDraft();
-  showSucessAlert("Photo saved successfully!");
+  showSuccessAlert("Photo saved successfully!");
   return true;
 }
 
-// Sets the latest camera image in the photo element and updates its aspect ratio
-function setLatestCameraImage(dataUrl) {
-  if (!photo) {
-    return;
-  }
-
-  photo.onload = () => {
-    if (photo.naturalWidth && photo.naturalHeight) {
-      photo.style.aspectRatio = `${photo.naturalWidth} / ${photo.naturalHeight}`;
+// Saves an image with effect to the backend database
+async function saveImageToDatabase(dataUrl, options = {}) {
+  try {
+    const requestBody = buildImageRequestBody(dataUrl, options);
+    const response = await fetch("/api/images", {
+      method: "POST",
+      headers: await getJsonHeaders(),
+      body: JSON.stringify(requestBody),
+    });
+    const data = await response.json();
+    if (data.success) {
+      await handleImageSaveSuccess(data);
+    } else {
+    showErrorAlert("Failed to save photo: " + data.error);
     }
-  };
-
-  photo.src = dataUrl;
-  photo.style.display = "block";
-}
-
-// Returns the rendered size of an element, or fallback values if not available
-function getRenderedSize(element, fallbackWidth, fallbackHeight) {
-  if (!element) {
-    return {
-      width: fallbackWidth,
-      height: fallbackHeight,
-    };
-  }
-
-  const rect = element.getBoundingClientRect();
-  return {
-    width: rect.width || fallbackWidth,
-    height: rect.height || fallbackHeight,
-  };
-}
-
-// Calculates the effect overlay dimensions for uploaded images
-function getUploadEffectDimensions() {
-  const previewImg = document.getElementById("upload-preview");
-  const uploadEffectPreview = document.getElementById("upload-effect-preview");
-  const uploadedImage = window._uploadedImageData;
-
-  if (!uploadedImage) {
-    return {
-      effectWidth: 100,
-      effectHeight: 80,
-    };
-  }
-
-  const previewSize = getRenderedSize(previewImg, 320, 240);
-  const overlaySize = getRenderedSize(uploadEffectPreview, 100, 80);
-
-  const widthRatio = uploadedImage.width / Math.max(previewSize.width, 1);
-  const heightRatio = uploadedImage.height / Math.max(previewSize.height, 1);
-
-  return {
-    effectWidth: Math.max(1, Math.round(overlaySize.width * widthRatio)),
-    effectHeight: Math.max(1, Math.round(overlaySize.height * heightRatio)),
-  };
-}
-
-// Helpers for saveImageToDatabase
-function buildImageRequestBody(dataUrl, options = {}) {
-  if (options.effectDataUrl) {
-    return {
-      base_image_data: dataUrl,
-      effect_image_data: options.effectDataUrl,
-      effect_width: options.effectWidth,
-      effect_height: options.effectHeight,
-      caption: options.caption || "",
-    };
-  } else {
-    return {
-      image_data: dataUrl,
-      caption: options.caption || "",
-    };
+  } catch (error) {
+  showErrorAlert("Error saving photo");
   }
 }
 
+// Handles successful image save by updating the gallery and clearing drafts
 async function handleImageSaveSuccess(data) {
   if (typeof invalidatePostViews === "function") {
     invalidatePostViews();
@@ -123,24 +69,80 @@ async function handleImageSaveSuccess(data) {
   }
 }
 
-// Saves an image with effect to the backend database
-async function saveImageToDatabase(dataUrl, options = {}) {
-  try {
-    const requestBody = buildImageRequestBody(dataUrl, options);
-    const response = await fetch("/api/images", {
-      method: "POST",
-      headers: await getJsonHeaders(),
-      body: JSON.stringify(requestBody),
-    });
-    const data = await response.json();
-    if (data.success) {
-      await handleImageSaveSuccess(data);
-    } else {
-    showErrorAlert("Failed to save photo: " + data.error);
-    }
-  } catch (error) {
-  showErrorAlert("Error saving photo");
+// Helpers for saveImageToDatabase
+function buildImageRequestBody(dataUrl, options = {}) {
+  if (options.effectDataUrl) {
+    return {
+      base_image_data: dataUrl,
+      effect_image_data: options.effectDataUrl,
+      effect_width: options.effectWidth,
+      effect_height: options.effectHeight,
+      caption: options.caption || "",
+    };
+  } else {
+    return {
+      image_data: dataUrl,
+      caption: options.caption || "",
+    };
   }
+}
+
+
+// Sets the latest camera image in the photo element and updates its aspect ratio
+function setLatestCameraImage(dataUrl) {
+  if (!photo) {
+    return;
+  }
+
+  photo.onload = () => {
+    if (photo.naturalWidth && photo.naturalHeight) {
+      photo.style.aspectRatio = `${photo.naturalWidth} / ${photo.naturalHeight}`;
+    }
+  };
+
+  photo.src = dataUrl;
+  photo.style.display = "block";
+}
+
+// Calculates the effect overlay dimensions for uploaded images
+function getUploadEffectDimensions() {
+  const previewImg = document.getElementById("upload-preview");
+  const uploadEffectPreview = document.getElementById("upload-effect-preview");
+  const uploadedImage = window._uploadedImageData;
+
+  if (!uploadedImage) {
+    return {
+      effectWidth: 100,
+      effectHeight: 80,
+    };
+  }
+
+  const previewSize = getRenderedSize(previewImg, 320, 240);
+  const overlaySize = getRenderedSize(uploadEffectPreview, 100, 80);
+
+  const widthRatio = uploadedImage.width / Math.max(previewSize.width, 1);
+  const heightRatio = uploadedImage.height / Math.max(previewSize.height, 1);
+
+  return {
+    effectWidth: Math.max(1, Math.round(overlaySize.width * widthRatio)),
+    effectHeight: Math.max(1, Math.round(overlaySize.height * heightRatio)),
+  };
+}
+
+// Returns the rendered size of an element, or fallback values if not available
+function getRenderedSize(element, fallbackWidth, fallbackHeight) {
+  if (!element) {
+    return {
+      width: fallbackWidth,
+      height: fallbackHeight,
+    };
+  }
+
+  const rect = element.getBoundingClientRect();
+  return {
+    width: rect.width || fallbackWidth,
+    height: rect.height || fallbackHeight,
+  };
 }
 
 // Store uploaded image data for later saving

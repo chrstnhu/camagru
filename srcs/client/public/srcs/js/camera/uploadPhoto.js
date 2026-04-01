@@ -1,13 +1,76 @@
-// Validates that the file is an image type
-function validateImageFile(file) {
-  if (!file) {
-    return false;
+// Handles image file selection and preview, including resizing and effect preview
+function handleImageUpload(event) {
+  const file = event.target.files[0];
+  if (!validateImageFile(file)) {
+    return;
   }
-  if (!file.type.startsWith("image/")) {
-    showErrorAlert("Please select a valid image file");
-    return false;
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const img = new Image();
+    img.onload = function () {
+      const { resizedDataUrl, newWidth, newHeight } = resizeImage(
+        img,
+        e.target.result,
+      );
+      updateUploadPreview(resizedDataUrl, newWidth, newHeight);
+      updateEffectPreview();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  if (event.target.value) {
+    event.target.value = "";
   }
-  return true;
+}
+
+// Saves the uploaded photo with the selected effect as a draft
+function saveUploadedPhoto() {
+  if (!window._uploadedImageData)
+    return showInfoAlert("Please upload an image first");
+
+  const { src, width, height } = window._uploadedImageData;
+  const ctx = createCanvasContext(width, height);
+  const baseImg = new Image();
+
+  baseImg.onload = () => {
+    ctx.drawImage(baseImg, 0, 0, width, height);
+    const baseDataUrl = ctx.canvas.toDataURL("image/png");
+
+    // No effect: save only the base image
+    if (!selectedEffect) {
+      addCaptureDraft({
+        rawDataUrl: baseDataUrl,
+        previewDataUrl: baseDataUrl,
+        effectDataUrl: null,
+        effectWidth: width,
+        effectHeight: height,
+      });
+      showSuccessAlert("Photo uploaded! You can save it to your drafts.");
+      resetUploadPreview();
+      return;
+    }
+
+    // With effect: overlay effect image
+    const effectImg = new Image();
+    effectImg.onload = () => {
+      const { w, h } = drawImageCentered(ctx, effectImg, width, height);
+      addCaptureDraft({
+        rawDataUrl: baseDataUrl,
+        previewDataUrl: ctx.canvas.toDataURL("image/png"),
+        effectDataUrl: selectedEffect.dataUrl,
+        effectWidth: w,
+        effectHeight: h,
+      });
+      showSuccessAlert("Photo uploaded! You can save it to your drafts.");
+      resetUploadPreview();
+    };
+    effectImg.onerror = () =>
+      showErrorAlert("Failed to prepare uploaded photo");
+    effectImg.src = selectedEffect.dataUrl;
+  };
+  baseImg.onerror = () => showErrorAlert("Failed to read uploaded image");
+  baseImg.src = src;
 }
 
 // Resizes the image to fit within 640x480 while maintaining aspect ratio
@@ -71,30 +134,16 @@ function updateEffectPreview() {
   }
 }
 
-// Handles image file selection and preview, including resizing and effect preview
-function handleImageUpload(event) {
-  const file = event.target.files[0];
-  if (!validateImageFile(file)) {
-    return;
+// Validates that the file is an image type
+function validateImageFile(file) {
+  if (!file) {
+    return false;
   }
-
-  const reader = new FileReader();
-  reader.onload = function (e) {
-    const img = new Image();
-    img.onload = function () {
-      const { resizedDataUrl, newWidth, newHeight } = resizeImage(
-        img,
-        e.target.result,
-      );
-      updateUploadPreview(resizedDataUrl, newWidth, newHeight);
-      updateEffectPreview();
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-  if (event.target.value) {
-    event.target.value = "";
+  if (!file.type.startsWith("image/")) {
+    showInfoAlert("Please select a valid image file");
+    return false;
   }
+  return true;
 }
 
 // Creates a canvas context for compositing the uploaded image with the selected effect
@@ -117,53 +166,6 @@ function drawImageCentered(ctx, img, width, height) {
   ctx.drawImage(img, x, y, w, h);
 
   return { w, h };
-}
-
-// Saves the uploaded photo with the selected effect as a draft
-function saveUploadedPhoto() {
-  if (!window._uploadedImageData)
-    return showErrorAlert("Please upload an image first");
-
-  const { src, width, height } = window._uploadedImageData;
-  const ctx = createCanvasContext(width, height);
-  const baseImg = new Image();
-
-  baseImg.onload = () => {
-    ctx.drawImage(baseImg, 0, 0, width, height);
-    const baseDataUrl = ctx.canvas.toDataURL("image/png");
-
-    // No effect: save only the base image
-    if (!selectedEffect) {
-      addCaptureDraft({
-        rawDataUrl: baseDataUrl,
-        previewDataUrl: baseDataUrl,
-        effectDataUrl: null,
-        effectWidth: width,
-        effectHeight: height,
-      });
-      resetUploadPreview();
-      return;
-    }
-
-    // With effect: overlay effect image
-    const effectImg = new Image();
-    effectImg.onload = () => {
-      const { w, h } = drawImageCentered(ctx, effectImg, width, height);
-      addCaptureDraft({
-        rawDataUrl: baseDataUrl,
-        previewDataUrl: ctx.canvas.toDataURL("image/png"),
-        effectDataUrl: selectedEffect.dataUrl,
-        effectWidth: w,
-        effectHeight: h,
-      });
-      resetUploadPreview();
-    };
-    effectImg.onerror = () =>
-      showErrorAlert("Failed to prepare uploaded photo");
-    effectImg.src = selectedEffect.dataUrl;
-  };
-  baseImg.onerror = () => showErrorAlert("Failed to read uploaded image");
-  baseImg.src = src;
 }
 
 // Resets the upload preview and disables the save button

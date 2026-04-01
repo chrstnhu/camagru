@@ -10,7 +10,6 @@ class Comment {
 
     // Add a comment
     public function addComment($userId, $postId, $commentText) {
-        // Use named parameters for security and clarity
         $query = "INSERT INTO " . $this->table_name . " 
                   (user_id, post_id, comment_text, created_at) 
                   VALUES (:user_id, :post_id, :comment_text, NOW())";
@@ -25,7 +24,6 @@ class Comment {
 
     // Get all comments for a post
     public function getCommentsByPost($postId) {
-        // Use named parameter for security and clarity
         $query = "SELECT c.*, u.username 
                   FROM " . $this->table_name . " c
                   JOIN users u ON c.user_id = u.id
@@ -39,7 +37,7 @@ class Comment {
 
     // Delete a comment
     public function deleteComment($commentId, $userId) {
-        // Check if the comment belongs to the user using named parameters for clarity and security
+        // Check if the comment belongs to the user using named parameters
         $query = "SELECT user_id FROM " . $this->table_name . " WHERE id = :id";
         $stmt = $this->conn->prepare($query);
         $stmt->execute([':id' => $commentId]);

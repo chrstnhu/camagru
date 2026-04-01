@@ -1,9 +1,6 @@
 FROM nginx:stable
 
-# Copie la configuration nginx personnalisée si besoin
-# COPY ./nginx.conf /etc/nginx/nginx.conf
-
-# Copie les fichiers statiques dans le dossier servi par nginx
+# Copy SSL certificates
 COPY ./public/ /usr/share/nginx/html/
 
 RUN chmod -R 755 /usr/share/nginx/html

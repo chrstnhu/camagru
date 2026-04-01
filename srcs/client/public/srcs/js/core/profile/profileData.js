@@ -2,6 +2,23 @@ window.PROFILE_GALLERY_FEED_MODE_STORAGE_KEY = "galleryFeedDisplayMode";
 window.PROFILE_MY_POSTS_FEED_MODE_STORAGE_KEY = "myPostsFeedDisplayMode";
 window._profileAvatarData = null;
 
+// Loads the user profile from the server and updates the UI
+function loadUserProfile() {
+  fetch("/api/user/status")
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.logged_in && data.user) {
+        updateProfileFields(data.user);
+        updateFeedModeBtn();
+        updateAvatarPreview(data.user.username);
+      }
+    })
+    .catch((error) => {
+      // console.error("Error loading profile:", error);
+      showErrorAlert("An error occurred while loading profile data. Please try again.");
+    });
+}
+
 // Updates the profile form fields with the given user data
 function updateProfileFields(user) {
   document.getElementById("profile-username").value = user.username || "";
@@ -43,22 +60,6 @@ function updateAvatarPreview(username) {
       avatarPreview.src = "assets/profile/default-avatar.png";
     };
   }
-}
-
-// Loads the user profile from the server and updates the UI
-function loadUserProfile() {
-  fetch("/api/user/status")
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.logged_in && data.user) {
-        updateProfileFields(data.user);
-        updateFeedModeBtn();
-        updateAvatarPreview(data.user.username);
-      }
-    })
-    .catch((error) => {
-      console.error("Error loading profile:", error);
-    });
 }
 
 // Handles email verification success message on DOM load

@@ -1,8 +1,8 @@
 # Camagru 📸
 
-A photo-sharing web application built with vanilla JavaScript on the frontend and native PHP on the backend, developed in the spirit of the 42 curriculum.
+A photo-sharing web application built with HTML/CSS/JavaScript pure on the frontend and native PHP on the backend, developed in the spirit of the 42 curriculum.
 
-Camagru allows users to register, verify their email, capture or upload photos, apply overlays, publish images, interact through likes and comments, and manage their own gallery.
+Camagru allows users to register, verify their email, capture or upload photos, apply effect, publish images, interact through likes and comments, and manage their own gallery.
 
 ## 📋 Table of Contents
 
@@ -19,7 +19,7 @@ Camagru allows users to register, verify their email, capture or upload photos, 
 
 ## 🎯 About
 
-Camagru is a small social photo platform where authenticated users can create and share edited pictures.
+Camagru is a small social photo platform where authenticated users can create and share edited pictures like instagram.
 
 The application supports:
 
@@ -31,6 +31,7 @@ The application supports:
 - mandatory overlay selection before publishing,
 - personal gallery management,
 - likes, comments, and comment email notifications.
+- ligth/dark theme
 
 The goal of the project is to keep the stack simple and readable while still covering authentication, media processing, security, and deployment.
 
@@ -41,7 +42,7 @@ The goal of the project is to keep the stack simple and readable while still cov
 - **Authentication**: register, login, logout, email verification, password reset.
 - **Profile Management**: update username, email, password, avatar, and notification settings.
 - **Photo Publishing**: capture from webcam or upload from disk.
-- **Overlay System**: apply an effect before saving a picture.
+- **Effect System**: apply an effect before saving a picture.
 - **Gallery**: browse all published posts.
 - **My Photos**: view and manage only your own posts.
 - **Interactions**: like posts and add comments.

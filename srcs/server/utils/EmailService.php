@@ -73,7 +73,6 @@ class EmailService {
     }
     
     // Send profile update confirmation email
-
     public function sendProfileUpdateEmail($email, $username) {
         $subject = 'Profile updated - Camagru';
         $message = "Hello $username,\n\n";

@@ -1,3 +1,106 @@
+// Handles the registration form submission, validates input, and processes registration
+async function registerCheck(event) {
+  if (event) {
+    event.preventDefault();
+  }
+
+  const username = document.getElementById("register-username")?.value;
+  const email = document.getElementById("register-email")?.value;
+  const password = document.getElementById("register-password")?.value;
+  const confirmPassword = document.getElementById(
+    "register-confirm-password",
+  )?.value;
+  const termsAgreed = document.getElementById("terms-agreement")?.checked;
+
+  if (
+    !checkClientSideValidation(
+      username,
+      email,
+      password,
+      confirmPassword,
+      termsAgreed,
+    )
+  ) {
+    return;
+  }
+
+  try {
+    const response = await sendRegisterRequest(username, email, password);
+
+    if (!response.ok) {
+      return handleRegisterApiError(response);
+    }
+    clearRegisterForm();
+    showSuccessAlert("Account created. Check your email to verify it.");
+    showLogin();
+  } catch (error) {
+    // console.error("Registration error:", error);
+    showErrorAlert("Connection error. Please try again.");
+  }
+}
+
+// Sends the registration request to the backend API
+async function sendRegisterRequest(username, email, password) {
+  return fetch("/api/auth/register", {
+    method: "POST",
+    headers: await getJsonHeaders(),
+    body: JSON.stringify({
+      username: username,
+      email: email,
+      password: password,
+      avatar_data: window._registerAvatarData || null,
+    }),
+  });
+}
+
+// Handles API errors from the registration request and displays appropriate messages
+async function handleRegisterApiError(response) {
+  let errorMessage;
+
+  try {
+    const errorData = await response.json();
+    errorMessage = errorData.error || `Server error: ${response.status}`;
+  } catch (e) {
+    const errorText = await response.text();
+    // console.error(
+    //   "Server returned non-JSON response:",
+    //   errorText.substring(0, 200),
+    // );
+    errorMessage = `Server error (${response.status}): ${response.statusText}`;
+  }
+
+  return showErrorAlert(errorMessage);
+}
+
+// Runs all client-side validations for the registration form
+function checkClientSideValidation(
+  username,
+  email,
+  password,
+  confirmPassword,
+  termsAgreed,
+) {
+  if (!username || !email || !password || !confirmPassword) {
+    showInfoAlert("Please fill in all fields!");
+    return false;
+  }
+
+  if (!validateRegisterIdentity(username, email)) {
+    return false;
+  }
+
+  if (!checkPasswordMatch(password, confirmPassword)) {
+    return false;
+  }
+
+  if (!termsAgreed) {
+    showErrorAlert("You must agree to the terms and conditions!");
+    return false;
+  }
+
+  return true;
+}
+
 // Clears all fields and resets the register form
 function clearRegisterForm() {
   document.getElementById("register-username").value = "";
@@ -55,114 +158,11 @@ function validateRegisterIdentity(username, email) {
 
   const emailRegex = /^\S+@\S+\.\S+$/;
   if (!emailRegex.test(email)) {
-    showErrorAlert("Please enter a valid email address!");
+    showInfoAlert("Please enter a valid email address!");
     return false;
   }
 
   return true;
-}
-
-// Runs all client-side validations for the registration form
-function checkClientSideValidation(
-  username,
-  email,
-  password,
-  confirmPassword,
-  termsAgreed,
-) {
-  if (!username || !email || !password || !confirmPassword) {
-    showErrorAlert("Please fill in all fields!");
-    return false;
-  }
-
-  if (!validateRegisterIdentity(username, email)) {
-    return false;
-  }
-
-  if (!checkPasswordMatch(password, confirmPassword)) {
-    return false;
-  }
-
-  if (!termsAgreed) {
-    showErrorAlert("You must agree to the terms and conditions!");
-    return false;
-  }
-
-  return true;
-}
-
-// Sends the registration request to the backend API
-async function sendRegisterRequest(username, email, password) {
-  return fetch("/api/auth/register", {
-    method: "POST",
-    headers: await getJsonHeaders(),
-    body: JSON.stringify({
-      username: username,
-      email: email,
-      password: password,
-      avatar_data: window._registerAvatarData || null,
-    }),
-  });
-}
-
-// Handles API errors from the registration request and displays appropriate messages
-async function handleRegisterApiError(response) {
-  let errorMessage;
-
-  try {
-    const errorData = await response.json();
-    errorMessage = errorData.error || `Server error: ${response.status}`;
-  } catch (e) {
-    const errorText = await response.text();
-    console.error(
-      "Server returned non-JSON response:",
-      errorText.substring(0, 200),
-    );
-    errorMessage = `Server error (${response.status}): ${response.statusText}`;
-  }
-
-  return showErrorAlert(errorMessage);
-}
-
-// Handles the registration form submission, validates input, and processes registration
-async function registerCheck(event) {
-  if (event) {
-    event.preventDefault();
-  }
-
-  const username = document.getElementById("register-username")?.value;
-  const email = document.getElementById("register-email")?.value;
-  const password = document.getElementById("register-password")?.value;
-  const confirmPassword = document.getElementById(
-    "register-confirm-password",
-  )?.value;
-  const termsAgreed = document.getElementById("terms-agreement")?.checked;
-
-  if (
-    !checkClientSideValidation(
-      username,
-      email,
-      password,
-      confirmPassword,
-      termsAgreed,
-    )
-  ) {
-    return;
-  }
-
-  try {
-    const response = await sendRegisterRequest(username, email, password);
-
-    if (!response.ok) {
-      return handleRegisterApiError(response);
-    }
-    clearRegisterForm();
-    showSuccessAlert("Account created. Check your email to verify it.");
-    showLogin();
-  } catch (error) {
-    console.error("Registration error:", error);
-    showErrorAlert("Connection error. Please try again.");
-  }
 }
 
 // Sets up the eye icon toggle for password visibility
@@ -211,7 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       if (!file.type.startsWith("image/")) {
-        return showErrorAlert("Please select a valid image file");
+        return showInfoAlert("Please select a valid image file");
       }
       const reader = new FileReader();
       reader.onload = (ev) => {

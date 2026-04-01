@@ -1,5 +1,3 @@
-/* Inline Authentication Styles - Home Page */
-
 /* ========== Layout Container ========== */
 .home-container {
   display: flex;
@@ -140,7 +138,8 @@
   box-shadow: 0 8px 8px rgba(0, 0, 0, 0.1);
   justify-content: center;
   min-height: 0;
-  color: var(--border-color);
+  color: var(--text-color-secondary);
+  background-color: var(--card-bg);
 }
 
 .login-component,
@@ -261,7 +260,7 @@
 .btn-primary {
   padding: 0.9rem 1rem;
   background: var(--color-primary);
-  color: var(--comment-bg);
+  color: var(--text-color);
   border: none;
   border-radius: 8px;
   font-size: 1rem;
@@ -270,6 +269,7 @@
   transition: all var(--transition-normal);
   width: 100%;
   box-sizing: border-box;
+  color : var(--text-color-secondary);
 }
 
 .submit-btn:hover,

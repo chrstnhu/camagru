@@ -13,7 +13,6 @@ class User {
         // Generate a unique verification token for email verification
         $verification_token = bin2hex(random_bytes(32));
 
-        // Use named parameters for security and clarity
         $query = "INSERT INTO " . $this->table_name . " 
                   (username, email, password, verification_token, email_verified, notification_enabled, created_at) 
                   VALUES (:username, :email, :password, :verification_token, 0, 1, NOW())";
@@ -39,7 +38,6 @@ class User {
 
     // Verify email using the verification code
     public function verifyEmail($code) {
-        // Use named parameter for security and clarity
         $query = "UPDATE " . $this->table_name . "
                   SET email_verified = 1, verification_token = NULL, updated_at = NOW()
                   WHERE verification_token = :verification_token";
@@ -57,7 +55,6 @@ class User {
 
     // Verify login credentials
     public function login($email, $password) {
-        // Use named parameter for security and clarity
         $query = "SELECT id, username, email, password, email_verified, notification_enabled 
                   FROM " . $this->table_name . " 
                   WHERE email = :email";
@@ -81,7 +78,6 @@ class User {
 
     // Check if email exists
     public function emailExists($email) {
-        // Use named parameter for security and clarity
         $query = "SELECT id FROM " . $this->table_name . " WHERE email = :email";
         $stmt = $this->conn->prepare($query);
         $stmt->execute([':email' => $email]);
@@ -90,7 +86,6 @@ class User {
 
     // Check if username exists
     public function usernameExists($username) {
-        // Use named parameter for security and clarity
         $query = "SELECT id FROM " . $this->table_name . " WHERE username = :username";
         $stmt = $this->conn->prepare($query);
         $stmt->execute([':username' => $username]);
@@ -99,7 +94,6 @@ class User {
 
     // Get a user by ID
     public function getById($id) {
-        // Use named parameter for security and clarity
         $query = "SELECT id, username, email, email_verified, notification_enabled, created_at 
                   FROM " . $this->table_name . " 
                   WHERE id = :id";
@@ -110,7 +104,6 @@ class User {
     
     // Update user avatar path
     public function updateAvatar($userId, $avatarPath) {
-        // Use named parameters for security and clarity
         $query = "UPDATE " . $this->table_name . " 
                   SET avatar_path = :avatar_path, updated_at = NOW() 
                   WHERE id = :id";
@@ -120,7 +113,6 @@ class User {
     
     // Get user avatar path
     public function getAvatarPath($userId) {
-        // Use named parameter for security and clarity
         $query = "SELECT avatar_path FROM " . $this->table_name . " WHERE id = :id";
         $stmt = $this->conn->prepare($query);
         $stmt->execute([':id' => $userId]);
@@ -130,7 +122,6 @@ class User {
     
     // Update user profile
     public function updateProfile($userId, $data) {
-        // Use named parameters for security and clarity
         $updates = [];
         $params = [];
 
@@ -170,7 +161,6 @@ class User {
     
     // Get user by email
     public function getByEmail($email) {
-        // Use named parameter for security and clarity
         $query = "SELECT id, username, email, email_verified, notification_enabled FROM " . $this->table_name . " 
                   WHERE email = :email";
         $stmt = $this->conn->prepare($query);
@@ -180,7 +170,6 @@ class User {
     
     // Create password reset token
     public function createPasswordResetToken($email) {
-        // Use named parameters for security and clarity
         $token = bin2hex(random_bytes(32));
         $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
 
@@ -201,7 +190,6 @@ class User {
     
     // Verify reset token
     public function verifyResetToken($token) {
-        // Use named parameter for security and clarity
         $query = "SELECT id, email, username FROM " . $this->table_name . " 
                   WHERE reset_token = :reset_token AND reset_token_expires > NOW()";
         $stmt = $this->conn->prepare($query);
@@ -216,7 +204,6 @@ class User {
             return false;
         }
 
-        // Use named parameters for security and clarity
         $password_hash = password_hash($newPassword, PASSWORD_DEFAULT);
         $query = "UPDATE " . $this->table_name . " 
                   SET password = :password, reset_token = NULL, reset_token_expires = NULL, updated_at = NOW() 

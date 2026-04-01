@@ -1,13 +1,12 @@
+/*========== Camera Container ==========*/
 .camera-container {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    margin: 0 auto;
-    padding: 20px;
-    border-radius: var(--radius-md);
-    gap: 20px;
-    /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); */
-    /* background-color: #f5f5f5; */
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        margin: 0 auto;
+        padding: 20px;
+        border-radius: var(--radius-md);
+        gap: 20px;
 }
 
 @media (max-width: 768px) {
@@ -16,7 +15,6 @@
     }
 }
 
-/* Section titles */
 .camera-container h2,
 .camera-container h3 {
     text-align: center;
@@ -25,22 +23,22 @@
     position: relative;
 }
 
+/*========== Camera Preview ==========*/
 .camera-preview {
-    display: flex;
-    flex: 2;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    border-radius: var(--radius-md);
-    padding: 20px;
-    box-shadow: var(--shadow-md);
-    backdrop-filter: blur(10px);
-    overflow: hidden;
-    /* background: var(--card-bg); */
-    background: var(--camera-bg);
-
+        display: flex;
+        flex: 2;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        border-radius: var(--radius-md);
+        padding: 20px;
+        box-shadow: var(--shadow-md);
+        backdrop-filter: blur(10px);
+        overflow: hidden;
+        background: var(--camera-bg);
 }
 
+/*========== Video Styles ==========*/
 .video-wrapper {
     position: relative;
     width: 100%;
@@ -89,22 +87,23 @@
     }
 }
 
+/*========== Photo Result ==========*/
 .photo-result {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    min-height: 400px;
-    border-radius: var(--radius-md);
-    padding: 20px;
-    backdrop-filter: blur(10px);
-    box-shadow: var(--shadow-md);
-    gap: var(--gap-md);
-    /* background: var(--card-bg); */
-    background: var(--camera-bg);
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        min-height: 400px;
+        border-radius: var(--radius-md);
+        padding: 20px;
+        backdrop-filter: blur(10px);
+        box-shadow: var(--shadow-md);
+        gap: var(--gap-md);
+        background: var(--camera-bg);
 }
+
 
 .photo-result h3 {
     margin-bottom: 15px;
@@ -112,18 +111,21 @@
 }
 
 
+
+/*========== Captured Photo Styles ==========*/
 .camera-result {
-    width: 100%;
-    max-width: 320px;
-    max-height: 240px;
-    align-self: center;
-    object-fit: contain;
-    object-position: center;
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-md);
-    overflow: hidden;
-    background: var(--comment-bg);
+        width: 100%;
+        max-width: 320px;
+        max-height: 240px;
+        align-self: center;
+        object-fit: contain;
+        object-position: center;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+        background: var(--comment-bg);
 }
+
 
 #photo {
     width: 100%;
@@ -139,24 +141,27 @@
     box-shadow: var(--shadow-md);
 }
 
+
 #photo.photo-taken {
     transform: scale(1.03);
 }
 
-/* Toggle Camera / Upload - same style as login/register separator */
+
+/*========== Toggle Buttons ==========*/
 .camera-toggle-btn,
 .upload-toggle-btn {
-    flex: 1;
-    padding: 0.75rem 1.5rem;
-    border: 2px solid var(--color-primary);
-    background: var(--card-bg);
-    color: var(--color-primary);
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all var(--transition-normal);
+        flex: 1;
+        padding: 0.75rem 1.5rem;
+        border: 2px solid var(--color-primary);
+        background: var(--card-bg);
+        color: var(--color-primary);
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all var(--transition-normal);
 }
+
 
 .camera-toggle-btn:hover,
 .upload-toggle-btn:hover {
@@ -165,6 +170,7 @@
     color: var(--text-color);
     box-shadow: 0 4px 12px var(--color-primary-dark, rgba(52, 152, 219, 0.3));
 }
+
 
 .camera-toggle-btn.is-active,
 .upload-toggle-btn.is-active {

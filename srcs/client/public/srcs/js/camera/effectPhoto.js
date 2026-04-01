@@ -23,6 +23,69 @@ function handleEffectSelection() {
   effects.forEach((effect) => createEffectElement(effect, effectsContainer));
 }
 
+// Toggles the selection of a photo effect, updating the UI and preview
+async function toggleEffectSelection(effectDiv, effect) {
+  const alreadySelected = effectDiv.classList.contains("is-selected");
+
+  document
+    .querySelectorAll(".effect")
+    .forEach((el) => el.classList.remove("is-selected"));
+
+  const uploadEffectPreview = document.getElementById("upload-effect-preview");
+  const addToDraft = document.getElementById("add-to-draft");
+
+  if (alreadySelected) {
+    clearCurrentEffect(uploadEffectPreview, addToDraft);
+    return;
+  }
+
+  effectDiv.classList.add("is-selected");
+
+  try {
+    await ensureEffectDataUrl(effect);
+    applySelectedEffect(effect, uploadEffectPreview, addToDraft);
+  } catch (error) {
+    clearCurrentEffect(uploadEffectPreview, addToDraft);
+    effectDiv.classList.remove("is-selected");
+    // console.error("Failed to load effect image:", error);
+    showErrorAlert("Failed to load selected effect");
+    return;
+  }
+}
+
+// Applies the selected effect to the preview and enables related UI
+function applySelectedEffect(effect, uploadEffectPreview, addToDraft) {
+  selectedEffect = effect;
+  cameraEffect.src = effect.img;
+  cameraEffect.style.display = "block";
+  startBtn.disabled = false;
+  startBtn.classList.remove("is-disabled");
+
+  if (uploadEffectPreview && window._uploadedImageData) {
+    uploadEffectPreview.src = effect.img;
+    uploadEffectPreview.style.display = "block";
+  }
+  if (addToDraft && window._uploadedImageData) {
+    addToDraft.disabled = false;
+  }
+}
+
+// Clears the currently selected effect and disables related UI
+function clearCurrentEffect(uploadEffectPreview, addToDraft) {
+  selectedEffect = null;
+  cameraEffect.src = "";
+  cameraEffect.style.display = "none";
+  startBtn.disabled = true;
+  startBtn.classList.add("is-disabled");
+
+  if (uploadEffectPreview) {
+    uploadEffectPreview.style.display = "none";
+  }
+  if (addToDraft) {
+    addToDraft.disabled = !window._uploadedImageData;
+  }
+}
+
 // Ensures the effect has a data URL (base64) for use in overlays
 async function ensureEffectDataUrl(effect) {
   if (effect.dataUrl) {
@@ -59,67 +122,4 @@ function createEffectElement(effect, container) {
 
   effectDiv.appendChild(img);
   container.appendChild(effectDiv);
-}
-
-// Clears the currently selected effect and disables related UI
-function clearCurrentEffect(uploadEffectPreview, addToDraft) {
-  selectedEffect = null;
-  cameraEffect.src = "";
-  cameraEffect.style.display = "none";
-  startBtn.disabled = true;
-  startBtn.classList.add("is-disabled");
-
-  if (uploadEffectPreview) {
-    uploadEffectPreview.style.display = "none";
-  }
-  if (addToDraft) {
-    addToDraft.disabled = !window._uploadedImageData;
-  }
-}
-
-// Applies the selected effect to the preview and enables related UI
-function applySelectedEffect(effect, uploadEffectPreview, addToDraft) {
-  selectedEffect = effect;
-  cameraEffect.src = effect.img;
-  cameraEffect.style.display = "block";
-  startBtn.disabled = false;
-  startBtn.classList.remove("is-disabled");
-
-  if (uploadEffectPreview && window._uploadedImageData) {
-    uploadEffectPreview.src = effect.img;
-    uploadEffectPreview.style.display = "block";
-  }
-  if (addToDraft && window._uploadedImageData) {
-    addToDraft.disabled = false;
-  }
-}
-
-// Toggles the selection of a photo effect, updating the UI and preview
-async function toggleEffectSelection(effectDiv, effect) {
-  const alreadySelected = effectDiv.classList.contains("is-selected");
-
-  document
-    .querySelectorAll(".effect")
-    .forEach((el) => el.classList.remove("is-selected"));
-
-  const uploadEffectPreview = document.getElementById("upload-effect-preview");
-  const addToDraft = document.getElementById("add-to-draft");
-
-  if (alreadySelected) {
-    clearCurrentEffect(uploadEffectPreview, addToDraft);
-    return;
-  }
-
-  effectDiv.classList.add("is-selected");
-
-  try {
-    await ensureEffectDataUrl(effect);
-    applySelectedEffect(effect, uploadEffectPreview, addToDraft);
-  } catch (error) {
-    console.error("Failed to load effect image:", error);
-    clearCurrentEffect(uploadEffectPreview, addToDraft);
-    effectDiv.classList.remove("is-selected");
-    showErrorAlert("Failed to load selected effect");
-    return;
-  }
 }

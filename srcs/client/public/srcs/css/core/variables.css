@@ -5,6 +5,7 @@
   --bg-color: #ffffff;
   --background-color: rgb(221, 232, 236);
   --text-color: #222222;
+  --text-color-secondary: #f3f4f6;
   --text-header: #1e40af;
   --comment-bg: #dfe1e2;
   --color-error: #ef4444;
@@ -83,6 +84,7 @@ select{
   --bg-color: #23272f;
   --background-color: #23272f;
   --text-color: #f3f4f6;
+  --text-color-secondary: #2d323c;
   --text-header: #e2e8f0;
   --color-primary: #3390c9;
   --color-primary-dark: #256fa1;

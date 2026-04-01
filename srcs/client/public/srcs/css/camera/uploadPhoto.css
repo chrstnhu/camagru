@@ -1,3 +1,4 @@
+/* ========== Upload Drop Zone ==========*/
 .upload-drop-zone {
     position: relative;
     width: 100%;
@@ -23,6 +24,7 @@
     background: rgba(102, 126, 234, 0.05);
 }
 
+/* ========== Upload Placeholder ==========*/
 .upload-placeholder {
     display: flex;
     flex-direction: column;
@@ -51,6 +53,7 @@
     cursor: pointer;
 }
 
+/*========== Upload Preview Wrapper ==========*/
 .upload-preview-wrapper {
     position: relative;
     display: inline-block;

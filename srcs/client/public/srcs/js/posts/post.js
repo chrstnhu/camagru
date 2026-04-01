@@ -7,83 +7,6 @@ const GALLERY_FEED_MODE_STORAGE_KEY = "galleryFeedDisplayMode";
 const INITIAL_RENDER_BATCH_SIZE = 8;
 const IDLE_RENDER_BATCH_SIZE = 4;
 
-// Runs a callback when the browser is idle, or after a short timeout fallback
-function runWhenIdle(callback) {
-  if (typeof window.requestIdleCallback === "function") {
-    window.requestIdleCallback(callback, { timeout: 100 });
-    return;
-  }
-
-  setTimeout(() => {
-    callback({ timeRemaining: () => 0, didTimeout: true });
-  }, 0);
-}
-
-// Renders posts in batches to avoid blocking the UI, using idle time
-
-function transformPostForGallery(postData) {
-  return {
-    id: postData.id,
-    image_id: postData.image_id,
-    user_id: postData.user_id,
-    alias: postData.alias,
-    avatar:
-      postData.image_data || postData.image_path || "assets/profile/photo1.jpg",
-    caption: postData.caption || "",
-    created_at: postData.created_at,
-    likes_count: postData.likes_count || 0,
-    comments_count: postData.comments_count || 0,
-    is_liked: postData.is_liked || false,
-  };
-}
-
-function renderPostsInBatches(postsData, startIndex = 0) {
-  return new Promise((resolve) => {
-    const total = postsData.length;
-    if (total === 0) {
-      resolve();
-      return;
-    }
-    let cursor = 0;
-    const renderChunk = (size) => {
-      const end = Math.min(cursor + size, total);
-      for (; cursor < end; cursor++) {
-        const postData = postsData[cursor];
-        const transformedPost = transformPostForGallery(postData);
-        generatepostHTML(transformedPost, startIndex + cursor);
-      }
-    };
-    renderChunk(INITIAL_RENDER_BATCH_SIZE);
-    const renderRemaining = () => {
-      if (cursor >= total) {
-        resolve();
-        return;
-      }
-      runWhenIdle(() => {
-        renderChunk(IDLE_RENDER_BATCH_SIZE);
-        renderRemaining();
-      });
-    };
-    renderRemaining();
-  });
-}
-
-// Returns the current display (infinite or pagination)
-function getFeedDisplayMode() {
-  const session = getUserSession();
-  if (!session || !session.logged_in) {
-    return "pagination";
-  }
-
-  const savedMode = localStorage.getItem(GALLERY_FEED_MODE_STORAGE_KEY);
-  return savedMode === "infinite" ? "infinite" : "pagination";
-}
-
-// Checks if the gallery is in infinite scroll mode
-function isInfiniteScrollMode() {
-  return getFeedDisplayMode() === "infinite";
-}
-
 // Initializes the gallery posts data, sets up pagination or infinite scroll
 async function initPostsData() {
   window._galleryNeedsRefresh = false;
@@ -120,12 +43,6 @@ async function initPostsData() {
   }
 }
 
-// Renders a batch of posts, starting at the current objJson length
-async function renderPosts(postsData) {
-  const startIndex = window.objJson.length;
-  await renderPostsInBatches(postsData, startIndex);
-}
-
 // Loads more posts for infinite scroll mode, appending them to the gallery
 async function loadMorePosts() {
   if (isLoading || !hasMorePosts) {
@@ -156,7 +73,8 @@ async function loadMorePosts() {
       }
     }
   } catch (error) {
-    console.error("Error loading posts:", error);
+    // console.error("Error loading posts:", error);
+    showErrorAlert("An error occurred while loading posts. Please try again.");
   } finally {
     isLoading = false;
   }
@@ -217,10 +135,94 @@ async function loadAllPostsForPagination() {
     hasMorePosts = false;
     currentLoadedPage = totalPages + 1;
   } catch (error) {
-    console.error("Error loading posts for pagination:", error);
+    // console.error("Error loading posts for pagination:", error);
+    showErrorAlert("An error occurred while loading posts. Please try again.");
   } finally {
     isLoading = false;
   }
+}
+
+// Runs a callback when the browser is idle, or after a short timeout fallback
+function runWhenIdle(callback) {
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(callback, { timeout: 100 });
+    return;
+  }
+
+  setTimeout(() => {
+    callback({ timeRemaining: () => 0, didTimeout: true });
+  }, 0);
+}
+
+// Renders a batch of posts, starting at the current objJson length
+async function renderPosts(postsData) {
+  const startIndex = window.objJson.length;
+  await renderPostsInBatches(postsData, startIndex);
+}
+
+// Renders posts in batches to avoid blocking the UI, using idle time
+function renderPostsInBatches(postsData, startIndex = 0) {
+  return new Promise((resolve) => {
+    const total = postsData.length;
+    if (total === 0) {
+      resolve();
+      return;
+    }
+    let cursor = 0;
+    const renderChunk = (size) => {
+      const end = Math.min(cursor + size, total);
+      for (; cursor < end; cursor++) {
+        const postData = postsData[cursor];
+        const transformedPost = transformPostForGallery(postData);
+        generatepostHTML(transformedPost, startIndex + cursor);
+      }
+    };
+    renderChunk(INITIAL_RENDER_BATCH_SIZE);
+    const renderRemaining = () => {
+      if (cursor >= total) {
+        resolve();
+        return;
+      }
+      runWhenIdle(() => {
+        renderChunk(IDLE_RENDER_BATCH_SIZE);
+        renderRemaining();
+      });
+    };
+    renderRemaining();
+  });
+}
+
+// Transforms raw post data from the API into the format needed for rendering
+function transformPostForGallery(postData) {
+  return {
+    id: postData.id,
+    image_id: postData.image_id,
+    user_id: postData.user_id,
+    alias: postData.alias,
+    avatar:
+      postData.image_data || postData.image_path || "assets/profile/photo1.jpg",
+    caption: postData.caption || "",
+    created_at: postData.created_at,
+    likes_count: postData.likes_count || 0,
+    comments_count: postData.comments_count || 0,
+    is_liked: postData.is_liked || false,
+  };
+}
+
+// Returns the current display (infinite or pagination)
+function getFeedDisplayMode() {
+  const session = getUserSession();
+  if (!session || !session.logged_in) {
+    return "pagination";
+  }
+
+  const savedMode = localStorage.getItem(GALLERY_FEED_MODE_STORAGE_KEY);
+  return savedMode === "infinite" ? "infinite" : "pagination";
+}
+
+// Checks if the gallery is in infinite scroll mode
+function isInfiniteScrollMode() {
+  return getFeedDisplayMode() === "infinite";
 }
 
 // BONUS - Sets up the infinite scroll

@@ -23,26 +23,8 @@ async function initLikeBtn(postId, index, initialIsLiked, initialLikeCount) {
     });
   } else {
     likeBtn.addEventListener("click", function () {
-      showErrorAlert("Please login to like posts");
+      showInfoAlert("Please login to like posts");
     });
-  }
-}
-
-// Loads the like status for a post from the API and updates the UI
-async function loadLikeStatus(postId, likeBtn, likeCount, isLoggedIn) {
-  try {
-    const response = await fetch(`/api/posts/${postId}/likes`);
-    const data = await response.json();
-
-    // Only show red heart if user is logged in
-    if (response.ok) {
-      updateLikeBtn(likeBtn, isLoggedIn ? data.is_liked : false);
-      likeCount.textContent = data.likes_count;
-    }
-  } catch (error) {
-    // console.error("Error loading like status:", error);
-    updateLikeBtn(likeBtn, false);
-    likeCount.textContent = "0";
   }
 }
 
@@ -50,7 +32,7 @@ async function loadLikeStatus(postId, likeBtn, likeCount, isLoggedIn) {
 async function toggleLike(postId, likeBtn, likeCount) {
   const session = getUserSession();
   if (!session || !session.user_id || !session.logged_in) {
-    return showErrorAlert("Please login to like posts");
+    return showInfoAlert("Please login to like posts");
   }
 
   try {
@@ -73,8 +55,26 @@ async function toggleLike(postId, likeBtn, likeCount) {
       }
     }
   } catch (error) {
-    console.error("Error toggling like:", error);
+    // console.error("Error toggling like:", error);
     showErrorAlert("Network error. Please try again.");
+  }
+}
+
+// Loads the like status for a post from the API and updates the UI
+async function loadLikeStatus(postId, likeBtn, likeCount, isLoggedIn) {
+  try {
+    const response = await fetch(`/api/posts/${postId}/likes`);
+    const data = await response.json();
+
+    // Only show red heart if user is logged in
+    if (response.ok) {
+      updateLikeBtn(likeBtn, isLoggedIn ? data.is_liked : false);
+      likeCount.textContent = data.likes_count;
+    }
+  } catch (error) {
+    // console.error("Error loading like status:", error);
+    updateLikeBtn(likeBtn, false);
+    likeCount.textContent = "0";
   }
 }
 

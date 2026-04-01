@@ -33,6 +33,7 @@ class BaseController {
         return json_decode(file_get_contents('php://input'), true) ?? [];
     }
 
+    // Get the CSRF token from the session, or generate a new one if it does not exist.
     protected function getCsrfToken() {
         if (empty($_SESSION['csrf_token'])) {
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -41,6 +42,7 @@ class BaseController {
         return $_SESSION['csrf_token'];
     }
 
+    // Require a valid CSRF token for the request
     protected function requireCsrfProtection() {
         $headerToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
         $sessionToken = $this->getCsrfToken();

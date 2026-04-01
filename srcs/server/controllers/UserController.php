@@ -30,7 +30,6 @@ class UserController extends BaseController {
             if ($currentUser && array_key_exists('avatar_path', $currentUser) && $currentUser['avatar_path']) {
                 $avatarPath = $currentUser['avatar_path'];
             } else if ($currentUser && array_key_exists('username', $currentUser) && $currentUser['username']) {
-                // fallback: default API route for avatar
                 $avatarPath = '/api/avatar/' . urlencode($currentUser['username']);
             }
             $response['user'] = [
@@ -454,9 +453,8 @@ class UserController extends BaseController {
                 $oldAvatarFile = $avatarDir . '/' . $oldUsername . '.png';
                 $newAvatarFile = $avatarDir . '/' . $input['username'] . '.png';
                 if (file_exists($oldAvatarFile)) {
-                    // If the old avatar file exists, rename it to the new username
+                    // If the old avatar file exists, rename it and update the database path
                     @rename($oldAvatarFile, $newAvatarFile);
-                    // Update avatar path in database
                     $dbAvatarPath = '/api/avatar/' . $input['username'];
                     $this->user->updateAvatar($userId, $dbAvatarPath);
                 }
@@ -501,7 +499,6 @@ class UserController extends BaseController {
         }
         
         // Retrieve current password hash from database
-        // Use named parameters (:id) for clarity and security
         $query = "SELECT password FROM users WHERE id = :id";
         $stmt = $this->db->prepare($query);
         $stmt->execute([':id' => $userId]);
@@ -511,12 +508,10 @@ class UserController extends BaseController {
             $this->sendError(404, 'User not found');
         }
 
-        // Check if current password is correct
         if (!password_verify($input['current_password'], $user['password'])) {
             $this->sendError(401, 'Current password is incorrect');
         }
 
-        // Validate new password complexity
         if (!$this->isStrongPassword($input['new_password'])) {
             $this->sendError(400, 'New password must be at least 8 characters and contain uppercase, lowercase and a number');
         }
@@ -533,10 +528,12 @@ class UserController extends BaseController {
         }
     }
 
+    // Validation email format
     private function isValidEmail($email) {
         return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
     }
 
+    // Validation of password complexity
     private function isStrongPassword($password) {
         return is_string($password)
             && strlen($password) >= 8
@@ -545,6 +542,7 @@ class UserController extends BaseController {
             && preg_match('/[0-9]/', $password);
     }
 
+    // Check if user is authenticated and has the required permission
     private function decodeAndValidateImageData($imageData, $maxBytes) {
         if (!is_string($imageData) || !preg_match('/^data:(image\/(png|jpeg));base64,/', $imageData)) {
             $this->sendError(400, 'Invalid image format');
@@ -569,6 +567,7 @@ class UserController extends BaseController {
         return $binary;
     }
 
+    // Save the uploaded avatar as a PNG file
     private function saveAvatarAsPng($binary, $targetPath) {
         $image = @imagecreatefromstring($binary);
         if ($image === false) {
