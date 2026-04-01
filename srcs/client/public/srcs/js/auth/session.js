@@ -52,12 +52,12 @@ async function handleUnauthorizedResponse(defaultMessage) {
       updateHomeDashboard();
     }
   } catch (error) {
-    console.error("Auth resync error:", error);
+    // console.error("Auth resync error:", error);
     applyLoggedOutState();
     updateHomeDashboard();
   }
 
-  showErrorAlert(
+  showInfoAlert(
     defaultMessage || "Your session has expired. Please log in again.",
   );
 }
@@ -81,7 +81,7 @@ function applyLoggedOutState() {
     myPostsNav.style.cursor = "not-allowed";
     myPostsNav.onclick = (e) => {
       e.preventDefault();
-      showErrorAlert("Please login to access your photos");
+      showInfoAlert("Please login to access your photos");
     };
   }
 
@@ -92,7 +92,7 @@ function applyLoggedOutState() {
     camera.style.cursor = "not-allowed";
     camera.onclick = (e) => {
       e.preventDefault();
-      showErrorAlert("Please login to access camera");
+      showInfoAlert("Please login to access camera");
     };
   }
 }
@@ -142,7 +142,8 @@ function getUserSession() {
       const parsedData = JSON.parse(decodeURIComponent(sessionData));
       return parsedData;
     } catch (error) {
-      console.error("❌ Error parsing session cookie:", error);
+      // console.error("❌ Error parsing session cookie:", error);
+      showErrorAlert("Session error. Please log in again.");
       return null;
     }
   }
@@ -163,7 +164,7 @@ async function logout() {
       return;
     }
   } catch (error) {
-    console.error("Logout error:", error);
+    // console.error("Logout error:", error);
     showErrorAlert("Logout failed. Please try again.");
     return;
   }
@@ -240,7 +241,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     })
     .catch((error) => {
-      console.error("Session sync error:", error);
+      // console.error("Session sync error:", error);
       const session = getUserSession();
       if (session && session.logged_in) {
         updateUIAfterLogin(session);
