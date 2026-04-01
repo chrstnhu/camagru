@@ -1,24 +1,3 @@
-// Sets the avatar image source, erroring to default
-function setAvatarSrc(img, src) {
-  img.src = src;
-
-  img.onerror = () => {
-    img.src = "assets/profile/default-avatar.png";
-  };
-}
-
-// Builds the avatar URL for a given username
-function buildAvatarUrl(username, version) {
-  if (!username) {
-    return "assets/profile/default-avatar.png";
-  }
-  if (!window._avatarCacheVersion) {
-    window._avatarCacheVersion = Date.now();
-  }
-  const cacheVersion = version || window._avatarCacheVersion;
-  return `/api/avatar/${encodeURIComponent(username)}?ts=${cacheVersion}`;
-}
-
 // Refreshes all avatar images in the UI for the given username
 function refreshAllUserAvatars(username, previousUsername = null) {
   const avatarUrl = buildAvatarUrl(username, Date.now());
@@ -105,4 +84,25 @@ function refreshAllUsername(oldUsername, newUsername) {
       el.textContent = newUsername;
     }
   });
+}
+
+// Builds the avatar URL for a given username
+function buildAvatarUrl(username, version) {
+  if (!username) {
+    return "assets/profile/default-avatar.png";
+  }
+  if (!window._avatarCacheVersion) {
+    window._avatarCacheVersion = Date.now();
+  }
+  const cacheVersion = version || window._avatarCacheVersion;
+  return `/api/avatar/${encodeURIComponent(username)}?ts=${cacheVersion}`;
+}
+
+// Sets the avatar image source, erroring to default
+function setAvatarSrc(img, src) {
+  img.src = src;
+
+  img.onerror = () => {
+    img.src = "assets/profile/default-avatar.png";
+  };
 }

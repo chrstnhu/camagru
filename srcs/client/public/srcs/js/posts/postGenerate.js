@@ -1,101 +1,3 @@
-// Helper to generate the delete button HTML for a post
-function getDeleteBtnHTML(user_post, index, showDeleteBtn, isOwner) {
-  if (showDeleteBtn && isOwner && user_post.image_id) {
-    return `
-      <button
-        id="post-delete-btn-${index}"
-        class="delete-btn post-delete-btn"
-        aria-label="Delete photo"
-      >
-        <i class="fa-solid fa-trash"></i>
-      </button>
-    `;
-  }
-  return "";
-}
-
-// Helper to generate the compact meta HTML for a post
-function getCompactMetaHTML(user_post, formattedDate, safeCaption) {
-  return `
-    <div class="post-compact-meta">
-      <div class="post-compact-topline">
-        ${
-          formattedDate
-            ? `<p class="post-compact-date">${formattedDate}</p>`
-            : ""
-        }
-        <div class="post-compact-likes">
-          <i class="fa-solid fa-heart"></i>
-          <span>${user_post.likes_count || 0}</span>
-        </div>
-      </div>
-      ${safeCaption ? `<p class="post-compact-caption">${safeCaption}</p>` : ""}
-    </div>
-  `;
-}
-
-// Helper to generate the comments section HTML for a post
-function getCommentsSectionHTML(
-  index,
-  commentAvatar,
-  initialCommentsCount,
-  compact,
-) {
-  return `
-    <div
-      id="comments-section-${index}"
-      class="comments-section comments-section-collapsible ${compact ? "comments-section-compact" : ""}"
-      data-loaded="false"
-      data-count="${initialCommentsCount}"
-    >
-      <div class="add-comment">
-          <div class="add-comment-container">
-          <img src="${commentAvatar}" alt="Avatar" class="add-comment-avatar"
-              onerror="this.onerror=null; this.src='assets/profile/default-avatar.png'">
-              <div class="comment-input-container comment-input-wrapper">
-                  <textarea id="comment-input-${index}" 
-                  placeholder="Add a comment..." 
-                  class="comment-input"
-                  rows="2"></textarea>
-                  <btn id="add-comment-btn-${index}" class="add-comment-btn-inside">
-                  <i class="fa-solid fa-paper-plane"></i>
-                  </btn>
-              </div>
-          </div>
-      </div>
-      <button
-        id="comments-toggle-btn-${index}"
-        class="comments-toggle-btn"
-        type="button"
-        aria-expanded="false"
-      >
-        <span class="comments-toggle-label">Comments</span>
-        <span id="comments-toggle-count-${index}" class="comments-toggle-count">(${initialCommentsCount})</span>
-        <span class="comments-toggle-action">Open</span>
-        <i class="fa-solid fa-chevron-down comments-toggle-icon"></i>
-      </button>
-
-      <div id="comments-body-${index}" class="comments-body comments-body-hidden">
-      <div id="comments-container-${index}" class="comments-list">
-      </div>
-      </div>
-    </div>
-  `;
-}
-
-// Helper to generate the like section HTML for a post
-function getLikeSectionHTML(index) {
-  return `
-    <div class="like-section">
-      <btn id="like-btn-${index}" class="like-btn">
-        <i class="fa-regular fa-heart"></i>
-        <span>Like</span>
-      </btn>
-      <span id="like-count-${index}" class="like-count">0</span>
-    </div>
-  `;
-}
-
 // Generate post HTML and insert into DOM
 function generatepostHTML(user_post, index, options = {}) {
   const targetId = options.targetId || "post-component";
@@ -192,4 +94,102 @@ function generatepostHTML(user_post, index, options = {}) {
   // Update post UI and initialize comments count
   updateUserPost(user_post, index);
   initCommentsCount(index, initialCommentsCount);
+}
+
+// Helper to generate the delete button HTML for a post
+function getDeleteBtnHTML(user_post, index, showDeleteBtn, isOwner) {
+  if (showDeleteBtn && isOwner && user_post.image_id) {
+    return `
+      <button
+        id="post-delete-btn-${index}"
+        class="delete-btn post-delete-btn"
+        aria-label="Delete photo"
+      >
+        <i class="fa-solid fa-trash"></i>
+      </button>
+    `;
+  }
+  return "";
+}
+
+// Helper to generate the compact meta HTML for a post
+function getCompactMetaHTML(user_post, formattedDate, safeCaption) {
+  return `
+    <div class="post-compact-meta">
+      <div class="post-compact-topline">
+        ${
+          formattedDate
+            ? `<p class="post-compact-date">${formattedDate}</p>`
+            : ""
+        }
+        <div class="post-compact-likes">
+          <i class="fa-solid fa-heart"></i>
+          <span>${user_post.likes_count || 0}</span>
+        </div>
+      </div>
+      ${safeCaption ? `<p class="post-compact-caption">${safeCaption}</p>` : ""}
+    </div>
+  `;
+}
+
+// Helper to generate the comments section HTML for a post
+function getCommentsSectionHTML(
+  index,
+  commentAvatar,
+  initialCommentsCount,
+  compact,
+) {
+  return `
+    <div
+      id="comments-section-${index}"
+      class="comments-section comments-section-collapsible ${compact ? "comments-section-compact" : ""}"
+      data-loaded="false"
+      data-count="${initialCommentsCount}"
+    >
+      <div class="add-comment">
+          <div class="add-comment-container">
+          <img src="${commentAvatar}" alt="Avatar" class="add-comment-avatar"
+              onerror="this.onerror=null; this.src='assets/profile/default-avatar.png'">
+              <div class="comment-input-container comment-input-wrapper">
+                  <textarea id="comment-input-${index}" 
+                  placeholder="Add a comment..." 
+                  class="comment-input"
+                  rows="2"></textarea>
+                  <btn id="add-comment-btn-${index}" class="add-comment-btn-inside">
+                  <i class="fa-solid fa-paper-plane"></i>
+                  </btn>
+              </div>
+          </div>
+      </div>
+      <button
+        id="comments-toggle-btn-${index}"
+        class="comments-toggle-btn"
+        type="button"
+        aria-expanded="false"
+      >
+        <span class="comments-toggle-label">Comments</span>
+        <span id="comments-toggle-count-${index}" class="comments-toggle-count">(${initialCommentsCount})</span>
+        <span class="comments-toggle-action">Open</span>
+        <i class="fa-solid fa-chevron-down comments-toggle-icon"></i>
+      </button>
+
+      <div id="comments-body-${index}" class="comments-body comments-body-hidden">
+      <div id="comments-container-${index}" class="comments-list">
+      </div>
+      </div>
+    </div>
+  `;
+}
+
+// Helper to generate the like section HTML for a post
+function getLikeSectionHTML(index) {
+  return `
+    <div class="like-section">
+      <btn id="like-btn-${index}" class="like-btn">
+        <i class="fa-regular fa-heart"></i>
+        <span>Like</span>
+      </btn>
+      <span id="like-count-${index}" class="like-count">0</span>
+    </div>
+  `;
 }

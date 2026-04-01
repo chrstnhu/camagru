@@ -1,4 +1,4 @@
-/* Btn Styles  */
+/*========== Button Styles ==========*/
 .btn {
     padding: 12px 24px;
     border: none;
@@ -8,7 +8,6 @@
     cursor: pointer;
     transition: all var(--transition-normal);
 }
-
 
 .btn--primary {
     background-color: var(--color-primary);
@@ -32,7 +31,6 @@
     transform: translateY(1px);
 }
 
-
 .btn-primary {
     padding: 0.75rem 1.5rem;
     border: 2px solid var(--color-primary);
@@ -50,33 +48,30 @@
     box-shadow: 0 4px 12px var(--color-primary-dark, rgba(52, 152, 219, 0.3));
 }
 
-
 .btn-inverse {
     background: var(--card-bg);
     color: var(--color-primary);
 }
 
-/* Camera Button */
+
+/* ========== Camera Button ==========*/
 .camera-btn {
-    /* position: absolute; */
-    bottom: 40px;
-    left: 50%;
-    /* transform: translateX(-50%); */
-    background-color: #e74c3c;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 60px;
-    aspect-ratio: 1/1;
-    font-size: var(--font-md);
-    cursor: pointer;
-    transition: all var(--transition-normal);
-    margin: 10px;
+        bottom: 40px;
+        left: 50%;
+        background-color: #e74c3c;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        aspect-ratio: 1/1;
+        font-size: var(--font-md);
+        cursor: pointer;
+        transition: all var(--transition-normal);
+        margin: 10px;
 }
 
 .camera-btn:hover {
     background-color: #c0392b;
-    /* transform: translateX(-50%) scale(1.05); */
     transform: scale(1.05);
 }
 
@@ -85,7 +80,9 @@
     background-color: #a93226;
 }
 
-/* Legacy Btn Support */
+
+/*========== Legacy Button Support ==========*/
+
 
 .submit-btn {
     padding: 12px 24px;
@@ -107,19 +104,19 @@
     transform: translateY(1px);
 }
 
-
+/*========== Like Button ==========*/
 .like-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: none;
-    border: none;
-    padding: 8px 12px;
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    font-size: var(--font-sm);
-    color: var(--border-color);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: none;
+        border: none;
+        padding: 8px 12px;
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        font-size: var(--font-sm);
+        color: var(--border-color);
 }
 
 .like-btn:hover {
@@ -135,23 +132,24 @@
     transition: all var(--transition-fast);
 }
 
+/*========== Delete Button ==========*/
 .delete-btn {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 30px;
-    height: 30px;
-    border: none;
-    border-radius: 50%;
-    background-color: rgba(231, 76, 60, 0.9);
-    color: white;
-    cursor: pointer;
-    opacity: 1;
-    transition: all var(--transition-fast);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 30px;
+        height: 30px;
+        border: none;
+        border-radius: 50%;
+        background-color: rgba(231, 76, 60, 0.9);
+        color: white;
+        cursor: pointer;
+        opacity: 1;
+        transition: all var(--transition-fast);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
 }
 
 .delete-btn i {

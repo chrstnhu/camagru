@@ -1,46 +1,3 @@
-// Clear the draft gallery UI
-function clearDraftGalleryUI(draftGallery, confirmActions) {
-  draftGallery.innerHTML = "";
-  draftGallery.style.display = "none";
-  if (confirmActions) {
-    confirmActions.style.display = "none";
-  }
-  if (photo) {
-    photo.removeAttribute("src");
-    photo.style.display = "none";
-  }
-}
-
-// Create a thumbnail element for a draft
-function createDraftThumbnail(draft, index, isSelected, onClick) {
-  const thumb = document.createElement("img");
-  thumb.src = draft.previewDataUrl;
-  thumb.alt = `Capture draft ${index + 1}`;
-  thumb.className = "capture-draft-item";
-  if (isSelected) {
-    thumb.classList.add("is-selected");
-  }
-  thumb.addEventListener("click", onClick);
-  return thumb;
-}
-
-// Updates the photo preview to show the currently selected draft
-function updateSelectedDraftPreview() {
-  if (!photo) {
-    return;
-  }
-
-  const selectedDraft = getSelectedDraft();
-  if (!selectedDraft) {
-    photo.removeAttribute("src");
-    photo.style.display = "none";
-    return;
-  }
-
-  photo.src = selectedDraft.previewDataUrl;
-  photo.style.display = "block";
-}
-
 // Renders the gallery of photo capture drafts in the UI
 function renderCaptureDraftGallery() {
   const draftGallery = document.getElementById("capture-draft-gallery");
@@ -70,19 +27,6 @@ function renderCaptureDraftGallery() {
     });
     draftGallery.appendChild(thumb);
   });
-}
-
-// Returns the currently selected draft object, or null if none
-function getSelectedDraft() {
-  if (
-    !window._captureDrafts ||
-    window._selectedCaptureDraftIndex < 0 ||
-    window._selectedCaptureDraftIndex >= window._captureDrafts.length
-  ) {
-    return null;
-  }
-
-  return window._captureDrafts[window._selectedCaptureDraftIndex] || null;
 }
 
 // Adds a new draft to the drafts array and updates the gallery
@@ -131,4 +75,60 @@ function removeSelectedDraft() {
   updateSelectedDraftPreview();
   renderCaptureDraftGallery();
   return true;
+}
+
+// Updates the photo preview to show the currently selected draft
+function updateSelectedDraftPreview() {
+  if (!photo) {
+    return;
+  }
+
+  const selectedDraft = getSelectedDraft();
+  if (!selectedDraft) {
+    photo.removeAttribute("src");
+    photo.style.display = "none";
+    return;
+  }
+
+  photo.src = selectedDraft.previewDataUrl;
+  photo.style.display = "block";
+}
+
+// Returns the currently selected draft object, or null if none
+function getSelectedDraft() {
+  if (
+    !window._captureDrafts ||
+    window._selectedCaptureDraftIndex < 0 ||
+    window._selectedCaptureDraftIndex >= window._captureDrafts.length
+  ) {
+    return null;
+  }
+
+  return window._captureDrafts[window._selectedCaptureDraftIndex] || null;
+}
+
+// Clear the draft gallery UI
+function clearDraftGalleryUI(draftGallery, confirmActions) {
+  draftGallery.innerHTML = "";
+  draftGallery.style.display = "none";
+  if (confirmActions) {
+    confirmActions.style.display = "none";
+  }
+  if (photo) {
+    photo.removeAttribute("src");
+    photo.style.display = "none";
+  }
+}
+
+// Create a thumbnail element for a draft
+function createDraftThumbnail(draft, index, isSelected, onClick) {
+  const thumb = document.createElement("img");
+  thumb.src = draft.previewDataUrl;
+  thumb.alt = `Capture draft ${index + 1}`;
+  thumb.className = "capture-draft-item";
+  if (isSelected) {
+    thumb.classList.add("is-selected");
+  }
+  thumb.addEventListener("click", onClick);
+  return thumb;
 }

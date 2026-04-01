@@ -1,3 +1,30 @@
+// Displays the email verification page, with status (success, error, unknown)
+function showEmailVerificationPage(status, reason = null) {
+  prepareVerificationPage();
+
+  const verificationPage = document.createElement("div");
+  verificationPage.id = "verification-page";
+  verificationPage.classList.add("verification-page");
+
+  const container = document.createElement("div");
+  container.classList.add("verification-container");
+
+  if (status === "success") {
+    renderSuccessContent(container);
+    bindSuccessActions(container);
+  } else if (status === "error") {
+    renderErrorContent(container, reason);
+    bindCloseBtn(container);
+  } else {
+    renderUnknownContent(container);
+    bindCloseBtn(container);
+  }
+
+  verificationPage.appendChild(container);
+  document.body.appendChild(verificationPage);
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
+
 // Hides the main content and removes verification page
 function prepareVerificationPage() {
   const mainContent = document.querySelector(".main-content");
@@ -77,38 +104,12 @@ function renderUnknownContent(container) {
   `;
 }
 
-// Closes the verification page and restores the main content
-function closeVerificationPage() {
-  const verificationPage = document.getElementById("verification-page");
-  if (verificationPage) {
-    verificationPage.remove();
-  }
-
-  const mainContent = document.querySelector(".main-content");
-  if (mainContent) {
-    mainContent.style.display = "";
-  }
-}
-
-// Binds the close action to the button
-function bindCloseBtn(container) {
-  const btn = container.querySelector(".verification-btn");
-  if (!btn) {
-    return;
-  }
-
-  btn.addEventListener("click", () => {
-    closeVerificationPage();
-  });
-}
-
 // Binds the success actions (countdown auto-redirect and button click)
 function bindSuccessActions(container) {
   const btn = container.querySelector(".verification-btn");
   if (btn) {
     btn.addEventListener("click", () => {
       closeVerificationPage();
-      window.activateLoginPopup();
     });
   }
 
@@ -125,34 +126,32 @@ function bindSuccessActions(container) {
     if (countdown <= 0) {
       clearInterval(countdownInterval);
       closeVerificationPage();
-      window.activateLoginPopup();
     }
   }, 1000);
 }
 
-// Displays the email verification page, with status (success, error, unknown)
-function showEmailVerificationPage(status, reason = null) {
-  prepareVerificationPage();
-
-  const verificationPage = document.createElement("div");
-  verificationPage.id = "verification-page";
-  verificationPage.classList.add("verification-page");
-
-  const container = document.createElement("div");
-  container.classList.add("verification-container");
-
-  if (status === "success") {
-    renderSuccessContent(container);
-    bindSuccessActions(container);
-  } else if (status === "error") {
-    renderErrorContent(container, reason);
-    bindCloseBtn(container);
-  } else {
-    renderUnknownContent(container);
-    bindCloseBtn(container);
+// Binds the close action to the button
+function bindCloseBtn(container) {
+  const btn = container.querySelector(".verification-btn");
+  if (!btn) {
+    return;
   }
 
-  verificationPage.appendChild(container);
-  document.body.appendChild(verificationPage);
-  window.history.replaceState({}, document.title, window.location.pathname);
+  btn.addEventListener("click", () => {
+    closeVerificationPage();
+  });
+}
+
+
+// Closes the verification page and restores the main content
+function closeVerificationPage() {
+  const verificationPage = document.getElementById("verification-page");
+  if (verificationPage) {
+    verificationPage.remove();
+  }
+
+  const mainContent = document.querySelector(".main-content");
+  if (mainContent) {
+    mainContent.style.display = "";
+  }
 }

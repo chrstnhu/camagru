@@ -10,7 +10,6 @@ class Post {
 
     // Retrieve all posts with pagination and like status
     public function getAllPosts($limit = 10, $offset = 0, $userId = null, $authorId = null) {
-        // Use named parameters for security and clarity
         $query = "SELECT 
                     p.id,
                     p.image_path,
@@ -37,6 +36,7 @@ class Post {
                   LEFT JOIN users u ON p.user_id = u.id
                   LEFT JOIN images i ON i.post_id = p.id
                   LEFT JOIN likes l ON p.id = l.post_id";
+
         // Add a join to check if the logged-in user has liked
         if ($userId) {
             $query .= " LEFT JOIN likes ul ON p.id = ul.post_id AND ul.user_id = :user_id";
@@ -60,8 +60,7 @@ class Post {
             $query .= ", ul.user_id";
         }
 
-        $query .= " ORDER BY p.created_at DESC
-                  LIMIT :limit OFFSET :offset";
+        $query .= " ORDER BY p.created_at DESC LIMIT :limit OFFSET :offset";
 
         $stmt = $this->conn->prepare($query);
 
@@ -87,8 +86,8 @@ class Post {
                     p.created_at,
                     p.user_id,
                     u.username as alias,
-                                        u.email,
-                                        u.notification_enabled
+                    u.email,
+                    u.notification_enabled
                   FROM " . $this->table_name . " p
                   LEFT JOIN users u ON p.user_id = u.id
                         WHERE p.id = :id";
@@ -100,7 +99,6 @@ class Post {
 
     // Create a new post
     public function create($userId, $imagePath, $caption = '', $imageData = null) {
-        // Use named parameters for security and clarity
         $query = "INSERT INTO " . $this->table_name . " 
                   (user_id, image_path, image_data, caption, created_at) 
                   VALUES (:user_id, :image_path, :image_data, :caption, NOW())";
@@ -119,7 +117,6 @@ class Post {
 
     // Count total posts
     public function getTotalCount($authorId = null) {
-        // Use named parameter for security and clarity
         $query = "SELECT COUNT(*) as total FROM " . $this->table_name;
         $params = [];
 

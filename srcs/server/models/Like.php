@@ -19,7 +19,6 @@ class Like {
 
     // Add a like
     private function addLike($userId, $postId) {
-        // Use named parameters for security and clarity
         $query = "INSERT INTO " . $this->table_name . " 
               (user_id, post_id, created_at) 
               VALUES (:user_id, :post_id, NOW())";
@@ -30,7 +29,6 @@ class Like {
 
     // Remove a like
     private function removeLike($userId, $postId) {
-        // Use named parameters for security and clarity
         $query = "DELETE FROM " . $this->table_name . " 
               WHERE user_id = :user_id AND post_id = :post_id";
 
@@ -40,7 +38,6 @@ class Like {
 
     // Check if the user has liked the post
     public function isLikedByUser($userId, $postId) {
-        // Use named parameters for security and clarity
         $query = "SELECT id FROM " . $this->table_name . " 
                   WHERE user_id = :user_id AND post_id = :post_id";
 
@@ -51,7 +48,6 @@ class Like {
 
     // Count the total number of likes for a post
     public function getLikeCount($postId) {
-        // Use named parameter for security and clarity
         $query = "SELECT COUNT(*) as total FROM " . $this->table_name . " 
                   WHERE post_id = :post_id";
 

@@ -28,6 +28,7 @@ class PostController extends BaseController {
             $limit = $_GET['limit'] ?? 10;
             $page = $_GET['page'] ?? 1;
 
+            // Validate limit and page parameters
             if (!ctype_digit((string) $limit) || (int) $limit < 1 || (int) $limit > 100) {
                 $this->sendError(400, 'Invalid limit');
             }
@@ -58,7 +59,6 @@ class PostController extends BaseController {
             foreach ($posts as &$post) {
                 $post['avatar'] = "assets/profile/photo1.jpg"; // Default avatar
                 
-                // If no user is logged in
                 if (!$userId && !isset($post['is_liked'])) {
                     $post['is_liked'] = false;
                 }
@@ -73,7 +73,18 @@ class PostController extends BaseController {
             ]);
 
         } catch (Exception $e) {
-            $this->sendError(500, 'Database error: ' . $e->getMessage());
+            if (strpos($e->getMessage(), 'doesn\'t exist') !== false) {
+                echo json_encode([
+                'posts' => [],
+                'total' => 0,
+                'page' => isset($page) ? (int)$page : 1,
+                'limit' => isset($limit) ? (int)$limit : 10,
+                'total_pages' => 0
+                ]);
+                http_response_code(200);
+            } else {
+                $this->sendError(500, 'Database error: ' . $e->getMessage());
+            }
         }
     }
 

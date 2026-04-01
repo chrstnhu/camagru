@@ -96,7 +96,6 @@ class Router {
             // error_log("Router Debug - Pattern match result: " . ($match ? 'TRUE' : 'FALSE'));
             return $match;
         }
-        
         // Match exact
         $exactMatch = $routePath === $path;
         // error_log("Router Debug - Exact match: " . ($exactMatch ? 'TRUE' : 'FALSE'));

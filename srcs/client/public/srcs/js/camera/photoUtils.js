@@ -28,65 +28,6 @@ function renderCaptureDraftGallery() {
   });
 }
 
-// Clears the draft gallery and hides related UI elements
-function clearDraftGalleryUI(draftGallery, confirmActions) {
-  draftGallery.innerHTML = "";
-  draftGallery.style.display = "none";
-  if (confirmActions) {
-    confirmActions.style.display = "none";
-  }
-  if (photo) {
-    photo.removeAttribute("src");
-    photo.style.display = "none";
-  }
-}
-
-// Shows the draft gallery and confirm actions UI elements
-function showDraftGalleryUI(draftGallery, confirmActions) {}
-
-// Creates a thumbnail element for a capture draft, marking it as selected if applicable
-function createDraftThumbnail(draft, index, isSelected, onClick) {
-  const thumb = document.createElement("img");
-  thumb.src = draft.previewDataUrl;
-  thumb.alt = `Capture draft ${index + 1}`;
-  thumb.className = "capture-draft-item";
-  if (isSelected) {
-    thumb.classList.add("is-selected");
-  }
-  thumb.addEventListener("click", onClick);
-  return thumb;
-}
-
-// Updates the photo preview to show the currently selected draft
-function updateSelectedDraftPreview() {
-  if (!photo) {
-    return;
-  }
-
-  const selectedDraft = getSelectedDraft();
-  if (!selectedDraft) {
-    photo.removeAttribute("src");
-    photo.style.display = "none";
-    return;
-  }
-
-  photo.src = selectedDraft.previewDataUrl;
-  photo.style.display = "block";
-}
-
-// Returns the currently selected draft object, or null if none
-function getSelectedDraft() {
-  if (
-    !window._captureDrafts ||
-    window._selectedCaptureDraftIndex < 0 ||
-    window._selectedCaptureDraftIndex >= window._captureDrafts.length
-  ) {
-    return null;
-  }
-
-  return window._captureDrafts[window._selectedCaptureDraftIndex] || null;
-}
-
 // Adds a new draft to the drafts array and updates the gallery
 function addCaptureDraft(draft) {
   if (!window._captureDrafts) {
@@ -135,46 +76,53 @@ function removeSelectedDraft() {
   return true;
 }
 
-// Helpers for image upload and preview
-function setUploadPreviewDisplay(e) {
-  const placeholder = document.getElementById("upload-placeholder");
-  const previewWrapper = document.getElementById("upload-preview-wrapper");
-  const previewImg = document.getElementById("upload-preview");
-  const uploadEffectPreview = document.getElementById("upload-effect-preview");
-  const addToDraftBtn = document.getElementById("add-to-draft");
-  if (placeholder) {
-    placeholder.style.display = "none";
+// Returns the currently selected draft object, or null if none
+function getSelectedDraft() {
+  if (
+    !window._captureDrafts ||
+    window._selectedCaptureDraftIndex < 0 ||
+    window._selectedCaptureDraftIndex >= window._captureDrafts.length
+  ) {
+    return null;
   }
-  if (previewWrapper) {
-    previewWrapper.style.display = "inline-block";
+
+  return window._captureDrafts[window._selectedCaptureDraftIndex] || null;
+}
+
+// Clears the draft gallery and hides related UI elements
+function clearDraftGalleryUI(draftGallery, confirmActions) {
+  draftGallery.innerHTML = "";
+  draftGallery.style.display = "none";
+  if (confirmActions) {
+    confirmActions.style.display = "none";
   }
-  if (previewImg) {
-    previewImg.src = e.target.result;
-  }
-  if (uploadEffectPreview && selectedEffect) {
-    uploadEffectPreview.src = selectedEffect.img;
-    uploadEffectPreview.style.display = "block";
-  }
-  if (addToDraftBtn) {
-    addToDraftBtn.disabled = !selectedEffect;
+  if (photo) {
+    photo.removeAttribute("src");
+    photo.style.display = "none";
   }
 }
 
-function storeUploadedImageData(e, img) {
-  window._uploadedImageData = {
-    src: e.target.result,
-    width: img.width,
-    height: img.height,
-  };
+// Creates a thumbnail element for a capture draft, marking it as selected if applicable
+function createDraftThumbnail(draft, index, isSelected, onClick) {
+  const thumb = document.createElement("img");
+  thumb.src = draft.previewDataUrl;
+  thumb.alt = `Capture draft ${index + 1}`;
+  thumb.className = "capture-draft-item";
+  if (isSelected) {
+    thumb.classList.add("is-selected");
+  }
+  thumb.addEventListener("click", onClick);
+  return thumb;
 }
 
+// Handles image file selection, reads the file, and updates the upload preview
 function handleImageUpload(event) {
   const file = event.target.files[0];
   if (!file) {
     return;
   }
   if (!file.type.startsWith("image/")) {
-    return showErrorAlert("Please select a valid image file");
+    return showInfoAlert("Please select a valid image file");
   }
   const reader = new FileReader();
   reader.onload = function (e) {
@@ -191,33 +139,30 @@ function handleImageUpload(event) {
   }
 }
 
-function drawEffectOnCanvas(
-  previewContext,
-  effectImage,
-  imgData,
-  effectWidth,
-  effectHeight,
-  normalizedBaseDataUrl,
-) {
-  const posX = (imgData.width - effectWidth) / 2;
-  const posY = (imgData.height - effectHeight) / 2;
-  previewContext.drawImage(effectImage, posX, posY, effectWidth, effectHeight);
-  addCaptureDraft({
-    rawDataUrl: normalizedBaseDataUrl,
-    previewDataUrl: previewContext.canvas.toDataURL("image/png"),
-    effectDataUrl: selectedEffect.dataUrl,
-    effectWidth,
-    effectHeight,
-  });
-  resetUploadPreview();
+// Updates the photo preview to show the currently selected draft
+function updateSelectedDraftPreview() {
+  if (!photo) {
+    return;
+  }
+
+  const selectedDraft = getSelectedDraft();
+  if (!selectedDraft) {
+    photo.removeAttribute("src");
+    photo.style.display = "none";
+    return;
+  }
+
+  photo.src = selectedDraft.previewDataUrl;
+  photo.style.display = "block";
 }
 
+// Saves the currently uploaded photo with the selected effect as a new draft
 function saveUploadedPhoto() {
   if (!window._uploadedImageData) {
-    return showErrorAlert("Please upload an image first");
+    return showInfoAlert("Please upload an image first");
   }
   if (!selectedEffect) {
-    return showErrorAlert("Please select an effect first");
+    return showInfoAlert("Please select an effect first");
   }
   const imgData = window._uploadedImageData;
   const { effectWidth, effectHeight } = getUploadEffectDimensions();
@@ -249,6 +194,62 @@ function saveUploadedPhoto() {
     showErrorAlert("Failed to read uploaded image");
   };
   baseImage.src = imgData.src;
+}
+
+// Draws the effect on the canvas and adds a new draft with the combined image
+function drawEffectOnCanvas(
+  previewContext,
+  effectImage,
+  imgData,
+  effectWidth,
+  effectHeight,
+  normalizedBaseDataUrl,
+) {
+  const posX = (imgData.width - effectWidth) / 2;
+  const posY = (imgData.height - effectHeight) / 2;
+  previewContext.drawImage(effectImage, posX, posY, effectWidth, effectHeight);
+  addCaptureDraft({
+    rawDataUrl: normalizedBaseDataUrl,
+    previewDataUrl: previewContext.canvas.toDataURL("image/png"),
+    effectDataUrl: selectedEffect.dataUrl,
+    effectWidth,
+    effectHeight,
+  });
+  resetUploadPreview();
+}
+
+// Sets the upload preview display based on the uploaded image and selected effect
+function setUploadPreviewDisplay(e) {
+  const placeholder = document.getElementById("upload-placeholder");
+  const previewWrapper = document.getElementById("upload-preview-wrapper");
+  const previewImg = document.getElementById("upload-preview");
+  const uploadEffectPreview = document.getElementById("upload-effect-preview");
+  const addToDraftBtn = document.getElementById("add-to-draft");
+  if (placeholder) {
+    placeholder.style.display = "none";
+  }
+  if (previewWrapper) {
+    previewWrapper.style.display = "inline-block";
+  }
+  if (previewImg) {
+    previewImg.src = e.target.result;
+  }
+  if (uploadEffectPreview && selectedEffect) {
+    uploadEffectPreview.src = selectedEffect.img;
+    uploadEffectPreview.style.display = "block";
+  }
+  if (addToDraftBtn) {
+    addToDraftBtn.disabled = !selectedEffect;
+  }
+}
+
+// Store the uploaded image data in a global variable
+function storeUploadedImageData(e, img) {
+  window._uploadedImageData = {
+    src: e.target.result,
+    width: img.width,
+    height: img.height,
+  };
 }
 
 // Resets the upload preview to its initial state

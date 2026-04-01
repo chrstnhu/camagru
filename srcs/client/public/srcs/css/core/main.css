@@ -1,3 +1,4 @@
+/*========== Theme Toggle Button ==========*/
 .theme-toggle-btn {
   background: var(--card-bg);
   border: 2px solid var(--color-primary);
@@ -48,6 +49,7 @@
   color: #fff;
 }
 
+/*========== Header and Navigation ==========*/
 .header-container {
   display: flex;
   justify-content: center;
@@ -102,17 +104,12 @@
   }
 }
 
-@import url('https://fonts.googleapis.com/css?family=Montserrat:400,700&display=swap');
-
-.montserrat-sans-serif {
-  font-family: "Montserrat", Georgia, 'Times New Roman', Times, serif, sans-serif;
-  font-optical-sizing: auto;
-  font-weight: 400;
-  font-style: normal;
-}
-
-body {
   /*a href=httpsfr.freepik.comvecteurs-librefond-bleu-aquarelle_23761122.html*/
+body {
+  /*
+    Page background and base text color.
+    Background image attribution: https://fr.freepik.com/vecteurs-libre/fond-bleu-aquarelle_23761122.html
+  */
   background: url('../../../assets/img/background.jpg') no-repeat;
   background-size: cover;
   background-position: center;
@@ -122,7 +119,6 @@ body {
   padding: 0;
   box-sizing: border-box;
   color: var(--text-color);
-  font-family: "montserrat-sans-serif";
 }
 
 
@@ -167,6 +163,7 @@ a:hover {
   transform: scale(1.15);
 }
 
+/*========== Navigation Content ==========*/
 .nav-content {
   cursor: pointer;
   padding: 17px 0;
@@ -184,7 +181,6 @@ a:hover {
   box-sizing: border-box;
 }
 
-/* Responsive: hide navigation text on mobile devices */
 @media (max-width: 768px) {
   .nav-label {
     display: none;
@@ -212,7 +208,7 @@ main,
   box-sizing: border-box;
 }
 
-/* Footer */
+/*========== Footer ==========*/
 footer {
   height: 60px;
   display: flex;
@@ -225,7 +221,7 @@ footer {
   font-size: var(--font-sm);
 }
 
-/* Alert Container - Stacked notifications */
+/*========== Alert Styles ==========*/
 .alert-container {
   position: fixed;
   bottom: 20px;
@@ -328,11 +324,19 @@ footer {
   word-wrap: break-word;
 }
 
+.alert.is-info i {
+  color: #2196f3;
+}
+
+.alert.is-info::after {
+  background-color: #2196f3;
+}
+
+/* ========== User Profile Dropdown ==========*/
 .user-profile {
   position: relative;
   padding: 10px;
 }
-
 
 .user-profile .user-avatar {
   width: 32px;
@@ -391,7 +395,7 @@ footer {
   background: var(--card-bg);
 }
 
-
+/*========== Forgot/Reset Overlay ==========*/
 .forgot-reset-overlay {
   position: fixed;
   top: 0;

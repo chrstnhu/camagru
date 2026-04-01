@@ -1,6 +1,39 @@
 let ul;
 let posts;
 
+// Initializes pagination after posts are created and posts are available in the DOM
+function initPagination(postPerPage = 6, currentPage = 1) {
+  setTimeout(() => {
+    const availableposts = document.querySelectorAll(".post");
+    if (availableposts.length > 0) {
+      // console.log(`Pagination initialized with ${availableposts.length} posts`);
+      handlePagination(postPerPage, currentPage);
+    } else {
+      // console.warn("No posts found for pagination");
+      showErrorAlert("No posts available for pagination");
+    }
+  }, 100); // Wait 100ms for posts to be generated
+}
+
+// Handles the logic for changing pages and updating the UI
+const handlePagination = (postPerPage, currentPage) => {
+  ul = document.querySelector("nav.pagination ul");
+  if (!ul) {
+    return; 
+  }
+
+  // Retrieve the posts on each call to ensure they exist
+  posts = document.querySelectorAll(".post");
+
+  if (posts.length === 0) {
+    return; 
+  }
+
+  updateCurrentPage(postPerPage, currentPage);
+
+  ul.innerHTML = implementPagination(posts, postPerPage, currentPage);
+};
+
 // Generates the HTML for pagination controls based on the current page and total posts
 function implementPagination(posts, postPerPage, currentPage) {
   const totalPages = Math.ceil(posts.length / postPerPage);
@@ -24,25 +57,6 @@ function implementPagination(posts, postPerPage, currentPage) {
             <span class="icon"> &gt; </span></li>`;
   return li;
 }
-
-// Handles the logic for changing pages and updating the UI
-const handlePagination = (postPerPage, currentPage) => {
-  ul = document.querySelector("nav.pagination ul");
-  if (!ul) {
-    return; 
-  }
-
-  // Retrieve the posts on each call to ensure they exist
-  posts = document.querySelectorAll(".post");
-
-  if (posts.length === 0) {
-    return; 
-  }
-
-  updateCurrentPage(postPerPage, currentPage);
-
-  ul.innerHTML = implementPagination(posts, postPerPage, currentPage);
-};
 
 // Updates which posts are visible based on the current page
 const updateCurrentPage = (postPerPage, currentPage) => {
@@ -78,16 +92,3 @@ const generatePageNumbers = (totalPages, currentPage) => {
   }
   return pagination;
 };
-
-// Initializes pagination after posts are created and posts are available in the DOM
-function initPagination(postPerPage = 6, currentPage = 1) {
-  setTimeout(() => {
-    const availableposts = document.querySelectorAll(".post");
-    if (availableposts.length > 0) {
-      console.log(`Pagination initialized with ${availableposts.length} posts`);
-      handlePagination(postPerPage, currentPage);
-    } else {
-      console.warn("No posts found for pagination");
-    }
-  }, 100); // Wait 100ms for posts to be generated
-}

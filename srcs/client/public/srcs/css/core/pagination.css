@@ -16,8 +16,6 @@ nav.pagination ul {
     gap: 0.6rem;
 }
 
-
-
 nav.pagination ul .page {
     cursor: pointer;
     user-select: none;

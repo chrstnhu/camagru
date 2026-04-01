@@ -1,45 +1,3 @@
-// Checks the validity of the current and new password fields
-function checkPassword(currentPassword, password, confirmPassword) {
-  if (!currentPassword) {
-    showErrorAlert("Please enter your current password!");
-    return false;
-  }
-
-  if (!password) {
-    showErrorAlert("Please enter a new password!");
-    return false;
-  }
-
-  if (password !== confirmPassword) {
-    showErrorAlert("Passwords do not match!");
-    return false;
-  }
-
-  if (password.length < 8) {
-    showErrorAlert("Password must be at least 8 characters long!");
-    return false;
-  }
-
-  const hasUpperCase = /[A-Z]/.test(password);
-  const hasLowerCase = /[a-z]/.test(password);
-  const hasNumber = /[0-9]/.test(password);
-
-  if (!hasUpperCase || !hasLowerCase || !hasNumber) {
-    showErrorAlert(
-      "Password must contain at least 1 uppercase, 1 lowercase and 1 number!",
-    );
-    return false;
-  }
-  return true;
-}
-
-// Clears the password fields in the profile form
-function clearPasswordFields() {
-  document.getElementById("profile-current-password").value = "";
-  document.getElementById("profile-password").value = "";
-  document.getElementById("profile-confirm-password").value = "";
-}
-
 // Handles the password update form submission and updates the password via API
 async function submitPasswordForm(e) {
   e.preventDefault();
@@ -69,6 +27,48 @@ async function submitPasswordForm(e) {
     // console.error("Error updating password:", error);
     showErrorAlert("Network error. Please try again.");
   }
+}
+
+// Checks the validity of the current and new password fields
+function checkPassword(currentPassword, password, confirmPassword) {
+  if (!currentPassword) {
+    showInfoAlert("Please enter your current password!");
+    return false;
+  }
+
+  if (!password) {
+    showInfoAlert("Please enter a new password!");
+    return false;
+  }
+
+  if (password !== confirmPassword) {
+    showInfoAlert("Passwords do not match!");
+    return false;
+  }
+
+  if (password.length < 8) {
+    showInfoAlert("Password must be at least 8 characters long!");
+    return false;
+  }
+
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+
+  if (!hasUpperCase || !hasLowerCase || !hasNumber) {
+    showErrorAlert(
+      "Password must contain at least 1 uppercase, 1 lowercase and 1 number!",
+    );
+    return false;
+  }
+  return true;
+}
+
+// Clears the password fields in the profile form
+function clearPasswordFields() {
+  document.getElementById("profile-current-password").value = "";
+  document.getElementById("profile-password").value = "";
+  document.getElementById("profile-confirm-password").value = "";
 }
 
 // Binds the password form submit event on DOM load

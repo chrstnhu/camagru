@@ -16,7 +16,7 @@ async function saveSelectedDraft() {
   });
 
   removeSelectedDraft();
-  showSucessAlert("Photo saved successfully!");
+  showSuccessAlert("Photo saved successfully!");
   return true;
 }
 

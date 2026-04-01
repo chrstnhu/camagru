@@ -18,21 +18,22 @@ class ImageController extends BaseController {
 
     // Save a captured image
     public function saveImage() {
+        // Check if the user is authenticated and CSRF token is valid
         $this->checkUserAuth('save images');
         $this->requireCsrfProtection();
         
         try {
-            // Retrieve JSON data sent by the client
             $input = json_decode(file_get_contents('php://input'), true);
             
-            // Retrieve user ID from session (secure)
             $userId = $_SESSION['user_id'];
-            $caption = $input['caption'] ?? '';  // Optional caption
+            $caption = $input['caption'] ?? '';
 
+            // Handle two possible image upload formats: with effect overlay or direct image data
             if (isset($input['base_image_data']) && isset($input['effect_image_data'])) {
                 $effectWidth = isset($input['effect_width']) ? (int) $input['effect_width'] : 100;
                 $effectHeight = isset($input['effect_height']) ? (int) $input['effect_height'] : 80;
 
+                // Compose the final image with the effect overlay
                 $imageData = $this->composeImageData(
                     $input['base_image_data'],
                     $input['effect_image_data'],
@@ -49,7 +50,7 @@ class ImageController extends BaseController {
                 $this->sendError(400, 'Caption is too long');
             }
             
-            // Generate a unique filename
+            // Generate a unique filename for the image
             $timestamp = time(); 
             $randomString = bin2hex(random_bytes(8));
             $imagePath = "uploads/images/{$userId}_{$timestamp}_{$randomString}.png";
@@ -61,6 +62,7 @@ class ImageController extends BaseController {
                 throw new Exception('Failed to publish post');
             }
 
+            // Insert the image record into the images table
             $stmt = $this->db->prepare("
                 INSERT INTO images (user_id, post_id, image_path, image_data, caption, created_at)
                 VALUES (:user_id, :post_id, :image_path, :image_data, :caption, NOW())
@@ -74,9 +76,11 @@ class ImageController extends BaseController {
                 ':caption' => $caption
             ]);
             
+            // Get the ID of the newly inserted image
             $imageId = $this->db->lastInsertId();
             $this->db->commit();
             
+            // Send a success response with image details
             http_response_code(201);
             $this->sendSuccess('Image saved successfully', [
                 'image_id' => $imageId,
@@ -160,6 +164,7 @@ class ImageController extends BaseController {
                 $this->sendError(403, 'You can only delete your own images');
             }
             
+            // Start transaction to delete image and associated post
             $this->db->beginTransaction();
 
             $stmt = $this->db->prepare("DELETE FROM images WHERE id = :id");
@@ -190,11 +195,13 @@ class ImageController extends BaseController {
         }
     }
 
+    // Validate image data URL format and content
     private function validateImageDataUrl($imageData) {
         if (!is_string($imageData) || !preg_match('/^data:(image\/(png|jpeg));base64,/', $imageData)) {
             $this->sendError(400, 'Invalid image format');
         }
 
+        // Decode the base64 data to check size and type
         $encoded = substr($imageData, strpos($imageData, ',') + 1);
         $binary = base64_decode($encoded, true);
 
@@ -214,6 +221,7 @@ class ImageController extends BaseController {
         return $imageData;
     }
 
+    // Decode image data URL and return binary data and metadata
     private function decodeImageDataUrl($imageData) {
         $this->validateImageDataUrl($imageData);
 
@@ -233,6 +241,7 @@ class ImageController extends BaseController {
         ];
     }
 
+    // Compose base image and effect image into a single image
     private function composeImageData($baseImageData, $effectImageData, $effectWidth, $effectHeight) {
         $baseImage = $this->decodeImageDataUrl($baseImageData);
         $effectImage = $this->decodeImageDataUrl($effectImageData);
@@ -244,11 +253,13 @@ class ImageController extends BaseController {
             $this->sendError(400, 'Unable to process image composition');
         }
 
+        // Enable alpha blending and save alpha for both images
         imagealphablending($baseResource, true);
         imagesavealpha($baseResource, true);
         imagealphablending($effectResource, true);
         imagesavealpha($effectResource, true);
 
+        // Calculate position and size for the effect overlay
         $baseWidth = imagesx($baseResource);
         $baseHeight = imagesy($baseResource);
         $overlaySourceWidth = imagesx($effectResource);
@@ -260,6 +271,7 @@ class ImageController extends BaseController {
         $positionX = (int) floor(($baseWidth - $overlayWidth) / 2);
         $positionY = (int) floor(($baseHeight - $overlayHeight) / 2);
 
+        // Create a new true color image for the final composition
         imagecopyresampled(
             $baseResource,
             $effectResource,
@@ -273,6 +285,7 @@ class ImageController extends BaseController {
             $overlaySourceHeight
         );
 
+        // Capture the output of the composed image as a binary string
         ob_start();
         imagepng($baseResource);
         $composedBinary = ob_get_clean();
