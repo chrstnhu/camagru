@@ -1,5 +1,7 @@
 # Camagru 📸
 
+![Demo Camagru](assets/Camagru-visual.gif)
+
 A photo-sharing web application built with HTML/CSS/JavaScript pure on the frontend and native PHP on the backend, developed in the spirit of the 42 curriculum.
 
 Camagru allows users to register, verify their email, capture or upload photos, apply effect, publish images, interact through likes and comments, and manage their own gallery.
