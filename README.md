@@ -8,16 +8,16 @@ Camagru allows users to register, verify their email, capture or upload photos, 
 
 ## 📋 Table of Contents
 
-- [About](#about)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Architecture](#architecture)
-- [Security](#security)
-- [Important Files](#important-files)
-- [Documentation](#documentation)
+- [About](#-about)
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Project Structure](#-project-structure)
+- [Installation](#-installation)
+- [Usage](#-usage)
+- [Architecture](#-architecture)
+- [Security](#-security)
+- [Important Files](#-important-files)
+- [Documentation](#-documentation)
 
 ## 🎯 About
 
